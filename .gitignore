@@ -1,0 +1,11 @@
+.venv/
+pycache/
+.pyc
+.env
+models/.joblib
+models/*.csv
+data/
+*.db
+.DS_Store
+Archive.zip
+submission 2/
