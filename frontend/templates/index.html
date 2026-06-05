@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Care Attend - NHS Predictive Risk Assessment</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <!-- LOGIN SCREEN (Fig 3.6a) -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-hero">
+            <div class="login-logo-icon"><i data-lucide="heart-pulse" style="width:32px;height:32px;"></i></div>
+            <h1 class="login-title" data-i18n="appTitle">Care Attend</h1>
+            <p class="login-subtitle" data-i18n="appSubtitle">NHS Predictive Risk Assessment</p>
+        </div>
+
+        <div class="login-container">
+            <!-- Login Form -->
+            <div id="login-form-wrapper">
+                <h2 class="login-heading" data-i18n="welcomeBack">Welcome Back</h2>
+                <p class="login-desc" data-i18n="signInDesc">Sign in to access your practice dashboard</p>
+
+                <form id="login-form" class="auth-form">
+                    <div class="form-group">
+                        <label for="login-username">Email Address</label>
+                        <input type="text" id="login-username" placeholder="staff@nhspractice.nhs.uk" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="login-password" placeholder="••••••••" required>
+                            <button type="button" class="password-toggle" onclick="togglePassword('login-password', this)">Show</button>
+                        </div>
+                    </div>
+                    <div class="form-row-inline">
+                        <label class="checkbox-label compact">
+                            <input type="checkbox" id="remember-me">
+                            <span>Remember me</span>
+                        </label>
+                    </div>
+                    <!-- 2FA Code Field (shown when needed) -->
+                    <div class="form-group" id="login-2fa-group" style="display:none;">
+                        <label for="login-2fa-code">2FA Verification Code</label>
+                        <input type="text" id="login-2fa-code" placeholder="Enter 6-digit code" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" class="ac-code-input">
+                    </div>
+
+                    <div id="login-error" class="auth-error" style="display:none;"></div>
+                    <button type="submit" class="btn-primary btn-login" id="login-submit-btn">LOG IN</button>
+                </form>
+
+                <div class="auth-divider"><span>OR</span></div>
+                <button class="btn-outline" onclick="showRegister()">CREATE NEW ACCOUNT</button>
+            </div>
+
+            <!-- Register Form -->
+            <div id="register-form-wrapper" style="display:none;">
+                <h2 class="login-heading">Create Account</h2>
+                <p class="login-desc">Register for practice access</p>
+
+                <form id="register-form" class="auth-form">
+                    <div class="form-group">
+                        <label for="reg-username">Username</label>
+                        <input type="text" id="reg-username" placeholder="e.g. asha.patel" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-email">Email Address</label>
+                        <input type="email" id="reg-email" placeholder="staff@nhspractice.nhs.uk" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-password">Password</label>
+                        <input type="password" id="reg-password" placeholder="Minimum 8 characters" required minlength="8">
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-role">Role</label>
+                        <select id="reg-role">
+                            <option value="staff">Staff</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <div id="register-error" class="auth-error" style="display:none;"></div>
+                    <div id="register-success" class="auth-success" style="display:none;"></div>
+                    <button type="submit" class="btn-primary btn-login">CREATE ACCOUNT</button>
+                </form>
+
+                <div class="auth-divider"><span>OR</span></div>
+                <button class="btn-outline" onclick="showLogin()">BACK TO LOGIN</button>
+            </div>
+
+            <!-- GDPR Data Protection Notice (NFR-01) -->
+            <div class="data-protection-notice">
+                <h4 data-i18n="dataProtection">Data Protection Notice</h4>
+                <p data-i18n="noDataStored">No patient data is stored on this device.</p>
+                <p data-i18n="sessionCleared">All session data is cleared on close.</p>
+                <p data-i18n="gdprCompliant">GDPR Article 5(1)(c) compliant.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP (shown after login) -->
+    <div id="main-app" style="display:none;">
+        <a href="#tab-assessment" class="skip-link" onclick="switchTab('assessment')">Skip to main content</a>
+        <header class="nhs-header">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon"><i data-lucide="heart-pulse" style="width:20px;height:20px;"></i></span>
+                    <h1>Care Attend</h1>
+                </div>
+                <div class="header-right">
+                    <select class="lang-selector" onchange="setLanguage(this.value)" aria-label="Language">
+                        <option value="en">EN</option>
+                        <option value="cy">CY</option>
+                        <option value="ur">UR</option>
+                        <option value="pl">PL</option>
+                    </select>
+                    <button class="header-icon-btn" onclick="toggleDarkMode()" title="Toggle dark mode" aria-label="Toggle dark mode">
+                        <i data-lucide="moon" id="dark-mode-icon" style="width:18px;height:18px;"></i>
+                    </button>
+                    <div class="notif-wrapper">
+                        <button class="header-icon-btn" onclick="toggleNotifications()" title="Notifications" aria-label="Notifications" id="notif-btn">
+                            <i data-lucide="bell" style="width:18px;height:18px;"></i>
+                            <span class="notif-badge" id="notif-badge" style="display:none;">0</span>
+                        </button>
+                        <div class="notification-dropdown" id="notification-dropdown" style="display:none;">
+                            <div class="notif-dropdown-header">
+                                <h4>Notifications</h4>
+                                <button class="notif-clear-btn" onclick="clearAllNotifications()">Clear All</button>
+                            </div>
+                            <div class="notif-list" id="notif-list">
+                                <div class="notif-empty">No notifications yet</div>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="session-timer" id="session-timer" title="Session time remaining"><i data-lucide="clock" style="width:12px;height:12px;"></i> <span id="session-countdown">30:00</span></span>
+                    <button class="user-badge-btn" id="user-badge" onclick="openProfile()" title="Account"></button>
+                    <button class="btn-logout" onclick="handleLogout()"><i data-lucide="log-out" style="width:14px;height:14px;margin-right:4px;"></i> Log Out</button>
+                </div>
+            </div>
+        </header>
+
+        <nav class="tab-nav" role="tablist" aria-label="Main navigation">
+            <button class="tab-btn active" data-tab="assessment" role="tab" aria-selected="true" aria-controls="tab-assessment">
+                <span class="tab-icon"><i data-lucide="clipboard-list" style="width:16px;height:16px;"></i></span> Assessment
+            </button>
+            <button class="tab-btn" data-tab="results" role="tab" aria-selected="false" aria-controls="tab-results">
+                <span class="tab-icon"><i data-lucide="activity" style="width:16px;height:16px;"></i></span> Results
+            </button>
+            <button class="tab-btn" data-tab="dashboard" role="tab" aria-selected="false" aria-controls="tab-dashboard">
+                <span class="tab-icon"><i data-lucide="layout-dashboard" style="width:16px;height:16px;"></i></span> Dashboard
+            </button>
+            <button class="tab-btn" data-tab="batch" role="tab" aria-selected="false" aria-controls="tab-batch">
+                <span class="tab-icon"><i data-lucide="upload" style="width:16px;height:16px;"></i></span> Batch
+            </button>
+            <button class="tab-btn" data-tab="bias" role="tab" aria-selected="false" aria-controls="tab-bias">
+                <span class="tab-icon"><i data-lucide="scale" style="width:16px;height:16px;"></i></span> Bias
+            </button>
+            <button class="tab-btn" data-tab="ethics" role="tab" aria-selected="false" aria-controls="tab-ethics">
+                <span class="tab-icon"><i data-lucide="shield-check" style="width:16px;height:16px;"></i></span> Ethics
+            </button>
+        </nav>
+
+        <main class="container">
+            <!-- ASSESSMENT TAB -->
+            <section id="tab-assessment" class="tab-content active" role="tabpanel">
+                <div class="card">
+                    <h2 class="card-title">Patient Risk Assessment</h2>
+                    <p class="card-description">Enter patient details to generate a DNA risk prediction with explainable AI outputs.</p>
+
+                    <!-- EHR Quick Lookup (Feature 10 - Mock) -->
+                    <div class="ehr-lookup-bar">
+                        <input type="text" id="ehr-nhs-number" placeholder="NHS Number (e.g. NHS001)" class="ehr-input">
+                        <button type="button" class="btn-secondary btn-small-fit" onclick="lookupEHR()">Auto-fill from EHR</button>
+                    </div>
+
+                    <form id="assessment-form">
+                        <div class="form-section">
+                            <h3 class="section-label">Demographics</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="age">Age (0-120) <span class="required">*</span></label>
+                                    <input type="number" id="age" name="Age" min="0" max="120" required placeholder="e.g. 72" aria-describedby="age-hint">
+                                    <span class="field-hint" id="age-hint">0 - 120 years</span>
+                                    <span class="error-msg" id="age-error" role="alert"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label for="gender">Gender <span class="required">*</span></label>
+                                    <select id="gender" name="Gender" required aria-label="Patient gender">
+                                        <option value="">Select...</option>
+                                        <option value="0">Female</option>
+                                        <option value="1">Male</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3 class="section-label">Appointment Details</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="leadtime">Lead Time (days) <span class="required">*</span></label>
+                                    <input type="number" id="leadtime" name="AppointmentLeadTimeDays" min="0" max="365" required placeholder="e.g. 14">
+                                </div>
+                                <div class="form-group">
+                                    <label for="priordna">Prior DNA Count <span class="required">*</span></label>
+                                    <input type="number" id="priordna" name="PriorDNACount" min="0" max="50" required placeholder="e.g. 3">
+                                </div>
+                            </div>
+                            <div class="checkbox-grid" style="margin-top:12px;">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="sms-check" name="SMSReceived">
+                                    <span class="checkmark"></span>
+                                    SMS Reminder Received
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3 class="section-label">Clinical Flags</h3>
+                            <div class="checkbox-grid">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="hypertension" name="Hypertension">
+                                    <span class="checkmark"></span>
+                                    Hypertension
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="diabetes" name="Diabetes">
+                                    <span class="checkmark"></span>
+                                    Diabetes
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="alcoholism" name="Alcoholism">
+                                    <span class="checkmark"></span>
+                                    Alcohol Dependency
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="disability" name="Disability">
+                                    <span class="checkmark"></span>
+                                    Registered Disability
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3 class="section-label">Social Context</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="imd">IMD Decile (1-10) <span class="required">*</span></label>
+                                    <input type="number" id="imd" name="IMDDecile" min="1" max="10" required placeholder="e.g. 2">
+                                    <span class="field-hint">1 (most deprived) - 10 (least deprived)</span>
+                                    <span class="error-msg" id="imd-error" role="alert"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Auto-calculated age group display -->
+                        <div class="age-group-display" id="age-group-display" style="display:none;">
+                            <span id="age-group-label">Age Group: --</span>
+                        </div>
+
+                        <div class="validation-status" id="validation-status"></div>
+
+                        <button type="submit" class="btn-primary" id="submit-btn">
+                            <span class="btn-text">ASSESS RISK</span>
+                            <span class="btn-loading" style="display:none;">Analysing...</span>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="card info-card">
+                    <h3>About This Tool</h3>
+                    <p>Care Attend uses machine learning to predict which patients are at risk of missing their appointment. Predictions are explained using SHAP (SHapley Additive exPlanations), and the system monitors for demographic bias.</p>
+                    <p><strong>Data Handling:</strong> No patient data is stored. All information is processed in-session only and cleared when you close the browser. Fully compliant with UK GDPR Article 5(1)(c) data minimisation principles.</p>
+                </div>
+            </section>
+
+            <!-- RESULTS TAB -->
+            <section id="tab-results" class="tab-content" role="tabpanel">
+                <div id="no-results" class="card empty-state">
+                    <div class="empty-icon"><i data-lucide="bar-chart-3" style="width:48px;height:48px;color:var(--nhs-grey);"></i></div>
+                    <h3>No Assessment Yet</h3>
+                    <p>Complete the patient assessment form to view risk prediction results.</p>
+                    <button class="btn-secondary" onclick="switchTab('assessment')">Go to Assessment</button>
+                </div>
+
+                <div id="results-content" style="display:none;">
+                    <div class="card risk-card" id="risk-card">
+                        <div class="result-session-bar" id="result-session-bar"></div>
+                        <div class="risk-header">
+                            <div class="risk-gauge-container">
+                                <canvas id="risk-gauge" width="220" height="220"></canvas>
+                                <div class="risk-percentage" id="risk-percentage">--</div>
+                            </div>
+                            <div class="risk-info">
+                                <div class="risk-tier-badge" id="risk-tier-badge">--</div>
+                                <p class="risk-label">DNA Risk Level</p>
+                                <div class="patient-meta" id="patient-meta"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2 class="card-title">Why This Score? (SHAP)</h2>
+                        <p class="card-description">Top contributing risk factors identified by SHAP explainability analysis.</p>
+                        <div class="shap-chart-container">
+                            <canvas id="shap-chart" height="200"></canvas>
+                        </div>
+                        <div id="shap-legend" class="shap-legend">
+                            <span class="legend-item"><span class="dot risk-up"></span> Increases Risk</span>
+                            <span class="legend-item"><span class="dot risk-down"></span> Reduces Risk</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2 class="card-title">Recommended Interventions</h2>
+                        <p class="card-description">Contextual support actions based on the patient's risk profile and age group.</p>
+                        <div id="interventions-list" class="interventions-grid"></div>
+                    </div>
+
+                    <!-- Natural Language Summary (Feature 13) -->
+                    <div class="card bias-summary-card" id="nl-summary-card" style="display:none;">
+                        <h2 class="card-title">Plain-English Summary</h2>
+                        <p id="nl-summary-text" style="font-size:15px;line-height:1.7;"></p>
+                    </div>
+
+                    <!-- Prediction Feedback (Feature 12) -->
+                    <div class="card" id="feedback-card" style="display:none;">
+                        <h2 class="card-title">Was this prediction accurate?</h2>
+                        <p class="card-description">Your feedback helps improve model accuracy over time.</p>
+                        <div class="result-actions">
+                            <button class="btn-primary btn-half" style="background:#007F3B" onclick="submitFeedback('correct')">Correct</button>
+                            <button class="btn-primary btn-half" style="background:#DA291C" onclick="submitFeedback('incorrect')">Incorrect</button>
+                        </div>
+                        <div id="feedback-response" style="display:none;margin-top:12px;"></div>
+                    </div>
+
+                    <!-- Risk History (FR-09, US-012) -->
+                    <div class="card" id="risk-history-card" style="display:none;">
+                        <h2 class="card-title">Risk History (Session)</h2>
+                        <p class="card-description">Risk score trajectory across assessments in this session.</p>
+                        <div class="risk-history-chart-container">
+                            <canvas id="risk-history-chart" height="200"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Action buttons matching Fig 3.6b -->
+                    <div class="result-actions">
+                        <button class="btn-primary btn-half" onclick="switchTab('assessment')"><i data-lucide="plus" style="width:14px;height:14px;margin-right:4px;"></i> New Assessment</button>
+                        <button class="btn-primary btn-half btn-dark" onclick="exportPatientPDF()"><i data-lucide="file-down" style="width:14px;height:14px;margin-right:4px;"></i> Export PDF</button>
+                    </div>
+                    <div class="result-actions">
+                        <button class="btn-secondary btn-half" onclick="printResults()"><i data-lucide="printer" style="width:14px;height:14px;margin-right:4px;"></i> Print</button>
+                        <button class="btn-secondary btn-half" onclick="switchTab('bias')"><i data-lucide="scale" style="width:14px;height:14px;margin-right:4px;"></i> Bias Dashboard</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PRACTICE DASHBOARD TAB (US-002, Feature 11) -->
+            <section id="tab-dashboard" class="tab-content" role="tabpanel">
+                <div class="card">
+                    <h2 class="card-title">Practice Dashboard</h2>
+                    <p class="card-description">Real-time practice-wide DNA risk overview. Session-scoped data only.</p>
+                    <button class="btn-primary" onclick="loadDashboard()">Refresh Dashboard</button>
+                </div>
+                <div id="dashboard-content" style="display:none;">
+                    <div class="card">
+                        <div class="metrics-row" id="dashboard-metrics"></div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">Age Group Breakdown</h3>
+                        <div id="dashboard-age-breakdown"></div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">Recent Assessments</h3>
+                        <div id="dashboard-recent" style="overflow-x:auto;"></div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">Feedback Accuracy</h3>
+                        <div id="dashboard-feedback"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- BATCH UPLOAD TAB (FR-08, US-010) -->
+            <section id="tab-batch" class="tab-content" role="tabpanel">
+                <div class="card">
+                    <h2 class="card-title">Batch Patient Upload</h2>
+                    <p class="card-description">Upload a CSV of up to 100 patient records for bulk risk assessment. Results returned as downloadable CSV.</p>
+
+                    <div class="batch-upload-area" id="batch-upload-area">
+                        <div class="upload-icon"><i data-lucide="file-up" style="width:40px;height:40px;color:var(--nhs-grey);"></i></div>
+                        <p>Drag & drop CSV file here or click to browse</p>
+                        <input type="file" id="batch-file-input" accept=".csv" style="display:none;" onchange="handleBatchFile(this)">
+                        <button class="btn-secondary" onclick="document.getElementById('batch-file-input').click()">Choose CSV File</button>
+                    </div>
+
+                    <div id="batch-file-info" style="display:none;" class="batch-file-info">
+                        <span id="batch-file-name"></span>
+                        <button class="btn-small" onclick="clearBatchFile()">Remove</button>
+                    </div>
+
+                    <button class="btn-primary" id="batch-submit-btn" onclick="submitBatch()" style="display:none;margin-top:16px;">
+                        <span class="btn-text">Process Batch</span>
+                        <span class="btn-loading" style="display:none;">Processing...</span>
+                    </button>
+
+                    <div class="card info-card" style="margin-top:16px;">
+                        <h4>Required CSV Columns</h4>
+                        <p><code>Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile</code></p>
+                        <p>Optional: <code>Hypertension, Diabetes, Alcoholism, Disability</code></p>
+                    </div>
+                </div>
+
+                <div id="batch-results" style="display:none;">
+                    <div class="card">
+                        <h3 class="card-title">Batch Results</h3>
+                        <div class="metrics-row" id="batch-summary"></div>
+                        <div id="batch-table-container" style="margin-top:16px;overflow-x:auto;"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- BIAS MONITOR TAB -->
+            <section id="tab-bias" class="tab-content" role="tabpanel">
+                <div class="card">
+                    <h2 class="card-title">Ethical Bias Monitoring Dashboard</h2>
+                    <p class="card-description">Fairness metrics across protected characteristic groups. Threshold: 0.10 per NHS AI ethics guidance.</p>
+
+                    <div class="bias-tab-nav" role="tablist">
+                        <button class="bias-tab active" data-bias="age" onclick="switchBiasTab('age')">Age</button>
+                        <button class="bias-tab" data-bias="gender" onclick="switchBiasTab('gender')">Gender</button>
+                        <button class="bias-tab" data-bias="imd" onclick="switchBiasTab('imd')">IMD</button>
+                    </div>
+
+                    <button class="btn-primary" id="run-audit-btn" onclick="runBiasAudit()" style="margin-top:16px;">
+                        <span class="btn-text">Run Bias Audit</span>
+                        <span class="btn-loading" style="display:none;">Auditing...</span>
+                    </button>
+                </div>
+
+                <div id="bias-results" style="display:none;">
+                    <div class="card">
+                        <h3 class="card-title">Overall Model Performance</h3>
+                        <div class="metrics-row" id="overall-metrics"></div>
+                    </div>
+
+                    <div class="card" id="bias-age-panel">
+                        <h3 class="card-title">Age Group Fairness</h3>
+                        <div id="age-audit" class="audit-section"></div>
+                    </div>
+
+                    <div class="card" id="bias-gender-panel" style="display:none;">
+                        <h3 class="card-title">Gender Fairness</h3>
+                        <div id="gender-audit" class="audit-section"></div>
+                    </div>
+
+                    <div class="card" id="bias-imd-panel" style="display:none;">
+                        <h3 class="card-title">Deprivation (IMD) Fairness</h3>
+                        <div id="imd-audit" class="audit-section"></div>
+                    </div>
+
+                    <!-- Plain-English Summary -->
+                    <div class="card bias-summary-card" id="bias-summary-card" style="display:none;">
+                        <h3 class="card-title">Plain-English Summary</h3>
+                        <p id="bias-summary-text"></p>
+                    </div>
+
+                    <!-- PDF Export (US-011) -->
+                    <button class="btn-primary" onclick="exportBiasPDF()" style="margin-bottom:20px;">
+                        EXPORT PDF AUDIT REPORT
+                    </button>
+                </div>
+            </section>
+
+            <!-- ETHICS FRAMEWORK TAB (Feature 19) -->
+            <section id="tab-ethics" class="tab-content" role="tabpanel">
+                <div class="card">
+                    <h2 class="card-title">NHSX AI Ethics Framework Compliance</h2>
+                    <p class="card-description">Mapping against NHS England (2024) Guide to Good Practice for Digital and Data-Driven Health Technologies.</p>
+                    <div class="result-actions">
+                        <button class="btn-primary btn-half" onclick="loadEthicsFramework()">Load Ethics Mapping</button>
+                        <button class="btn-primary btn-half btn-dark" onclick="runCrossValidation(event)">Run Cross-Validation</button>
+                    </div>
+                </div>
+
+                <div id="ethics-content" style="display:none;"></div>
+
+                <div id="cv-results" style="display:none;">
+                    <div class="card">
+                        <h3 class="card-title">Cross-Validation Results (5-Fold)</h3>
+                        <p class="card-description">With bootstrap 95% confidence intervals and McNemar significance tests.</p>
+                        <div id="cv-table-container"></div>
+                    </div>
+                    <div class="card" id="cv-significance" style="display:none;">
+                        <h3 class="card-title">Statistical Significance (McNemar)</h3>
+                        <div id="cv-sig-content"></div>
+                    </div>
+                    <div class="card bias-summary-card" id="dl-narrative" style="display:none;">
+                        <h3 class="card-title">Deep Learning vs. Interpretable Models</h3>
+                        <p id="dl-narrative-text"></p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Toast Notification Container -->
+        <div id="toast-container" class="toast-container"></div>
+
+        <footer class="nhs-footer">
+            <p>Care Attend &copy; 2025 | COM668 Computing Project | Ulster University | Session-scoped data only &mdash; no patient records stored.</p>
+        </footer>
+    </div>
+
+    <!-- Account Centre -->
+    <div id="profile-overlay" class="profile-overlay" style="display:none;" onclick="if(event.target===this)closeProfile()">
+        <div class="account-centre">
+            <button class="profile-close" onclick="closeProfile()">&times;</button>
+
+            <!-- Account Header -->
+            <div class="ac-header">
+                <div class="ac-avatar" id="ac-avatar">?</div>
+                <div class="ac-header-info">
+                    <h2 id="ac-display-name">--</h2>
+                    <p class="ac-role-badge" id="ac-role">Staff</p>
+                </div>
+            </div>
+
+            <!-- Account Tabs -->
+            <div class="ac-tabs">
+                <button class="ac-tab active" onclick="switchAccountTab('personal')"><i data-lucide="user" style="width:14px;height:14px;"></i> Personal</button>
+                <button class="ac-tab" onclick="switchAccountTab('security')"><i data-lucide="shield" style="width:14px;height:14px;"></i> Security</button>
+                <button class="ac-tab" onclick="switchAccountTab('privacy')"><i data-lucide="lock" style="width:14px;height:14px;"></i> Privacy</button>
+            </div>
+
+            <!-- Personal Info Tab -->
+            <div class="ac-panel active" id="ac-panel-personal">
+                <div class="ac-section">
+                    <h3 class="ac-section-title"><i data-lucide="user-circle" style="width:16px;height:16px;"></i> Profile Information</h3>
+                    <div class="ac-field-group">
+                        <div class="ac-field">
+                            <label>Display Name</label>
+                            <div class="ac-field-row">
+                                <input type="text" id="ac-edit-name" placeholder="Enter display name" class="ac-input">
+                                <button class="ac-save-btn" onclick="saveDisplayName()"><i data-lucide="check" style="width:14px;height:14px;"></i></button>
+                            </div>
+                        </div>
+                        <div class="ac-field">
+                            <label>Username</label>
+                            <p class="ac-field-value" id="ac-username">--</p>
+                        </div>
+                        <div class="ac-field">
+                            <label>Email</label>
+                            <p class="ac-field-value" id="ac-email">--</p>
+                        </div>
+                        <div class="ac-field">
+                            <label>Role</label>
+                            <p class="ac-field-value" id="ac-role-text">--</p>
+                        </div>
+                        <div class="ac-field">
+                            <label>Member Since</label>
+                            <p class="ac-field-value" id="ac-member-since">--</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ac-section">
+                    <h3 class="ac-section-title"><i data-lucide="activity" style="width:16px;height:16px;"></i> Current Session</h3>
+                    <div class="ac-field-group">
+                        <div class="ac-field">
+                            <label>Status</label>
+                            <p class="ac-field-value"><span class="ac-status-dot"></span> Active</p>
+                        </div>
+                        <div class="ac-field">
+                            <label>Session Timeout</label>
+                            <p class="ac-field-value">30 minutes inactivity (NFR-06)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Tab -->
+            <div class="ac-panel" id="ac-panel-security">
+                <div class="ac-section">
+                    <h3 class="ac-section-title"><i data-lucide="key" style="width:16px;height:16px;"></i> Change Password</h3>
+                    <form id="change-password-form" onsubmit="handleChangePassword(event)">
+                        <div class="ac-field">
+                            <label for="ac-current-pw">Current Password</label>
+                            <input type="password" id="ac-current-pw" class="ac-input" required>
+                        </div>
+                        <div class="ac-field">
+                            <label for="ac-new-pw">New Password</label>
+                            <input type="password" id="ac-new-pw" class="ac-input" required minlength="8" placeholder="Minimum 8 characters">
+                        </div>
+                        <div class="ac-field">
+                            <label for="ac-confirm-pw">Confirm New Password</label>
+                            <input type="password" id="ac-confirm-pw" class="ac-input" required minlength="8">
+                        </div>
+                        <button type="submit" class="ac-action-btn"><i data-lucide="save" style="width:14px;height:14px;"></i> Update Password</button>
+                    </form>
+                    <p class="ac-hint" id="ac-pw-changed">--</p>
+                </div>
+
+                <div class="ac-section">
+                    <h3 class="ac-section-title"><i data-lucide="smartphone" style="width:16px;height:16px;"></i> Two-Factor Authentication (2FA)</h3>
+                    <p class="ac-desc">Add extra security with a time-based one-time password (TOTP) from an authenticator app like Google Authenticator or Authy.</p>
+
+                    <div id="2fa-status" class="ac-2fa-status">
+                        <div class="ac-2fa-badge disabled" id="2fa-badge"><i data-lucide="shield-off" style="width:14px;height:14px;"></i> Disabled</div>
+                    </div>
+
+                    <!-- 2FA Setup Flow -->
+                    <div id="2fa-setup-area">
+                        <button class="ac-action-btn" id="2fa-setup-btn" onclick="start2FASetup()"><i data-lucide="shield-plus" style="width:14px;height:14px;"></i> Enable 2FA</button>
+                    </div>
+
+                    <!-- 2FA QR + Verify (hidden until setup) -->
+                    <div id="2fa-qr-area" style="display:none;">
+                        <div class="ac-2fa-steps">
+                            <div class="ac-step">
+                                <span class="ac-step-num">1</span>
+                                <span>Scan QR code with your authenticator app</span>
+                            </div>
+                            <div id="2fa-qr-container" class="ac-qr-container"></div>
+                            <div class="ac-manual-key">
+                                <label>Manual entry key:</label>
+                                <code id="2fa-secret-key">--</code>
+                            </div>
+                            <div class="ac-step">
+                                <span class="ac-step-num">2</span>
+                                <span>Enter 6-digit code to verify</span>
+                            </div>
+                            <div class="ac-field-row" style="margin-top:8px;">
+                                <input type="text" id="2fa-verify-code" class="ac-input ac-code-input" maxlength="6" placeholder="000000" pattern="[0-9]{6}" inputmode="numeric">
+                                <button class="ac-action-btn" onclick="verify2FA()"><i data-lucide="check-circle" style="width:14px;height:14px;"></i> Verify</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2FA Disable (shown when enabled) -->
+                    <div id="2fa-disable-area" style="display:none;">
+                        <p class="ac-desc">To disable 2FA, enter your password for confirmation.</p>
+                        <div class="ac-field-row">
+                            <input type="password" id="2fa-disable-pw" class="ac-input" placeholder="Your password">
+                            <button class="ac-action-btn ac-danger-btn" onclick="disable2FA()"><i data-lucide="shield-off" style="width:14px;height:14px;"></i> Disable</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Privacy Tab -->
+            <div class="ac-panel" id="ac-panel-privacy">
+                <div class="ac-section">
+                    <h3 class="ac-section-title"><i data-lucide="file-text" style="width:16px;height:16px;"></i> Data Protection</h3>
+                    <div class="ac-privacy-card">
+                        <div class="ac-privacy-item">
+                            <i data-lucide="check-circle" style="width:16px;height:16px;color:#007F3B;"></i>
+                            <div>
+                                <strong>GDPR Article 5(1)(c) Compliant</strong>
+                                <p>Data minimisation — only essential fields collected.</p>
+                            </div>
+                        </div>
+                        <div class="ac-privacy-item">
+                            <i data-lucide="check-circle" style="width:16px;height:16px;color:#007F3B;"></i>
+                            <div>
+                                <strong>Session-Scoped Processing</strong>
+                                <p>No patient data stored. All cleared on browser close.</p>
+                            </div>
+                        </div>
+                        <div class="ac-privacy-item">
+                            <i data-lucide="check-circle" style="width:16px;height:16px;color:#007F3B;"></i>
+                            <div>
+                                <strong>Encrypted Authentication</strong>
+                                <p>Passwords hashed with bcrypt. Sessions expire after 30 minutes.</p>
+                            </div>
+                        </div>
+                        <div class="ac-privacy-item">
+                            <i data-lucide="check-circle" style="width:16px;height:16px;color:#007F3B;"></i>
+                            <div>
+                                <strong>No Third-Party Data Sharing</strong>
+                                <p>All processing local. No external analytics or tracking.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ac-section">
+                    <h3 class="ac-section-title"><i data-lucide="download" style="width:16px;height:16px;"></i> Your Data</h3>
+                    <p class="ac-desc">Your account stores only: username, email, hashed password, and role. No patient data is associated with your account.</p>
+                    <button class="ac-action-btn ac-danger-btn" onclick="handleLogout()"><i data-lucide="log-out" style="width:14px;height:14px;"></i> Log Out &amp; Clear Session</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Keyboard Shortcuts Modal -->
+    <div id="shortcuts-overlay" class="profile-overlay" style="display:none;" onclick="if(event.target===this)closeShortcuts()">
+        <div class="profile-modal shortcuts-modal">
+            <button class="profile-close" onclick="closeShortcuts()">&times;</button>
+            <h2 style="color:var(--nhs-blue);margin-bottom:16px;"><i data-lucide="keyboard" style="width:20px;height:20px;margin-right:8px;"></i>Keyboard Shortcuts</h2>
+            <div class="shortcut-grid">
+                <div class="shortcut-row"><kbd>?</kbd><span>Show shortcuts</span></div>
+                <div class="shortcut-row"><kbd>1</kbd>-<kbd>6</kbd><span>Switch tabs</span></div>
+                <div class="shortcut-row"><kbd>N</kbd><span>New assessment</span></div>
+                <div class="shortcut-row"><kbd>D</kbd><span>Toggle dark mode</span></div>
+                <div class="shortcut-row"><kbd>Esc</kbd><span>Close panels</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Chatbot Widget -->
+    <div class="chatbot-fab" id="chatbot-fab" onclick="toggleChatbot()" title="Care Attend AI Assistant">
+        <i data-lucide="bot" style="width:24px;height:24px;"></i>
+    </div>
+    <div class="chatbot-panel" id="chatbot-panel" style="display:none;">
+        <div class="chatbot-header">
+            <div class="chatbot-header-info">
+                <i data-lucide="bot" style="width:20px;height:20px;"></i>
+                <div>
+                    <span class="chatbot-title">Care Attend AI</span>
+                    <span class="chatbot-status"><span class="status-dot"></span> Online</span>
+                </div>
+            </div>
+            <button class="chatbot-close" onclick="toggleChatbot()"><i data-lucide="x" style="width:18px;height:18px;"></i></button>
+        </div>
+        <div class="chatbot-messages" id="chatbot-messages">
+            <div class="chat-msg bot">
+                <div class="chat-avatar"><i data-lucide="bot" style="width:14px;height:14px;"></i></div>
+                <div class="chat-bubble">Hello! I'm your Care Attend assistant. I can help with risk assessments, bias monitoring, and navigating the app. What would you like to know?</div>
+            </div>
+            <div class="chat-suggestions" id="chat-suggestions">
+                <button class="suggestion-chip" onclick="sendSuggestion('How do I assess a patient?')">How to assess a patient?</button>
+                <button class="suggestion-chip" onclick="sendSuggestion('What is SHAP?')">What is SHAP?</button>
+                <button class="suggestion-chip" onclick="sendSuggestion('How does bias monitoring work?')">Bias monitoring?</button>
+                <button class="suggestion-chip" onclick="sendSuggestion('Tell me about data privacy')">Data privacy</button>
+            </div>
+        </div>
+        <div class="chatbot-input-area">
+            <input type="text" id="chatbot-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendChatMessage()">
+            <button class="chatbot-send" onclick="sendChatMessage()"><i data-lucide="send" style="width:18px;height:18px;"></i></button>
+        </div>
+    </div>
+
+    <script src="/static/js/i18n.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

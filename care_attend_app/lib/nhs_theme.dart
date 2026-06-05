@@ -1,0 +1,101 @@
+import 'package:flutter/material.dart';
+
+class NHSTheme {
+  static const Color blue = Color(0xFF003087);
+  static const Color darkBlue = Color(0xFF002060);
+  static const Color lightBlue = Color(0xFF41B6E6);
+  static const Color white = Color(0xFFFFFFFF);
+  static const Color paleGrey = Color(0xFFF0F4F5);
+  static const Color grey = Color(0xFFAEB7BD);
+  static const Color darkGrey = Color(0xFF425563);
+  static const Color black = Color(0xFF231F20);
+
+  static const Color riskLow = Color(0xFF007F3B);
+  static const Color riskMedium = Color(0xFFFFB81C);
+  static const Color riskHigh = Color(0xFFDA291C);
+  static const Color riskLowBg = Color(0xFFE8F5E9);
+  static const Color riskMediumBg = Color(0xFFFFF8E1);
+  static const Color riskHighBg = Color(0xFFFFEBEE);
+
+  static ThemeData get theme => ThemeData(
+        primaryColor: blue,
+        scaffoldBackgroundColor: paleGrey,
+        fontFamily: 'Arial',
+        colorScheme: const ColorScheme.light(
+          primary: blue,
+          secondary: lightBlue,
+          error: riskHigh,
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: blue,
+          foregroundColor: white,
+          elevation: 2,
+          centerTitle: true,
+          titleTextStyle: TextStyle(
+            fontFamily: 'Arial',
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: white,
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: blue,
+            foregroundColor: white,
+            minimumSize: const Size(double.infinity, 48),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(6),
+            ),
+            textStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(6),
+            borderSide: const BorderSide(color: grey, width: 1.5),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(6),
+            borderSide: const BorderSide(color: blue, width: 2),
+          ),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        ),
+      );
+
+  static Color riskColor(String tier) {
+    switch (tier.toLowerCase()) {
+      case 'high':
+        return riskHigh;
+      case 'medium':
+        return riskMedium;
+      default:
+        return riskLow;
+    }
+  }
+
+  static Color riskBgColor(String tier) {
+    switch (tier.toLowerCase()) {
+      case 'high':
+        return riskHighBg;
+      case 'medium':
+        return riskMediumBg;
+      default:
+        return riskLowBg;
+    }
+  }
+
+  static String ageGroup(int age) {
+    if (age < 18) return 'Under 18';
+    if (age < 65) return '18-64';
+    if (age < 75) return '65-74';
+    if (age < 85) return '75-84';
+    return '85+';
+  }
+}
