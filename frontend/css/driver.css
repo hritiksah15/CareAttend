@@ -1,0 +1,123 @@
+/* ── Enhanced Guided Tour (Driver.js-style) ──
+   Element spotlight with backdrop cutout.
+   Upgrades built-in tour with focused highlighting. */
+
+.tour-highlight {
+    position: relative;
+    z-index: 10001 !important;
+    box-shadow: 0 0 0 4px rgba(65, 182, 230, 0.6), 0 0 0 9999px rgba(0, 0, 0, 0.55) !important;
+    border-radius: 8px;
+    transition: box-shadow 0.3s ease;
+}
+
+.tour-highlight-pulse {
+    animation: tourPulse 2s ease-in-out infinite;
+}
+
+@keyframes tourPulse {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(65,182,230,0.6), 0 0 0 9999px rgba(0,0,0,0.55); }
+    50% { box-shadow: 0 0 0 8px rgba(65,182,230,0.3), 0 0 0 9999px rgba(0,0,0,0.55); }
+}
+
+/* Tour tooltip positioning */
+.tour-card {
+    z-index: 10002;
+}
+
+.tour-card.positioned {
+    position: fixed;
+    max-width: 420px;
+}
+
+.tour-card.pos-bottom {
+    margin-top: 12px;
+}
+
+.tour-card.pos-top {
+    margin-bottom: 12px;
+}
+
+/* Arrow pointing to element */
+.tour-card::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: inherit;
+    border: 1px solid var(--glass-border, rgba(255,255,255,0.45));
+    transform: rotate(45deg);
+}
+
+.tour-card.pos-bottom::after {
+    top: -7px;
+    left: 50%;
+    margin-left: -6px;
+    border-right: none;
+    border-bottom: none;
+}
+
+.tour-card.pos-top::after {
+    bottom: -7px;
+    left: 50%;
+    margin-left: -6px;
+    border-left: none;
+    border-top: none;
+}
+
+/* Step indicator dots */
+.tour-dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 16px;
+}
+
+.tour-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #d0d5dd;
+    transition: all 0.2s ease;
+}
+
+.tour-dot.active {
+    background: #003087;
+    width: 20px;
+    border-radius: 4px;
+}
+
+body.dark-mode .tour-dot { background: #444; }
+body.dark-mode .tour-dot.active { background: #41B6E6; }
+
+/* Keyboard nav hint */
+.tour-key-hint {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 8px;
+    font-size: 11px;
+    color: #AEB7BD;
+}
+
+.tour-key-hint kbd {
+    background: #F0F4F5;
+    border: 1px solid #d0d5dd;
+    border-radius: 3px;
+    padding: 1px 6px;
+    font-family: monospace;
+    font-size: 11px;
+}
+
+body.dark-mode .tour-key-hint kbd {
+    background: #2d2d3f;
+    border-color: #444;
+    color: #ccc;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .tour-highlight-pulse { animation: none; }
+    .tour-highlight {
+        box-shadow: 0 0 0 4px rgba(65,182,230,0.6), 0 0 0 9999px rgba(0,0,0,0.55) !important;
+    }
+}

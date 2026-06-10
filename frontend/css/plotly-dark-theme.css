@@ -1,0 +1,58 @@
+/* ── Chart Dark Theme ──
+   Consistent dark mode for Chart.js canvases and any future Plotly charts.
+   Applied via body.dark-mode cascade. */
+
+body.dark-mode .chart-container,
+body.dark-mode .shap-chart-container,
+body.dark-mode .risk-history-chart-container {
+    background: rgba(45, 45, 63, 0.5);
+    border-radius: 8px;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+body.dark-mode canvas {
+    filter: brightness(0.95);
+}
+
+/* Plotly chart overrides (if Plotly added later) */
+body.dark-mode .js-plotly-plot .plotly .main-svg {
+    background: transparent !important;
+}
+
+body.dark-mode .js-plotly-plot .plotly .bg {
+    fill: transparent !important;
+}
+
+body.dark-mode .js-plotly-plot text {
+    fill: #c0c0c0 !important;
+}
+
+body.dark-mode .js-plotly-plot .gridlayer line {
+    stroke: rgba(255, 255, 255, 0.08) !important;
+}
+
+body.dark-mode .js-plotly-plot .zerolinelayer line {
+    stroke: rgba(255, 255, 255, 0.15) !important;
+}
+
+body.dark-mode .js-plotly-plot .legend text {
+    fill: #b0b0c0 !important;
+}
+
+body.dark-mode .js-plotly-plot .modebar-btn path {
+    fill: #888 !important;
+}
+
+body.dark-mode .js-plotly-plot .modebar-btn:hover path {
+    fill: #41B6E6 !important;
+}
+
+/* Chart.js tooltip dark mode */
+body.dark-mode .chartjs-tooltip {
+    background: rgba(45, 45, 63, 0.9) !important;
+    color: #e0e0e0 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(8px);
+    border-radius: 6px !important;
+}

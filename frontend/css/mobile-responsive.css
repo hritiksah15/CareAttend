@@ -1,0 +1,162 @@
+/* ── Mobile-First Responsive Design ──
+   Progressive breakpoints: 480 → 640 → 768 → 1024
+   Touch targets: minimum 44x44px (WCAG 2.5.5) */
+
+/* ── Extra Small (≤480px) - Small phones ── */
+@media (max-width: 480px) {
+    .container { padding: 12px 8px; }
+
+    .card { padding: 16px; margin-bottom: 12px; border-radius: 8px; }
+    .card-title { font-size: 16px; }
+    .card-description { font-size: 13px; }
+
+    .login-hero { padding: 32px 16px 28px; }
+    .login-title { font-size: 24px; }
+    .login-subtitle { font-size: 14px; }
+    .login-container { padding: 20px 16px; }
+    .login-heading { font-size: 18px; }
+
+    .btn-primary { padding: 12px 20px; font-size: 15px; }
+    .btn-secondary { padding: 8px 16px; font-size: 13px; }
+
+    .form-grid { grid-template-columns: 1fr; gap: 12px; }
+    .checkbox-grid { grid-template-columns: 1fr; }
+
+    .risk-header { flex-direction: column; align-items: center; text-align: center; gap: 16px; }
+    .risk-gauge-container { width: 160px; height: 160px; }
+    .risk-percentage { font-size: 32px; }
+
+    .metrics-row { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .metric-box { padding: 12px 6px; }
+    .metric-value { font-size: 22px; }
+    .metric-label { font-size: 11px; }
+
+    .shap-chart-container { max-width: 100%; }
+    .shap-legend { flex-direction: column; gap: 6px; align-items: center; }
+
+    .intervention-card { padding: 10px 12px; }
+    .intervention-number { width: 28px; height: 28px; font-size: 12px; }
+    .intervention-text h4 { font-size: 13px; }
+    .intervention-text p { font-size: 12px; }
+
+    .chatbot-panel { width: calc(100vw - 16px); right: 8px; bottom: 80px; max-height: 70vh; }
+    .chatbot-fab { width: 48px; height: 48px; bottom: 16px; right: 16px; }
+
+    .notification-dropdown { width: calc(100vw - 32px); right: -60px; }
+
+    .result-actions { flex-direction: column; }
+
+    .bias-tab-nav { flex-wrap: wrap; }
+    .bias-tab { font-size: 12px; padding: 8px 10px; }
+    .bias-bar-label { width: 50px; font-size: 11px; }
+
+    .ehr-lookup-bar { flex-direction: column; }
+    .ehr-input { width: 100%; }
+
+    .tour-card { padding: 20px; max-width: 95%; }
+    .tour-card h3 { font-size: 16px; }
+    .tour-card p { font-size: 13px; }
+    .tour-actions { flex-direction: column; }
+    .tour-actions .btn-primary,
+    .tour-actions .btn-secondary { width: 100%; text-align: center; }
+
+    .proxy-toggle-bar { flex-direction: column; align-items: flex-start; }
+
+    .account-centre { width: 95vw; }
+    .ac-header { padding: 16px; }
+    .ac-panel { padding: 16px; }
+}
+
+/* ── Small (≤640px) - Large phones ── */
+@media (max-width: 640px) {
+    .header-content { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .header-right { margin-top: 8px; width: 100%; justify-content: space-between; }
+
+    .tab-btn { font-size: 11px; padding: 10px 6px; }
+    .tab-icon { display: none; }
+
+    .form-grid { grid-template-columns: 1fr; }
+    .checkbox-grid { grid-template-columns: 1fr; }
+
+    .risk-header { flex-direction: column; align-items: center; text-align: center; }
+    .result-actions { flex-direction: column; }
+
+    .bias-bar-label { width: 60px; font-size: 12px; }
+}
+
+/* ── Medium (≤768px) - Tablets portrait ── */
+@media (max-width: 768px) {
+    .container { padding: 20px 12px; }
+
+    .form-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+
+    .metrics-row { grid-template-columns: repeat(2, 1fr); }
+
+    .chatbot-panel { width: 320px; }
+
+    .notification-dropdown { width: 300px; }
+
+    .account-centre { width: 90vw; }
+}
+
+/* ── Large (≤1024px) - Tablets landscape ── */
+@media (max-width: 1024px) {
+    .tab-btn { font-size: 13px; padding: 12px 10px; }
+}
+
+/* ── Touch device enhancements ── */
+@media (hover: none) and (pointer: coarse) {
+    .card:hover { transform: none; box-shadow: var(--shadow-glass); }
+    .metric-box:hover { transform: none; }
+    .intervention-card:hover { transform: none; }
+    .btn-primary:hover { transform: none; }
+    .btn-secondary:hover { transform: none; }
+    .tab-btn:hover { transform: none; }
+    .checkbox-label:hover { transform: none; }
+
+    .btn-primary:active { transform: scale(0.97); }
+    .card:active { transform: scale(0.99); }
+}
+
+/* ── Landscape phone ── */
+@media (max-height: 500px) and (orientation: landscape) {
+    .login-hero { padding: 20px 16px; }
+    .login-logo-icon { width: 40px; height: 40px; font-size: 20px; margin-bottom: 8px; }
+    .login-title { font-size: 22px; }
+    .login-container { padding: 16px; }
+    .chatbot-panel { max-height: 280px; }
+    .tour-card { padding: 16px; }
+}
+
+/* ── Print ── */
+@media print {
+    .nhs-header,
+    .tab-nav,
+    .nhs-footer,
+    .chatbot-fab,
+    .chatbot-panel,
+    .notification-dropdown,
+    .btn-primary,
+    .btn-secondary,
+    .btn-outline,
+    .proxy-toggle-bar,
+    .ehr-lookup-bar,
+    .tour-overlay,
+    .skip-link { display: none !important; }
+
+    body, body.dark-mode {
+        background: #fff !important;
+        color: #000 !important;
+    }
+
+    .card, body.dark-mode .card {
+        background: #fff !important;
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+        backdrop-filter: none !important;
+        page-break-inside: avoid;
+    }
+
+    .container { max-width: 100%; padding: 0; }
+    .tab-content { display: block !important; opacity: 1 !important; }
+}
