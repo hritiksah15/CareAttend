@@ -66,6 +66,8 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
 
         if (res.ok && data.token) {
             authToken = data.token;
+            localStorage.setItem('careattend_token', data.token);
+            localStorage.setItem('careattend_user', username);
             document.getElementById('login-2fa-group').style.display = 'none';
             if (document.getElementById('login-2fa-code')) document.getElementById('login-2fa-code').value = '';
             document.getElementById('login-submit-btn').textContent = 'LOG IN';
@@ -241,6 +243,8 @@ async function handleLogout() {
         });
     } catch { /* ignore */ }
     authToken = null;
+    localStorage.removeItem('careattend_token');
+    localStorage.removeItem('careattend_user');
     clearSessionTimer();
     closeProfile();
     document.getElementById('main-app').style.display = 'none';
@@ -1496,4 +1500,330 @@ const _origShowMainApp = showMainApp;
 showMainApp = function(username) {
     _origShowMainApp(username);
     startSessionCountdown();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 };
+
+
+// ── Notifications ──
+
+let notifications = [];
+
+function toggleNotifications() {
+    const dd = document.getElementById('notification-dropdown');
+    dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+}
+
+function addNotification(title, desc, type) {
+    notifications.unshift({ title, desc, type, time: new Date() });
+    if (notifications.length > 20) notifications.pop();
+    renderNotifications();
+    updateNotifBadge();
+}
+
+function renderNotifications() {
+    const list = document.getElementById('notif-list');
+    if (!notifications.length) {
+        list.innerHTML = '<div class="notif-empty">No notifications yet</div>';
+        return;
+    }
+    list.innerHTML = notifications.map(function(n) {
+        var iconColor = n.type === 'error' ? '#DA291C' : n.type === 'success' ? '#007F3B' : '#003087';
+        return '<div class="notif-item"><div class="notif-icon" style="color:' + iconColor + ';">&#9679;</div><div class="notif-content"><strong>' + n.title + '</strong><p>' + n.desc + '</p><span class="notif-time">' + timeAgo(n.time) + '</span></div></div>';
+    }).join('');
+}
+
+function updateNotifBadge() {
+    var badge = document.getElementById('notif-badge');
+    if (notifications.length > 0) {
+        badge.textContent = notifications.length;
+        badge.style.display = 'inline-block';
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+function clearAllNotifications() {
+    notifications = [];
+    renderNotifications();
+    updateNotifBadge();
+}
+
+function timeAgo(date) {
+    var seconds = Math.floor((new Date() - date) / 1000);
+    if (seconds < 60) return 'Just now';
+    var minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return minutes + 'm ago';
+    var hours = Math.floor(minutes / 60);
+    if (hours < 24) return hours + 'h ago';
+    return Math.floor(hours / 24) + 'd ago';
+}
+
+
+// ── AI Chatbot ──
+
+let chatbotOpen = false;
+
+function toggleChatbot() {
+    chatbotOpen = !chatbotOpen;
+    document.getElementById('chatbot-panel').style.display = chatbotOpen ? 'flex' : 'none';
+    if (chatbotOpen && typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function sendSuggestion(text) {
+    document.getElementById('chatbot-input').value = text;
+    sendChatMessage();
+    var suggestions = document.getElementById('chat-suggestions');
+    if (suggestions) suggestions.style.display = 'none';
+}
+
+function sendChatMessage() {
+    var input = document.getElementById('chatbot-input');
+    var text = input.value.trim();
+    if (!text) return;
+    appendChatMessage(text, 'user');
+    input.value = '';
+    showTypingIndicator();
+    setTimeout(function() {
+        removeTypingIndicator();
+        var response = getChatbotResponse(text);
+        appendChatMessage(response, 'bot');
+    }, 800);
+}
+
+function appendChatMessage(text, sender) {
+    var container = document.getElementById('chatbot-messages');
+    var div = document.createElement('div');
+    div.className = 'chat-msg ' + sender;
+    var avatar = sender === 'bot' ? '<div class="chat-avatar">AI</div>' : '<div class="chat-avatar">You</div>';
+    div.innerHTML = avatar + '<div class="chat-bubble">' + text + '</div>';
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+
+function showTypingIndicator() {
+    var container = document.getElementById('chatbot-messages');
+    var div = document.createElement('div');
+    div.className = 'chat-msg bot typing-indicator';
+    div.id = 'typing-indicator';
+    div.innerHTML = '<div class="chat-avatar">AI</div><div class="chat-bubble"><span class="typing-dots">...</span></div>';
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+
+function removeTypingIndicator() {
+    var el = document.getElementById('typing-indicator');
+    if (el) el.remove();
+}
+
+function getChatbotResponse(query) {
+    var q = query.toLowerCase();
+    if (q.includes('assess') || q.includes('predict') || q.includes('risk')) {
+        return 'To assess a patient, go to the <strong>Assessment</strong> tab (press 1). Fill in demographics, appointment details, clinical flags, and IMD decile. Click "Assess Risk" to get a DNA prediction with SHAP explanations and recommended interventions.';
+    } else if (q.includes('shap') || q.includes('explain')) {
+        return '<strong>SHAP</strong> (SHapley Additive exPlanations) shows which factors contributed most to the prediction. Green bars reduce risk, red bars increase it. Each patient gets a personalised explanation — not a black box.';
+    } else if (q.includes('bias') || q.includes('fair')) {
+        return 'The <strong>Bias Monitor</strong> (tab 5) audits the model for fairness across age, gender, and IMD groups. It checks demographic parity and equalised odds with a 0.10 threshold per NHS AI ethics guidance. You can export PDF reports for governance.';
+    } else if (q.includes('privacy') || q.includes('gdpr') || q.includes('data')) {
+        return 'Care Attend is <strong>GDPR Article 5(1)(c) compliant</strong>. No patient data is stored — all predictions are session-scoped. Passwords are hashed with bcrypt. Sessions expire after 30 minutes. No third-party analytics.';
+    } else if (q.includes('batch') || q.includes('csv') || q.includes('upload')) {
+        return 'The <strong>Batch Upload</strong> tab (press 4) lets you upload a CSV of up to 100 patients. Required columns: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile. Results download as CSV.';
+    } else if (q.includes('slot') || q.includes('overbook')) {
+        return 'The <strong>Slot Optimisation</strong> tab (press 7) analyses appointment slots for overbooking opportunities. Paste JSON patient data — slots with 40%+ DNA risk are flagged as overbookable.';
+    } else if (q.includes('nudge') || q.includes('message') || q.includes('patient comms')) {
+        return 'The <strong>Patient Nudge</strong> tab (press 8) generates personalised, non-stigmatising messages in English, Welsh, Urdu, or Polish based on the patient\'s risk profile.';
+    } else if (q.includes('2fa') || q.includes('two-factor') || q.includes('authenticator')) {
+        return 'Enable <strong>2FA</strong> in your Account Centre > Security tab. It uses TOTP — compatible with Google Authenticator, Authy, or any TOTP app. You\'ll need the 6-digit code to log in.';
+    } else if (q.includes('proxy') || q.includes('carer') || q.includes('digital exclusion')) {
+        return 'The <strong>Carer Proxy</strong> mode (Assessment tab) lets a family member or carer enter patient data on behalf of digitally excluded patients — bridging the gap for 3.8M UK adults who\'ve never used the internet.';
+    } else if (q.includes('shortcut') || q.includes('keyboard')) {
+        return 'Press <strong>?</strong> to see keyboard shortcuts. Keys 1-8 switch tabs. N = new assessment, D = dark mode, G = guided tour, Esc = close panels.';
+    } else if (q.includes('tour') || q.includes('guide') || q.includes('help')) {
+        return 'Press the <strong>?</strong> button in the header or press G to start the guided tour. It walks through all 8 features step by step.';
+    } else {
+        return 'I can help with: patient assessment, SHAP explanations, bias monitoring, batch upload, slot optimisation, patient nudge, 2FA security, carer proxy mode, and more. What would you like to know?';
+    }
+}
+
+
+// ── Toast Notifications ──
+
+function showToast(message, type, duration) {
+    type = type || 'info';
+    duration = duration || 4000;
+    var container = document.getElementById('toast-container');
+    if (!container) return;
+    var toast = document.createElement('div');
+    toast.className = 'toast toast-' + type;
+    var iconMap = { success: '&#10003;', error: '&#10007;', warning: '&#9888;', info: '&#8505;' };
+    toast.innerHTML = '<span class="toast-icon">' + (iconMap[type] || iconMap.info) + '</span><span class="toast-msg">' + message + '</span>';
+    container.appendChild(toast);
+    setTimeout(function() { toast.classList.add('toast-show'); }, 10);
+    setTimeout(function() {
+        toast.classList.remove('toast-show');
+        setTimeout(function() { toast.remove(); }, 300);
+    }, duration);
+}
+
+
+// ── Keyboard Shortcuts (enhanced) ──
+
+function openShortcuts() {
+    document.getElementById('shortcuts-overlay').style.display = 'flex';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function closeShortcuts() {
+    document.getElementById('shortcuts-overlay').style.display = 'none';
+}
+
+// Override existing keyboard handler
+document.removeEventListener('keydown', arguments.callee);
+document.addEventListener('keydown', function(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    if (!authToken) return;
+
+    var tabs = ['assessment', 'results', 'dashboard', 'batch', 'bias', 'ethics', 'slots', 'nudge'];
+    var key = e.key;
+
+    if (key >= '1' && key <= '8') {
+        e.preventDefault();
+        switchTab(tabs[parseInt(key) - 1]);
+    } else if (key === '?') {
+        e.preventDefault();
+        openShortcuts();
+    } else if (key.toLowerCase() === 'n') {
+        e.preventDefault();
+        switchTab('assessment');
+        document.getElementById('age').focus();
+    } else if (key.toLowerCase() === 'd') {
+        e.preventDefault();
+        toggleDarkMode();
+    } else if (key.toLowerCase() === 'g') {
+        e.preventDefault();
+        startGuidedTour();
+    } else if (key === 'Escape') {
+        closeProfile();
+        closeShortcuts();
+        if (chatbotOpen) toggleChatbot();
+        document.getElementById('notification-dropdown').style.display = 'none';
+    }
+});
+
+
+// ── Patient PDF Export ──
+
+function exportPatientPDF() {
+    if (!lastResult) { showToast('No assessment to export.', 'warning'); return; }
+    var jsPDF = window.jspdf.jsPDF;
+    var doc = new jsPDF();
+    var y = 20;
+
+    doc.setFontSize(18);
+    doc.setTextColor(0, 48, 135);
+    doc.text('Care Attend - Patient Risk Report', 14, y); y += 10;
+
+    doc.setFontSize(10);
+    doc.setTextColor(66, 85, 99);
+    doc.text('Generated: ' + new Date().toLocaleString(), 14, y); y += 10;
+
+    doc.setFontSize(14);
+    doc.setTextColor(0, 48, 135);
+    doc.text('Risk Assessment', 14, y); y += 8;
+
+    var r = lastResult;
+    doc.autoTable({
+        startY: y,
+        head: [['Metric', 'Value']],
+        body: [
+            ['Risk Score', r.percentage],
+            ['Risk Tier', r.risk_tier],
+            ['Age Group', r.age_group],
+            ['Model', r.model_used || 'Logistic Regression'],
+        ],
+        theme: 'grid',
+        headStyles: { fillColor: [0, 48, 135] },
+    });
+    y = doc.lastAutoTable.finalY + 10;
+
+    if (r.shap_values && r.shap_values.length > 0) {
+        doc.setFontSize(14);
+        doc.setTextColor(0, 48, 135);
+        doc.text('SHAP Risk Factors', 14, y); y += 8;
+
+        doc.autoTable({
+            startY: y,
+            head: [['Factor', 'Impact', 'Direction']],
+            body: r.shap_values.map(function(s) { return [s.label, s.value.toFixed(4), s.direction]; }),
+            theme: 'grid',
+            headStyles: { fillColor: [0, 48, 135] },
+        });
+        y = doc.lastAutoTable.finalY + 10;
+    }
+
+    if (r.nl_summary) {
+        doc.setFontSize(12);
+        doc.setTextColor(0, 48, 135);
+        doc.text('Summary', 14, y); y += 6;
+        doc.setFontSize(10);
+        doc.setTextColor(66, 85, 99);
+        var lines = doc.splitTextToSize(r.nl_summary, 180);
+        doc.text(lines, 14, y);
+    }
+
+    doc.setFontSize(8);
+    doc.setTextColor(150);
+    doc.text('Care Attend | COM668 | Ulster University | GDPR Art 5(1)(c) Compliant | No patient data stored', 14, 285);
+
+    doc.save('CareAttend_Patient_Report.pdf');
+    showToast('PDF exported.', 'success');
+}
+
+function printResults() {
+    window.print();
+}
+
+
+// ── Dark Mode Icon Update ──
+
+function updateDarkModeIcon() {
+    var icon = document.getElementById('dark-mode-icon');
+    if (!icon) return;
+    var isDark = document.body.classList.contains('dark-mode');
+    icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+var _origToggleDark = toggleDarkMode;
+toggleDarkMode = function() {
+    _origToggleDark();
+    updateDarkModeIcon();
+};
+
+
+// ── DOMContentLoaded Init ──
+
+document.addEventListener('DOMContentLoaded', async function() {
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    updateDarkModeIcon();
+
+    // Auto-restore session from localStorage
+    var savedToken = localStorage.getItem('careattend_token');
+    var savedUser = localStorage.getItem('careattend_user');
+    if (savedToken && savedUser) {
+        try {
+            var res = await fetch('/api/profile', {
+                headers: { 'Authorization': 'Bearer ' + savedToken, 'Content-Type': 'application/json' },
+            });
+            if (res.ok) {
+                authToken = savedToken;
+                showMainApp(savedUser);
+                addNotification('Session Restored', 'Welcome back, ' + savedUser + '.', 'success');
+                return;
+            }
+        } catch { /* token invalid, fall through to login */ }
+        localStorage.removeItem('careattend_token');
+        localStorage.removeItem('careattend_user');
+    }
+
+    addNotification('Welcome to Care Attend', 'NHS Predictive Risk Assessment system ready. All data is session-scoped.', 'info');
+});
