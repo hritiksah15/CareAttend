@@ -6,7 +6,7 @@ let authToken = null;
 let sessionTimer = null;
 let biasAuditData = null;
 let riskHistory = []; // session-scoped risk trajectory (FR-09)
-const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes (NFR-06)
+const SESSION_TIMEOUT_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 // ── Auth Functions ──
 
@@ -118,11 +118,16 @@ let currentUsername = '';
 
 function showMainApp(username) {
     currentUsername = username;
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('main-app').style.display = 'block';
-    const initials = username.substring(0, 2).toUpperCase();
-    document.getElementById('user-badge').textContent = initials + ' ' + username;
-    resetSessionTimer();
+    const loginScreen = document.getElementById('login-screen');
+    loginScreen.classList.add('fade-out');
+    setTimeout(() => {
+        loginScreen.style.display = 'none';
+        loginScreen.classList.remove('fade-out');
+        document.getElementById('main-app').style.display = 'block';
+        const initials = username.substring(0, 2).toUpperCase();
+        document.getElementById('user-badge').textContent = initials + ' ' + username;
+        resetSessionTimer();
+    }, 300);
 }
 
 async function openProfile() {
@@ -1806,7 +1811,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (typeof lucide !== 'undefined') lucide.createIcons();
     updateDarkModeIcon();
 
-    // Auto-restore session from localStorage
     var savedToken = localStorage.getItem('careattend_token');
     var savedUser = localStorage.getItem('careattend_user');
     if (savedToken && savedUser) {
@@ -1820,7 +1824,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                 addNotification('Session Restored', 'Welcome back, ' + savedUser + '.', 'success');
                 return;
             }
-        } catch { /* token invalid, fall through to login */ }
+            console.warn('Session restore failed:', res.status);
+        } catch (err) {
+            console.warn('Session restore error:', err.message);
+        }
         localStorage.removeItem('careattend_token');
         localStorage.removeItem('careattend_user');
     }

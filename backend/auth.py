@@ -26,7 +26,7 @@ try:
 except ImportError:
     USE_PYOTP = False
 
-SESSION_TIMEOUT = 1800  # 30 minutes in seconds
+SESSION_TIMEOUT = 86400  # 24 hours in seconds
 
 
 def _hash_password(password):
