@@ -50,3 +50,76 @@ class Session(db.Model):
     user_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False)
     created_at = db.Column(db.Float, nullable=False, default=time.time)
     last_activity = db.Column(db.Float, nullable=False, default=time.time)
+
+
+class AuditLog(db.Model):
+    __tablename__ = "audit_logs"
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False)
+    action = db.Column(db.String(100), nullable=False)
+    detail = db.Column(db.Text, nullable=True)
+    ip_address = db.Column(db.String(45), nullable=True)
+    created_at = db.Column(db.Float, nullable=False, default=time.time)
+
+    user = db.relationship("User", backref=db.backref("audit_logs", lazy=True))
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "userId": self.user_id,
+            "action": self.action,
+            "detail": self.detail,
+            "ipAddress": self.ip_address,
+            "createdAt": self.created_at,
+        }
+
+
+class PersistentFeedback(db.Model):
+    __tablename__ = "feedback"
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False)
+    prediction_risk_tier = db.Column(db.String(20), nullable=False)
+    prediction_probability = db.Column(db.Float, nullable=False)
+    outcome = db.Column(db.String(20), nullable=False)
+    created_at = db.Column(db.Float, nullable=False, default=time.time)
+
+    user = db.relationship("User", backref=db.backref("feedback_entries", lazy=True))
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "userId": self.user_id,
+            "riskTier": self.prediction_risk_tier,
+            "probability": self.prediction_probability,
+            "outcome": self.outcome,
+            "createdAt": self.created_at,
+        }
+
+
+class CarerProxy(db.Model):
+    __tablename__ = "carer_proxies"
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    staff_user_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False)
+    carer_name = db.Column(db.String(100), nullable=False)
+    carer_relationship = db.Column(db.String(50), nullable=False)
+    carer_contact = db.Column(db.String(120), nullable=True)
+    patient_identifier = db.Column(db.String(50), nullable=False)
+    reason = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.Float, nullable=False, default=time.time)
+
+    staff_user = db.relationship("User", backref=db.backref("carer_proxies", lazy=True))
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "staffUserId": self.staff_user_id,
+            "carerName": self.carer_name,
+            "carerRelationship": self.carer_relationship,
+            "carerContact": self.carer_contact,
+            "patientIdentifier": self.patient_identifier,
+            "reason": self.reason,
+            "createdAt": self.created_at,
+        }

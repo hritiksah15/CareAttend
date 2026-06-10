@@ -1,7 +1,7 @@
 """Authentication module for Care Attend.
 
-Provides JWT-based session management with bcrypt password hashing
-and optional TOTP two-factor authentication.
+Provides session-based authentication with bcrypt password hashing
+backed by PostgreSQL via SQLAlchemy.
 Maps to: FR-04, NFR-01, NFR-06 in Requirements Traceability Matrix.
 """
 
@@ -141,20 +141,6 @@ def get_role(token):
     return None
 
 
-def change_password(user_id, current_password, new_password):
-    user = db.session.get(User, user_id)
-    if not user:
-        return "User not found"
-    if not _verify_password(current_password, user.password_hash):
-        return "Current password is incorrect"
-    if len(new_password) < 8:
-        return "New password must be at least 8 characters"
-    user.password_hash = _hash_password(new_password)
-    user.last_password_change = time.time()
-    db.session.commit()
-    return None
-
-
 def setup_totp(user_id):
     if not USE_PYOTP:
         return None, "2FA not available (pyotp not installed)"
@@ -197,20 +183,3 @@ def disable_totp(user_id, password):
     user.totp_secret = None
     db.session.commit()
     return None
-
-
-def update_profile(user_id, display_name=None):
-    user = db.session.get(User, user_id)
-    if not user:
-        return None, "User not found"
-    if display_name is not None:
-        user.display_name = display_name.strip()[:100]
-    db.session.commit()
-    return user.to_dict(), None
-
-
-def get_user_profile(user_id):
-    user = db.session.get(User, user_id)
-    if not user:
-        return None
-    return user.to_dict()

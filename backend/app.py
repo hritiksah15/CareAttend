@@ -15,10 +15,10 @@ import uuid
 from flask import Flask, render_template, request, jsonify, make_response
 from flask_cors import CORS
 
-from models import db, migrate
+from models import db, migrate, User
 from auth import (register_user, authenticate, logout, token_required,
-                  change_password, setup_totp, enable_totp, disable_totp,
-                  update_profile, get_user_profile)
+                  _hash_password, _verify_password,
+                  setup_totp, enable_totp, disable_totp)
 from ml.predictor import CareAttendPredictor
 from ml.bias_monitor import BiasMonitor
 from ml.interventions import generate_interventions
@@ -45,6 +45,8 @@ predictor = None
 bias_monitor = None
 training_results = None
 _prediction_log = []  # session-scoped assessment history for dashboard
+_carer_proxies = []
+_audit_log = []
 
 
 def load_models():
@@ -104,9 +106,10 @@ def auth_login():
     if isinstance(result, dict) and result.get("requires_2fa"):
         return jsonify({"requires_2fa": True, "message": "2FA verification required"}), 200
 
-    response = jsonify({"token": result, "message": "Login successful"})
+    token = result
+    response = jsonify({"token": token, "message": "Login successful"})
     response.set_cookie(
-        "session_token", result,
+        "session_token", token,
         httponly=True, samesite="Strict", max_age=1800
     )
     return response
@@ -606,42 +609,49 @@ def list_notifications():
 @app.route("/api/profile", methods=["GET"])
 @token_required
 def get_profile():
-    profile = get_user_profile(request.current_user["userId"])
-    if not profile:
+    user = db.session.get(User, request.current_user["userId"])
+    if not user:
         return jsonify({"error": "User not found"}), 404
-    return jsonify(profile)
+    return jsonify(user.to_dict())
 
 
 @app.route("/api/profile", methods=["PUT"])
 @token_required
-def update_profile_endpoint():
+def update_profile():
     data = request.get_json()
     if not data:
         return jsonify({"error": "No data provided"}), 400
-    profile, error = update_profile(
-        request.current_user["userId"],
-        display_name=data.get("displayName"),
-    )
-    if error:
-        return jsonify({"error": error}), 400
-    return jsonify(profile)
+    user = db.session.get(User, request.current_user["userId"])
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    display_name = data.get("displayName")
+    if display_name is not None:
+        user.display_name = display_name.strip()[:100]
+    db.session.commit()
+    return jsonify(user.to_dict())
 
 
 @app.route("/api/profile/change-password", methods=["POST"])
 @token_required
-def change_password_endpoint():
+def change_password():
     data = request.get_json()
     if not data:
         return jsonify({"error": "No data provided"}), 400
-    error = change_password(
-        request.current_user["userId"],
-        data.get("currentPassword", ""),
-        data.get("newPassword", ""),
-    )
-    if error:
-        return jsonify({"error": error}), 400
+    user = db.session.get(User, request.current_user["userId"])
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    if not _verify_password(data.get("currentPassword", ""), user.password_hash):
+        return jsonify({"error": "Current password is incorrect"}), 400
+    new_pw = data.get("newPassword", "")
+    if len(new_pw) < 8:
+        return jsonify({"error": "New password must be at least 8 characters"}), 400
+    user.password_hash = _hash_password(new_pw)
+    user.last_password_change = __import__("time").time()
+    db.session.commit()
     return jsonify({"message": "Password changed successfully"})
 
+
+# ── 2FA Endpoints ──
 
 @app.route("/api/profile/2fa/setup", methods=["POST"])
 @token_required
@@ -674,6 +684,193 @@ def disable_2fa():
     if error:
         return jsonify({"error": error}), 400
     return jsonify({"message": "2FA disabled"})
+
+
+# ── Carer / Family Proxy Mode (Digital Inclusion Bridge) ──
+
+@app.route("/api/carer-proxy", methods=["POST"])
+@token_required
+def create_carer_proxy():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+    carer_name = data.get("carerName", "").strip()
+    relationship = data.get("relationship", "").strip()
+    patient_id = data.get("patientIdentifier", "").strip()
+    if not carer_name or not relationship or not patient_id:
+        return jsonify({"error": "carerName, relationship, and patientIdentifier required"}), 400
+    if relationship not in ("family", "carer", "social_worker", "neighbour", "volunteer"):
+        return jsonify({"error": "Invalid relationship type"}), 400
+    proxy = {
+        "id": str(uuid.uuid4()),
+        "staffUser": request.current_user.get("username", ""),
+        "carerName": carer_name,
+        "carerRelationship": relationship,
+        "carerContact": data.get("carerContact", "").strip(),
+        "patientIdentifier": patient_id,
+        "reason": data.get("reason", "").strip(),
+        "createdAt": __import__("time").time(),
+    }
+    _carer_proxies.append(proxy)
+    _audit_log.append({
+        "id": str(uuid.uuid4()),
+        "user": request.current_user.get("username", ""),
+        "action": "carer_proxy_created",
+        "detail": f"Proxy for {patient_id} by {carer_name} ({relationship})",
+        "timestamp": __import__("time").time(),
+    })
+    return jsonify({"message": "Carer proxy registered", "proxy": proxy}), 201
+
+
+@app.route("/api/carer-proxy/list", methods=["GET"])
+@token_required
+def list_carer_proxies():
+    user = request.current_user.get("username", "")
+    proxies = [p for p in _carer_proxies if p["staffUser"] == user]
+    return jsonify({"proxies": proxies})
+
+
+# ── Appointment Slot Optimisation ──
+
+@app.route("/api/slot-optimisation", methods=["POST"])
+@token_required
+def slot_optimisation():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+    appointments = data.get("appointments", [])
+    if not appointments or len(appointments) > 50:
+        return jsonify({"error": "Provide 1-50 appointments"}), 400
+
+    results = []
+    total_wasted_minutes = 0
+    overbookable_slots = 0
+
+    for i, appt in enumerate(appointments):
+        patient, error = _validate_patient(appt)
+        if error:
+            results.append({"slot": i + 1, "error": error})
+            continue
+        pred = predictor.predict(patient)
+        prob = pred["probability"]
+        risk_tier = pred["risk_tier"]
+        slot_minutes = int(appt.get("slotMinutes", 15))
+        can_overbook = prob >= 0.4
+        if can_overbook:
+            overbookable_slots += 1
+        expected_waste = prob * slot_minutes
+        total_wasted_minutes += expected_waste
+        rec = ("Strong overbook candidate. Consider double-booking or waitlist patient." if prob >= 0.7
+               else "Moderate DNA risk. Consider standby patient or phone reminder 24h before." if prob >= 0.4
+               else "Low-moderate risk. Standard SMS reminder sufficient." if prob >= 0.2
+               else "Low risk. No action needed.")
+        results.append({
+            "slot": i + 1, "dna_probability": round(prob, 4), "risk_tier": risk_tier,
+            "can_overbook": can_overbook, "expected_waste_minutes": round(expected_waste, 1),
+            "recommendation": rec,
+        })
+
+    return jsonify({
+        "slots": results,
+        "summary": {
+            "total_slots": len(appointments), "overbookable": overbookable_slots,
+            "total_expected_waste_minutes": round(total_wasted_minutes, 1),
+            "potential_recovery_percent": round((overbookable_slots / len(appointments)) * 100, 1) if appointments else 0,
+        },
+    })
+
+
+# ── Patient Nudge Message Generator ──
+
+NUDGE_TEMPLATES = {
+    "transport": {
+        "en": "We understand getting to appointments can be difficult. Would a hospital transport service or phone/video consultation work better for you?",
+        "cy": "Rydym yn deall y gall cyrraedd apwyntiadau fod yn anodd. A fyddai gwasanaeth cludiant ysbyty neu ymgynghoriad ffôn/fideo yn gweithio'n well i chi?",
+        "ur": "ہم سمجتے ہیں کہ اپائنٹمنٹ تک پہنچنا مشکل ہو سکتا ہے۔ کیا ہسپتال کی نقل و حمل کی سروس یا فون/ویڈیو مشاورت آپ کے لیے بہتر ہوگی؟",
+        "pl": "Rozumiemy, że dotarcie na wizyty może być trudne. Czy transport szpitalny lub konsultacja telefoniczna/wideo byłyby dla Ciebie lepsze?",
+    },
+    "reminder": {
+        "en": "Just a friendly reminder about your upcoming appointment. If you need to reschedule, please call us — we're happy to find a time that works for you.",
+        "cy": "Nodyn cyfeillgar am eich apwyntiad sydd ar y gweill. Os oes angen aildrefnu, ffoniwch ni.",
+        "ur": "آپ کی آنے والی اپائنٹمنٹ کے بارے میں ایک دوستانہ یاد دہانی۔",
+        "pl": "Przyjazne przypomnienie o nadchodzącej wizycie. Jeśli musisz przełożyć termin, zadzwoń do nas.",
+    },
+    "support": {
+        "en": "We noticed you may face barriers to attending appointments. Our social prescribing team can help with transport, childcare, or other support. Would you like a referral?",
+        "cy": "Rydym wedi sylwi y gallech wynebu rhwystrau i fynychu apwyntiadau. Gall ein tîm presgripsiynu cymdeithasol helpu.",
+        "ur": "ہم نے محسوس کیا ہے کہ آپ کو اپائنٹمنٹ میں شرکت کرنے میں رکاوٹوں کا سامنا ہو سکتا ہے۔",
+        "pl": "Zauważyliśmy, że możesz napotykać bariery w uczęszczaniu na wizyty. Nasz zespół może pomóc.",
+    },
+    "gentle": {
+        "en": "We haven't seen you in a while and want to make sure you're okay. Your health matters to us. Please get in touch if there's anything we can do to help.",
+        "cy": "Nid ydym wedi eich gweld ers tro ac eisiau gwneud yn siŵr eich bod yn iawn. Mae eich iechyd yn bwysig i ni.",
+        "ur": "ہم نے آپ کو کچھ عرصے سے نہیں دیکھا اور یہ یقینی بنانا چاہتے ہیں کہ آپ ٹھیک ہیں۔",
+        "pl": "Nie widzieliśmy Cię od jakiegoś czasu i chcemy się upewnić, że wszystko w porządku.",
+    },
+}
+
+
+@app.route("/api/patient-nudge", methods=["POST"])
+@token_required
+def generate_patient_nudge():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+    patient_data = data.get("patient")
+    if not patient_data:
+        return jsonify({"error": "patient data required"}), 400
+    patient, error = _validate_patient(patient_data)
+    if error:
+        return jsonify({"error": error}), 400
+
+    language = data.get("language", "en")
+    if language not in ("en", "cy", "ur", "pl"):
+        language = "en"
+
+    result = predictor.predict(patient)
+    prob = result["probability"]
+    age = patient.get("Age", 0)
+    imd = patient.get("IMDDecile", 10)
+    prior_dna = patient.get("PriorDNACount", 0)
+
+    if age >= 65 or patient.get("Disability", 0) == 1:
+        nudge_type = "transport"
+    elif imd <= 3:
+        nudge_type = "support"
+    elif prior_dna >= 3:
+        nudge_type = "gentle"
+    else:
+        nudge_type = "reminder"
+
+    template = NUDGE_TEMPLATES.get(nudge_type, NUDGE_TEMPLATES["reminder"])
+    message = template.get(language, template["en"])
+    patient_name = data.get("patientName", "")
+    if patient_name:
+        message = f"Dear {patient_name}, {message[0].lower()}{message[1:]}"
+
+    factors = []
+    if age >= 65: factors.append("elderly_patient")
+    if imd <= 3: factors.append("high_deprivation")
+    if prior_dna >= 2: factors.append("repeat_dna")
+    if patient.get("Disability", 0) == 1: factors.append("disability")
+    if patient.get("SMSReceived", 0) == 0: factors.append("no_sms_reminder")
+    if prob >= 0.5: factors.append("high_risk")
+
+    return jsonify({
+        "nudge_type": nudge_type, "language": language, "message": message,
+        "risk_probability": result["percentage"], "risk_tier": result["risk_tier"],
+        "personalisation_factors": factors,
+    })
+
+
+# ── Audit Log ──
+
+@app.route("/api/audit-log", methods=["GET"])
+@token_required
+def get_audit_log():
+    if request.current_user.get("role") != "admin":
+        return jsonify({"error": "Admin access required"}), 403
+    return jsonify({"logs": _audit_log[-100:]})
 
 
 # ── Helpers ──
