@@ -1,6 +1,7 @@
 .venv/
-pycache/
-.pyc
+__pycache__/
+*.pyc
+create_trello_board.py
 .env
 models/.joblib
 models/*.csv
