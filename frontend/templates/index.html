@@ -8,6 +8,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 </head>
 <body>
     <!-- LOGIN SCREEN (Fig 3.6a) -->
@@ -101,10 +103,11 @@
 
     <!-- MAIN APP (shown after login) -->
     <div id="main-app" style="display:none;">
+        <a href="#tab-assessment" class="skip-link" onclick="switchTab('assessment')">Skip to main content</a>
         <header class="nhs-header">
             <div class="header-content">
                 <div class="logo">
-                    <span class="logo-icon">+</span>
+                    <span class="logo-icon"><i data-lucide="heart-pulse" style="width:20px;height:20px;"></i></span>
                     <h1>Care Attend</h1>
                 </div>
                 <div class="header-right">
@@ -114,10 +117,28 @@
                         <option value="ur">UR</option>
                         <option value="pl">PL</option>
                     </select>
-                    <button class="btn-dark-mode" onclick="toggleDarkMode()" title="Toggle dark mode" aria-label="Toggle dark mode">&#9789;</button>
-                    <button class="btn-guide" onclick="startGuidedTour()" title="Guided Tour">&#10068;</button>
+                    <button class="header-icon-btn" onclick="toggleDarkMode()" title="Toggle dark mode" aria-label="Toggle dark mode">
+                        <i data-lucide="moon" id="dark-mode-icon" style="width:18px;height:18px;"></i>
+                    </button>
+                    <button class="btn-guide" onclick="startGuidedTour()" title="Guided Tour"><i data-lucide="help-circle" style="width:18px;height:18px;"></i></button>
+                    <div class="notif-wrapper">
+                        <button class="header-icon-btn" onclick="toggleNotifications()" title="Notifications" aria-label="Notifications" id="notif-btn">
+                            <i data-lucide="bell" style="width:18px;height:18px;"></i>
+                            <span class="notif-badge" id="notif-badge" style="display:none;">0</span>
+                        </button>
+                        <div class="notification-dropdown" id="notification-dropdown" style="display:none;">
+                            <div class="notif-dropdown-header">
+                                <h4>Notifications</h4>
+                                <button class="notif-clear-btn" onclick="clearAllNotifications()">Clear All</button>
+                            </div>
+                            <div class="notif-list" id="notif-list">
+                                <div class="notif-empty">No notifications yet</div>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="session-timer" id="session-timer" title="Session time remaining"><i data-lucide="clock" style="width:12px;height:12px;"></i> <span id="session-countdown">30:00</span></span>
                     <button class="user-badge-btn" id="user-badge" onclick="openProfile()" title="Account"></button>
-                    <button class="btn-logout" onclick="handleLogout()">Log Out</button>
+                    <button class="btn-logout" onclick="handleLogout()"><i data-lucide="log-out" style="width:14px;height:14px;margin-right:4px;"></i> Log Out</button>
                 </div>
             </div>
         </header>
@@ -381,8 +402,12 @@
 
                     <!-- Action buttons matching Fig 3.6b -->
                     <div class="result-actions">
-                        <button class="btn-primary btn-half" onclick="switchTab('assessment')">New Assessment</button>
-                        <button class="btn-primary btn-half btn-dark" onclick="switchTab('bias')">Bias Dashboard</button>
+                        <button class="btn-primary btn-half" onclick="switchTab('assessment')"><i data-lucide="plus" style="width:14px;height:14px;margin-right:4px;"></i> New Assessment</button>
+                        <button class="btn-primary btn-half btn-dark" onclick="exportPatientPDF()"><i data-lucide="file-down" style="width:14px;height:14px;margin-right:4px;"></i> Export PDF</button>
+                    </div>
+                    <div class="result-actions">
+                        <button class="btn-secondary btn-half" onclick="printResults()"><i data-lucide="printer" style="width:14px;height:14px;margin-right:4px;"></i> Print</button>
+                        <button class="btn-secondary btn-half" onclick="switchTab('bias')"><i data-lucide="scale" style="width:14px;height:14px;margin-right:4px;"></i> Bias Dashboard</button>
                     </div>
                 </div>
             </section>
@@ -790,6 +815,58 @@
                     <button class="ac-action-btn ac-danger-btn" onclick="handleLogout()">&#128682; Log Out &amp; Clear Session</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Keyboard Shortcuts Modal -->
+    <div id="shortcuts-overlay" class="profile-overlay" style="display:none;" onclick="if(event.target===this)closeShortcuts()">
+        <div class="profile-modal shortcuts-modal" style="max-width:360px;">
+            <button class="profile-close" onclick="closeShortcuts()">&times;</button>
+            <h2 style="color:var(--nhs-blue);margin-bottom:16px;">&#9000; Keyboard Shortcuts</h2>
+            <div class="shortcut-grid">
+                <div class="shortcut-row"><kbd>?</kbd><span>Show shortcuts</span></div>
+                <div class="shortcut-row"><kbd>1</kbd>-<kbd>8</kbd><span>Switch tabs</span></div>
+                <div class="shortcut-row"><kbd>N</kbd><span>New assessment</span></div>
+                <div class="shortcut-row"><kbd>D</kbd><span>Toggle dark mode</span></div>
+                <div class="shortcut-row"><kbd>G</kbd><span>Guided tour</span></div>
+                <div class="shortcut-row"><kbd>Esc</kbd><span>Close panels</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Chatbot Widget -->
+    <div class="chatbot-fab" id="chatbot-fab" onclick="toggleChatbot()" title="Care Attend AI Assistant">
+        <i data-lucide="bot" style="width:24px;height:24px;"></i>
+    </div>
+    <div class="chatbot-panel" id="chatbot-panel" style="display:none;">
+        <div class="chatbot-header">
+            <div class="chatbot-header-info">
+                <i data-lucide="bot" style="width:20px;height:20px;"></i>
+                <div>
+                    <span class="chatbot-title">Care Attend AI</span>
+                    <span class="chatbot-status"><span class="status-dot"></span> Online</span>
+                </div>
+            </div>
+            <button class="chatbot-close" onclick="toggleChatbot()"><i data-lucide="x" style="width:18px;height:18px;"></i></button>
+        </div>
+        <div class="chatbot-messages" id="chatbot-messages">
+            <div class="chat-msg bot">
+                <div class="chat-avatar"><i data-lucide="bot" style="width:14px;height:14px;"></i></div>
+                <div class="chat-bubble">Hello! I'm your Care Attend assistant. I can help with risk assessments, bias monitoring, and navigating the app. What would you like to know?</div>
+            </div>
+            <div class="chat-suggestions" id="chat-suggestions">
+                <button class="suggestion-chip" onclick="sendSuggestion('How do I assess a patient?')">How to assess a patient?</button>
+                <button class="suggestion-chip" onclick="sendSuggestion('What is SHAP?')">What is SHAP?</button>
+                <button class="suggestion-chip" onclick="sendSuggestion('How does bias monitoring work?')">Bias monitoring?</button>
+                <button class="suggestion-chip" onclick="sendSuggestion('Tell me about data privacy')">Data privacy</button>
+            </div>
+        </div>
+        <div class="chatbot-input-area">
+            <input type="text" id="chatbot-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendChatMessage()">
+            <button class="chatbot-send" onclick="sendChatMessage()"><i data-lucide="send" style="width:18px;height:18px;"></i></button>
         </div>
     </div>
 
