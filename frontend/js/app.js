@@ -39,13 +39,11 @@ function togglePassword(inputId, btn) {
     }
 }
 
-let loginNeeds2FA = false;
-
 document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const username = document.getElementById('login-username').value.trim();
     const password = document.getElementById('login-password').value;
-    const totpCode = document.getElementById('login-2fa-code')?.value.trim() || null;
+    const totpCode = document.getElementById('login-2fa-code') ? document.getElementById('login-2fa-code').value.trim() : null;
 
     const body = { username, password };
     if (totpCode) body.totp_code = totpCode;
@@ -59,20 +57,17 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
         const data = await res.json();
 
         if (res.ok && data.requires_2fa) {
-            loginNeeds2FA = true;
             document.getElementById('login-2fa-group').style.display = 'block';
             document.getElementById('login-2fa-code').focus();
             document.getElementById('login-submit-btn').textContent = 'VERIFY & LOG IN';
-            showAuthError('login-error', '');
             document.getElementById('login-error').style.display = 'none';
             return;
         }
 
         if (res.ok && data.token) {
             authToken = data.token;
-            loginNeeds2FA = false;
             document.getElementById('login-2fa-group').style.display = 'none';
-            document.getElementById('login-2fa-code').value = '';
+            if (document.getElementById('login-2fa-code')) document.getElementById('login-2fa-code').value = '';
             document.getElementById('login-submit-btn').textContent = 'LOG IN';
             showMainApp(username);
         } else {
@@ -130,6 +125,9 @@ function showMainApp(username) {
 
 async function openProfile() {
     document.getElementById('profile-overlay').style.display = 'flex';
+    const initials = currentUsername.substring(0, 2).toUpperCase();
+    document.getElementById('ac-avatar').textContent = initials;
+
     try {
         const res = await fetch('/api/profile', { headers: authHeaders() });
         if (res.ok) {
@@ -137,9 +135,6 @@ async function openProfile() {
             renderAccountCentre(profile);
         }
     } catch { /* use defaults */ }
-    const initials = currentUsername.substring(0, 2).toUpperCase();
-    document.getElementById('ac-avatar').textContent = initials;
-    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 function renderAccountCentre(profile) {
@@ -157,34 +152,33 @@ function renderAccountCentre(profile) {
 
     if (profile.lastPasswordChange) {
         const d = new Date(profile.lastPasswordChange * 1000);
-        document.getElementById('ac-pw-changed').textContent = `Last changed: ${d.toLocaleDateString('en-GB')}`;
+        document.getElementById('ac-pw-changed').textContent = 'Last changed: ' + d.toLocaleDateString('en-GB');
     } else {
         document.getElementById('ac-pw-changed').textContent = 'Never changed';
     }
 
+    // 2FA status
     const badge = document.getElementById('2fa-badge');
     if (profile.totpEnabled) {
         badge.className = 'ac-2fa-badge enabled';
-        badge.innerHTML = '<i data-lucide="shield-check" style="width:14px;height:14px;"></i> Enabled';
+        badge.innerHTML = '&#128274; Enabled';
         document.getElementById('2fa-setup-area').style.display = 'none';
         document.getElementById('2fa-qr-area').style.display = 'none';
         document.getElementById('2fa-disable-area').style.display = 'block';
     } else {
         badge.className = 'ac-2fa-badge disabled';
-        badge.innerHTML = '<i data-lucide="shield-off" style="width:14px;height:14px;"></i> Disabled';
+        badge.innerHTML = '&#128274; Disabled';
         document.getElementById('2fa-setup-area').style.display = 'block';
         document.getElementById('2fa-qr-area').style.display = 'none';
         document.getElementById('2fa-disable-area').style.display = 'none';
     }
-    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 function switchAccountTab(tab) {
-    document.querySelectorAll('.ac-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.ac-panel').forEach(p => p.classList.remove('active'));
-    document.querySelector(`.ac-tab[onclick*="${tab}"]`).classList.add('active');
-    document.getElementById(`ac-panel-${tab}`).classList.add('active');
-    if (typeof lucide !== 'undefined') lucide.createIcons();
+    document.querySelectorAll('.ac-tab').forEach(function(t) { t.classList.remove('active'); });
+    document.querySelectorAll('.ac-panel').forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.ac-tab[onclick*="' + tab + '"]').classList.add('active');
+    document.getElementById('ac-panel-' + tab).classList.add('active');
 }
 
 async function saveDisplayName() {
@@ -198,10 +192,10 @@ async function saveDisplayName() {
         if (res.ok) {
             const profile = await res.json();
             document.getElementById('ac-display-name').textContent = profile.displayName || profile.username;
-            showToast('Display name updated.', 'success');
+            alert('Display name updated.');
         }
     } catch {
-        showToast('Failed to update name.', 'error');
+        alert('Failed to update name.');
     }
 }
 
@@ -212,7 +206,7 @@ async function handleChangePassword(e) {
     const confirmPw = document.getElementById('ac-confirm-pw').value;
 
     if (newPw !== confirmPw) {
-        showToast('New passwords do not match.', 'error');
+        alert('New passwords do not match.');
         return;
     }
 
@@ -224,104 +218,14 @@ async function handleChangePassword(e) {
         });
         const data = await res.json();
         if (res.ok) {
-            showToast('Password changed successfully.', 'success');
+            alert('Password changed successfully.');
             document.getElementById('change-password-form').reset();
-            document.getElementById('ac-pw-changed').textContent = `Last changed: ${new Date().toLocaleDateString('en-GB')}`;
+            document.getElementById('ac-pw-changed').textContent = 'Last changed: ' + new Date().toLocaleDateString('en-GB');
         } else {
-            showToast(data.error || 'Password change failed.', 'error');
+            alert(data.error || 'Password change failed.');
         }
     } catch {
-        showToast('Failed to change password.', 'error');
-    }
-}
-
-async function start2FASetup() {
-    try {
-        const res = await fetch('/api/profile/2fa/setup', {
-            method: 'POST',
-            headers: authHeaders(),
-        });
-        const data = await res.json();
-        if (res.ok) {
-            document.getElementById('2fa-setup-area').style.display = 'none';
-            document.getElementById('2fa-qr-area').style.display = 'block';
-            document.getElementById('2fa-secret-key').textContent = data.secret;
-
-            const qrContainer = document.getElementById('2fa-qr-container');
-            qrContainer.innerHTML = '';
-            if (typeof QRCode !== 'undefined') {
-                new QRCode(qrContainer, {
-                    text: data.uri,
-                    width: 180,
-                    height: 180,
-                    colorDark: '#003087',
-                    colorLight: '#ffffff',
-                });
-            }
-        } else {
-            showToast(data.error || '2FA setup failed.', 'error');
-        }
-    } catch {
-        showToast('Failed to start 2FA setup.', 'error');
-    }
-}
-
-async function verify2FA() {
-    const code = document.getElementById('2fa-verify-code').value.trim();
-    if (code.length !== 6) {
-        showToast('Enter 6-digit code from authenticator app.', 'warning');
-        return;
-    }
-    try {
-        const res = await fetch('/api/profile/2fa/enable', {
-            method: 'POST',
-            headers: authHeaders(),
-            body: JSON.stringify({ code }),
-        });
-        const data = await res.json();
-        if (res.ok) {
-            showToast('2FA enabled! Your account is now more secure.', 'success', 5000);
-            document.getElementById('2fa-qr-area').style.display = 'none';
-            document.getElementById('2fa-disable-area').style.display = 'block';
-            const badge = document.getElementById('2fa-badge');
-            badge.className = 'ac-2fa-badge enabled';
-            badge.innerHTML = '<i data-lucide="shield-check" style="width:14px;height:14px;"></i> Enabled';
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-        } else {
-            showToast(data.error || 'Verification failed.', 'error');
-        }
-    } catch {
-        showToast('Verification failed.', 'error');
-    }
-}
-
-async function disable2FA() {
-    const pw = document.getElementById('2fa-disable-pw').value;
-    if (!pw) {
-        showToast('Enter password to disable 2FA.', 'warning');
-        return;
-    }
-    try {
-        const res = await fetch('/api/profile/2fa/disable', {
-            method: 'POST',
-            headers: authHeaders(),
-            body: JSON.stringify({ password: pw }),
-        });
-        const data = await res.json();
-        if (res.ok) {
-            showToast('2FA disabled.', 'info');
-            document.getElementById('2fa-disable-area').style.display = 'none';
-            document.getElementById('2fa-setup-area').style.display = 'block';
-            document.getElementById('2fa-disable-pw').value = '';
-            const badge = document.getElementById('2fa-badge');
-            badge.className = 'ac-2fa-badge disabled';
-            badge.innerHTML = '<i data-lucide="shield-off" style="width:14px;height:14px;"></i> Disabled';
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-        } else {
-            showToast(data.error || 'Failed to disable 2FA.', 'error');
-        }
-    } catch {
-        showToast('Failed to disable 2FA.', 'error');
+        alert('Failed to change password.');
     }
 }
 
@@ -338,6 +242,7 @@ async function handleLogout() {
     } catch { /* ignore */ }
     authToken = null;
     clearSessionTimer();
+    closeProfile();
     document.getElementById('main-app').style.display = 'none';
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('login-password').value = '';
@@ -356,7 +261,7 @@ function authHeaders() {
 function resetSessionTimer() {
     clearSessionTimer();
     sessionTimer = setTimeout(() => {
-        showToast('Session expired due to 30 minutes of inactivity.', 'warning', 5000);
+        alert('Session expired due to 30 minutes of inactivity.');
         handleLogout();
     }, SESSION_TIMEOUT_MS);
 }
@@ -459,13 +364,13 @@ document.getElementById('assessment-form').addEventListener('submit', async (e) 
             renderResults(result);
             switchTab('results');
         } else if (res.status === 401) {
-            showToast('Session expired. Please log in again.', 'warning');
+            alert('Session expired. Please log in again.');
             handleLogout();
         } else {
-            showToast(result.error || 'Prediction failed.', 'error');
+            alert(result.error || 'Prediction failed.');
         }
     } catch {
-        showToast('Connection error. Is the server running?', 'error');
+        alert('Connection error. Is the server running?');
     } finally {
         btn.disabled = false;
         btn.querySelector('.btn-text').style.display = 'inline';
@@ -667,7 +572,7 @@ async function runBiasAudit() {
     try {
         const res = await fetch('/api/bias-audit', { headers: authHeaders() });
         if (res.status === 401) {
-            showToast('Session expired. Please log in again.', 'warning');
+            alert('Session expired. Please log in again.');
             handleLogout();
             return;
         }
@@ -675,7 +580,7 @@ async function runBiasAudit() {
         renderBiasResults(data);
         document.getElementById('bias-results').style.display = 'block';
     } catch {
-        showToast('Bias audit failed. Is the server running?', 'error');
+        alert('Bias audit failed. Is the server running?');
     } finally {
         btn.disabled = false;
         btn.querySelector('.btn-text').style.display = 'inline';
@@ -851,14 +756,14 @@ async function submitBatch() {
         });
 
         if (res.status === 401) {
-            showToast('Session expired. Please log in again.', 'warning');
+            alert('Session expired. Please log in again.');
             handleLogout();
             return;
         }
 
         if (!res.ok) {
             const err = await res.json();
-            showToast(err.error || 'Batch processing failed', 'error');
+            alert(err.error || 'Batch processing failed');
             return;
         }
 
@@ -874,7 +779,7 @@ async function submitBatch() {
         a.click();
         URL.revokeObjectURL(url);
     } catch {
-        showToast('Batch upload failed. Check server connection.', 'error');
+        alert('Batch upload failed. Check server connection.');
     } finally {
         btn.disabled = false;
         btn.querySelector('.btn-text').style.display = 'inline';
@@ -930,7 +835,7 @@ function renderBatchResults(csvText) {
 
 function exportBiasPDF() {
     if (!biasAuditData) {
-        showToast('Run bias audit first before exporting.', 'warning');
+        alert('Run bias audit first before exporting.');
         return;
     }
     const { jsPDF } = window.jspdf;
@@ -1049,7 +954,7 @@ async function submitFeedback(outcome) {
         el.style.display = 'block';
         document.getElementById('feedback-card').querySelectorAll('button').forEach(b => b.disabled = true);
     } catch {
-        showToast('Failed to submit feedback.', 'error');
+        alert('Failed to submit feedback.');
     }
 }
 
@@ -1063,7 +968,7 @@ async function loadDashboard() {
         renderDashboard(data);
         document.getElementById('dashboard-content').style.display = 'block';
     } catch {
-        showToast('Dashboard load failed.', 'error');
+        alert('Dashboard load failed.');
     }
 }
 
@@ -1112,12 +1017,12 @@ function renderDashboard(data) {
 
 async function lookupEHR() {
     const nhsNum = document.getElementById('ehr-nhs-number').value.trim();
-    if (!nhsNum) { showToast('Enter an NHS number (e.g. NHS001)', 'warning'); return; }
+    if (!nhsNum) { alert('Enter an NHS number (e.g. NHS001)'); return; }
 
     try {
         const res = await fetch(`/api/ehr/lookup/${nhsNum}`, { headers: authHeaders() });
         const data = await res.json();
-        if (!res.ok) { showToast(data.error || 'Patient not found', 'error'); return; }
+        if (!res.ok) { alert(data.error || 'Patient not found'); return; }
 
         const p = data.patient;
         document.getElementById('age').value = p.Age || '';
@@ -1129,9 +1034,9 @@ async function lookupEHR() {
         document.getElementById('disability').checked = !!p.Disability;
 
         document.getElementById('age').dispatchEvent(new Event('input'));
-        showToast(`Auto-filled from EHR: ${p.name} (${nhsNum})`, 'success');
+        alert(`Auto-filled from mock EHR: ${p.name} (${nhsNum})`);
     } catch {
-        showToast('EHR lookup failed. Check server connection.', 'error');
+        alert('EHR lookup failed. Check server connection.');
     }
 }
 
@@ -1143,7 +1048,7 @@ async function loadEthicsFramework() {
         if (res.status === 401) { handleLogout(); return; }
         const data = await res.json();
         renderEthicsFramework(data);
-    } catch { showToast('Failed to load ethics framework.', 'error'); }
+    } catch { alert('Failed to load ethics framework.'); }
 }
 
 function renderEthicsFramework(data) {
@@ -1170,8 +1075,8 @@ function renderEthicsFramework(data) {
     container.style.display = 'block';
 }
 
-async function runCrossValidation(e) {
-    const btn = e ? e.target : document.querySelector('[onclick*="runCrossValidation"]');
+async function runCrossValidation() {
+    const btn = event.target;
     btn.disabled = true;
     btn.textContent = 'Running (may take 30s)...';
 
@@ -1182,7 +1087,7 @@ async function runCrossValidation(e) {
         if (res.status === 401) { handleLogout(); return; }
         const data = await res.json();
         renderCVResults(data);
-    } catch { showToast('Cross-validation failed.', 'error'); }
+    } catch { alert('Cross-validation failed.'); }
     finally { btn.disabled = false; btn.textContent = 'Run Cross-Validation'; }
 }
 
@@ -1243,389 +1148,186 @@ if (dropArea) {
     });
 }
 
-// ══════════════════════════════════════════════════════
-// NOTIFICATION SYSTEM
-// ══════════════════════════════════════════════════════
 
-let notifications = [];
+// ── Carer / Family Proxy Mode (Digital Inclusion Bridge) ──
 
-function toggleNotifications() {
-    const dropdown = document.getElementById('notification-dropdown');
-    const isVisible = dropdown.style.display !== 'none';
-    dropdown.style.display = isVisible ? 'none' : 'block';
-    if (!isVisible) {
-        notifications.forEach(n => n.read = true);
-        updateNotifBadge();
-    }
-}
+let activeProxy = null;
 
-document.addEventListener('click', (e) => {
-    const wrapper = document.querySelector('.notif-wrapper');
-    const dropdown = document.getElementById('notification-dropdown');
-    if (wrapper && !wrapper.contains(e.target) && dropdown) {
-        dropdown.style.display = 'none';
-    }
-});
+async function registerCarerProxy() {
+    const carerName = document.getElementById('proxy-carer-name').value.trim();
+    const relationship = document.getElementById('proxy-relationship').value;
+    const patientId = document.getElementById('proxy-patient-id').value.trim();
+    const carerContact = document.getElementById('proxy-carer-contact').value.trim();
+    const reason = document.getElementById('proxy-reason').value.trim();
 
-function addNotification(title, desc, type) {
-    const notif = {
-        id: Date.now(),
-        title,
-        desc,
-        type,
-        time: new Date(),
-        read: false,
-    };
-    notifications.unshift(notif);
-    if (notifications.length > 20) notifications.pop();
-    renderNotifications();
-    updateNotifBadge();
-}
-
-function renderNotifications() {
-    const list = document.getElementById('notif-list');
-    if (notifications.length === 0) {
-        list.innerHTML = '<div class="notif-empty">No notifications yet</div>';
+    if (!carerName || !relationship || !patientId) {
+        alert('Carer name, relationship, and patient identifier required.');
         return;
     }
-    list.innerHTML = notifications.map(n => {
-        const iconMap = {
-            'risk-high': 'alert-triangle',
-            'risk-medium': 'alert-circle',
-            'risk-low': 'check-circle',
-            'info': 'info',
-            'bias': 'scale',
-        };
-        const ago = timeAgo(n.time);
-        return `
-            <div class="notif-item ${n.read ? '' : 'unread'}">
-                <div class="notif-icon ${n.type}"><i data-lucide="${iconMap[n.type] || 'info'}" style="width:16px;height:16px;"></i></div>
-                <div class="notif-body">
-                    <div class="notif-title">${n.title}</div>
-                    <div class="notif-desc">${n.desc}</div>
-                    <div class="notif-time">${ago}</div>
-                </div>
-            </div>
-        `;
-    }).join('');
-    if (typeof lucide !== 'undefined') lucide.createIcons();
-}
 
-function updateNotifBadge() {
-    const badge = document.getElementById('notif-badge');
-    const unread = notifications.filter(n => !n.read).length;
-    if (unread > 0) {
-        badge.textContent = unread > 9 ? '9+' : unread;
-        badge.style.display = 'flex';
-    } else {
-        badge.style.display = 'none';
-    }
-}
-
-function clearAllNotifications() {
-    notifications = [];
-    renderNotifications();
-    updateNotifBadge();
-}
-
-function timeAgo(date) {
-    const seconds = Math.floor((new Date() - date) / 1000);
-    if (seconds < 60) return 'Just now';
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ago`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
-    return `${Math.floor(hours / 24)}d ago`;
-}
-
-// ══════════════════════════════════════════════════════
-// AI CHATBOT
-// ══════════════════════════════════════════════════════
-
-let chatbotOpen = false;
-
-function toggleChatbot() {
-    chatbotOpen = !chatbotOpen;
-    const panel = document.getElementById('chatbot-panel');
-    const fab = document.getElementById('chatbot-fab');
-    panel.style.display = chatbotOpen ? 'flex' : 'none';
-    fab.classList.toggle('active', chatbotOpen);
-    if (chatbotOpen) {
-        document.getElementById('chatbot-input').focus();
-        if (typeof lucide !== 'undefined') lucide.createIcons();
-    }
-}
-
-function sendSuggestion(text) {
-    document.getElementById('chat-suggestions').style.display = 'none';
-    appendChatMessage(text, 'user');
-    showTypingIndicator();
-    setTimeout(() => {
-        removeTypingIndicator();
-        const response = getChatbotResponse(text);
-        appendChatMessage(response, 'bot');
-    }, 800 + Math.random() * 600);
-}
-
-function sendChatMessage() {
-    const input = document.getElementById('chatbot-input');
-    const text = input.value.trim();
-    if (!text) return;
-    input.value = '';
-    appendChatMessage(text, 'user');
-    showTypingIndicator();
-    setTimeout(() => {
-        removeTypingIndicator();
-        const response = getChatbotResponse(text);
-        appendChatMessage(response, 'bot');
-    }, 800 + Math.random() * 600);
-}
-
-function appendChatMessage(text, sender) {
-    const container = document.getElementById('chatbot-messages');
-    const avatarIcon = sender === 'bot' ? '<i data-lucide="bot" style="width:14px;height:14px;"></i>' : '<i data-lucide="user" style="width:14px;height:14px;"></i>';
-    const msg = document.createElement('div');
-    msg.className = `chat-msg ${sender}`;
-    msg.innerHTML = `
-        <div class="chat-avatar">${avatarIcon}</div>
-        <div class="chat-bubble">${text}</div>
-    `;
-    container.appendChild(msg);
-    container.scrollTop = container.scrollHeight;
-    if (typeof lucide !== 'undefined') lucide.createIcons();
-}
-
-function showTypingIndicator() {
-    const container = document.getElementById('chatbot-messages');
-    const indicator = document.createElement('div');
-    indicator.className = 'chat-msg bot';
-    indicator.id = 'typing-indicator';
-    indicator.innerHTML = `
-        <div class="chat-avatar"><i data-lucide="bot" style="width:14px;height:14px;"></i></div>
-        <div class="chat-bubble"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>
-    `;
-    container.appendChild(indicator);
-    container.scrollTop = container.scrollHeight;
-    if (typeof lucide !== 'undefined') lucide.createIcons();
-}
-
-function removeTypingIndicator() {
-    const indicator = document.getElementById('typing-indicator');
-    if (indicator) indicator.remove();
-}
-
-function getChatbotResponse(query) {
-    const q = query.toLowerCase();
-
-    if (q.includes('assess') || q.includes('patient') || q.includes('risk')) {
-        return 'To assess a patient: Go to the <strong>Assessment</strong> tab, fill in demographics (age, gender), appointment details (lead time, prior DNAs), clinical flags, and social context (IMD decile). Click <strong>"Assess Risk"</strong> to get a prediction with SHAP explanations.';
-    }
-    if (q.includes('shap') || q.includes('explain') || q.includes('why')) {
-        return '<strong>SHAP</strong> (SHapley Additive exPlanations) shows which factors contributed most to the prediction. Red bars increase risk, green bars reduce it. This makes the ML model transparent and auditable per NHS AI guidance.';
-    }
-    if (q.includes('bias') || q.includes('fair') || q.includes('ethic')) {
-        return 'The <strong>Bias Monitor</strong> tab runs fairness audits across age, gender, and IMD groups. It checks Demographic Parity and Equalised Odds against a 0.10 threshold per NHS AI ethics guidance. You can export a PDF audit report.';
-    }
-    if (q.includes('privacy') || q.includes('gdpr') || q.includes('data')) {
-        return 'Care Attend is <strong>GDPR Article 5(1)(c)</strong> compliant. No patient data is stored — all information is processed in-session only and cleared on browser close. Session timeout is 30 minutes of inactivity.';
-    }
-    if (q.includes('batch') || q.includes('upload') || q.includes('csv')) {
-        return 'The <strong>Batch Upload</strong> tab lets you upload a CSV with up to 100 patient records for bulk risk assessment. Required columns: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile. Results download as CSV.';
-    }
-    if (q.includes('dark') || q.includes('theme') || q.includes('mode')) {
-        return 'Click the <strong>moon icon</strong> in the header to toggle dark mode. Your preference is saved in local storage and persists across sessions.';
-    }
-    if (q.includes('ehr') || q.includes('auto-fill') || q.includes('nhs number')) {
-        return 'Use the <strong>EHR Quick Lookup</strong> bar on the Assessment tab. Enter an NHS number (e.g., NHS001) and click "Auto-fill from EHR" to populate patient details from the mock EHR system.';
-    }
-    if (q.includes('intervention') || q.includes('recommend') || q.includes('action')) {
-        return 'After a risk assessment, the system shows <strong>contextual interventions</strong> based on the patient\'s risk profile and age group. Priority 1 (red) = urgent, Priority 2 (amber) = important, Priority 3 (green) = preventive.';
-    }
-    if (q.includes('cross') || q.includes('validation') || q.includes('model')) {
-        return 'The <strong>Ethics</strong> tab includes 5-fold cross-validation with bootstrap 95% CIs and McNemar significance tests. This compares Random Forest, Logistic Regression, and other models to justify model selection.';
-    }
-    if (q.includes('language') || q.includes('welsh') || q.includes('urdu') || q.includes('polish')) {
-        return 'Care Attend supports <strong>4 languages</strong>: English (EN), Welsh (CY), Urdu (UR), and Polish (PL). Use the language selector in the header to switch. This meets NHS Wales accessibility requirements.';
-    }
-    if (q.includes('logout') || q.includes('session') || q.includes('timeout')) {
-        return 'Sessions timeout after <strong>30 minutes</strong> of inactivity (NFR-06). All session data is cleared on logout. Click "Log Out" in the header or let the timeout trigger automatically.';
-    }
-    if (q.includes('hello') || q.includes('hi') || q.includes('hey')) {
-        return 'Hello! How can I help you today? I can assist with risk assessments, explain SHAP values, guide you through bias monitoring, or answer questions about data privacy.';
-    }
-    if (q.includes('thank')) {
-        return 'You\'re welcome! Let me know if you need anything else. I\'m here to help you get the most out of Care Attend.';
-    }
-
-    return 'I can help with: <strong>patient assessments</strong>, <strong>SHAP explanations</strong>, <strong>bias monitoring</strong>, <strong>batch uploads</strong>, <strong>data privacy</strong>, and <strong>app navigation</strong>. Could you rephrase your question?';
-}
-
-// ══════════════════════════════════════════════════════
-// AUTO-NOTIFICATIONS ON KEY EVENTS
-// ══════════════════════════════════════════════════════
-
-const _originalRenderResults = renderResults;
-renderResults = function(result) {
-    _originalRenderResults(result);
-    const tier = result.risk_tier.toLowerCase();
-    const pct = result.percentage;
-    if (tier === 'high') {
-        addNotification(
-            'High Risk Patient Detected',
-            `Patient (Age ${result.patient_summary.Age}) scored ${pct}% DNA risk. Immediate intervention recommended.`,
-            'risk-high'
-        );
-    } else if (tier === 'medium') {
-        addNotification(
-            'Medium Risk Assessment',
-            `Patient (Age ${result.patient_summary.Age}) scored ${pct}% DNA risk. Consider preventive measures.`,
-            'risk-medium'
-        );
-    } else {
-        addNotification(
-            'Low Risk Assessment Complete',
-            `Patient (Age ${result.patient_summary.Age}) scored ${pct}% DNA risk.`,
-            'risk-low'
-        );
-    }
-};
-
-const _originalRunBiasAudit = runBiasAudit;
-runBiasAudit = async function() {
-    await _originalRunBiasAudit();
-    if (biasAuditData) {
-        const failures = [];
-        if (biasAuditData.age_group?.dp_status === 'Fail') failures.push('Age DP');
-        if (biasAuditData.gender?.dp_status === 'Fail') failures.push('Gender DP');
-        if (biasAuditData.imd_band?.dp_status === 'Fail') failures.push('IMD DP');
-        if (failures.length > 0) {
-            addNotification(
-                'Bias Alert: Threshold Exceeded',
-                `Fairness failures detected: ${failures.join(', ')}. Review bias dashboard.`,
-                'bias'
-            );
+    try {
+        const res = await fetch('/api/carer-proxy', {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({ carerName, relationship, patientIdentifier: patientId, carerContact, reason }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+            activeProxy = data.proxy;
+            alert('Proxy registered for ' + carerName + '. You can now assess on behalf of the patient.');
+            document.getElementById('proxy-register-form').style.display = 'none';
+            document.getElementById('proxy-active-badge').style.display = 'flex';
+            document.getElementById('proxy-active-name').textContent = carerName + ' (' + relationship + ')';
         } else {
-            addNotification(
-                'Bias Audit Complete',
-                'All fairness metrics within acceptable thresholds.',
-                'info'
-            );
+            alert(data.error || 'Failed to register proxy.');
         }
+    } catch {
+        alert('Connection error.');
     }
-};
+}
 
-// ══════════════════════════════════════════════════════
-// INITIALIZE LUCIDE ICONS
-// ══════════════════════════════════════════════════════
+function clearCarerProxy() {
+    activeProxy = null;
+    document.getElementById('proxy-register-form').style.display = 'block';
+    document.getElementById('proxy-active-badge').style.display = 'none';
+    document.getElementById('proxy-carer-name').value = '';
+    document.getElementById('proxy-patient-id').value = '';
+    document.getElementById('proxy-carer-contact').value = '';
+    document.getElementById('proxy-reason').value = '';
+}
 
-// ══════════════════════════════════════════════════════
-// TOAST NOTIFICATION SYSTEM (replaces alert())
-// ══════════════════════════════════════════════════════
+function toggleProxyPanel() {
+    const panel = document.getElementById('proxy-panel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
 
-function showToast(message, type = 'info', duration = 4000) {
-    const container = document.getElementById('toast-container');
-    if (!container) return;
 
-    const iconMap = {
-        success: 'check-circle',
-        error: 'alert-circle',
-        warning: 'alert-triangle',
-        info: 'info',
+// ── Slot Optimisation ──
+
+async function runSlotOptimisation() {
+    const textarea = document.getElementById('slot-input-data');
+    let appointments;
+    try {
+        appointments = JSON.parse(textarea.value);
+        if (!Array.isArray(appointments)) appointments = [appointments];
+    } catch {
+        alert('Invalid JSON. Enter array of patient objects.');
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/slot-optimisation', {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({ appointments }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+            renderSlotResults(data);
+        } else {
+            alert(data.error || 'Slot optimisation failed.');
+        }
+    } catch {
+        alert('Connection error.');
+    }
+}
+
+function renderSlotResults(data) {
+    const container = document.getElementById('slot-results');
+    container.style.display = 'block';
+    const summary = data.summary;
+    document.getElementById('slot-summary').innerHTML = `
+        <div class="metric-box"><div class="metric-value">${summary.total_slots}</div><div class="metric-label">Total Slots</div></div>
+        <div class="metric-box"><div class="metric-value">${summary.overbookable}</div><div class="metric-label">Overbookable</div></div>
+        <div class="metric-box"><div class="metric-value">${summary.total_expected_waste_minutes} min</div><div class="metric-label">Expected Waste</div></div>
+        <div class="metric-box"><div class="metric-value">${summary.potential_recovery_percent}%</div><div class="metric-label">Recovery Potential</div></div>
+    `;
+    let tableHTML = '<table class="audit-table"><thead><tr><th>Slot</th><th>DNA Risk</th><th>Tier</th><th>Overbook?</th><th>Waste (min)</th><th>Recommendation</th></tr></thead><tbody>';
+    data.slots.forEach(s => {
+        if (s.error) {
+            tableHTML += '<tr><td>' + s.slot + '</td><td colspan="5" style="color:#DA291C;">' + s.error + '</td></tr>';
+        } else {
+            const overbookIcon = s.can_overbook ? '<span style="color:#007F3B;">&#10003;</span>' : '&mdash;';
+            const tierCls = s.risk_tier === 'High' ? 'color:#DA291C;font-weight:700' :
+                            s.risk_tier === 'Medium' ? 'color:#B8860B;font-weight:700' : 'color:#007F3B;font-weight:700';
+            tableHTML += '<tr><td>' + s.slot + '</td><td>' + (s.dna_probability * 100).toFixed(1) + '%</td><td style="' + tierCls + '">' + s.risk_tier + '</td><td>' + overbookIcon + '</td><td>' + s.expected_waste_minutes + '</td><td style="font-size:13px;">' + s.recommendation + '</td></tr>';
+        }
+    });
+    tableHTML += '</tbody></table>';
+    document.getElementById('slot-table-container').innerHTML = tableHTML;
+}
+
+
+// ── Patient Nudge Generator ──
+
+async function generateNudge() {
+    const patientName = document.getElementById('nudge-patient-name').value.trim();
+    const language = document.getElementById('nudge-language').value;
+
+    const age = parseInt(document.getElementById('age').value) || 0;
+    const gender = parseInt(document.getElementById('gender').value) || 0;
+    const leadTime = parseInt(document.getElementById('leadtime').value) || 0;
+    const sms = document.getElementById('sms-check').checked ? 1 : 0;
+    const priorDNA = parseInt(document.getElementById('priordna').value) || 0;
+    const imd = parseInt(document.getElementById('imd').value) || 5;
+
+    if (!age && !priorDNA && !imd) {
+        alert('Fill in the Assessment form first, then generate a nudge.');
+        return;
+    }
+
+    const patient = {
+        Age: age, Gender: gender, AppointmentLeadTimeDays: leadTime,
+        SMSReceived: sms, PriorDNACount: priorDNA, IMDDecile: imd || 5,
+        Hypertension: document.getElementById('hypertension').checked ? 1 : 0,
+        Diabetes: document.getElementById('diabetes').checked ? 1 : 0,
+        Alcoholism: document.getElementById('alcoholism').checked ? 1 : 0,
+        Disability: document.getElementById('disability').checked ? 1 : 0,
     };
 
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.style.position = 'relative';
-    toast.innerHTML = `
-        <div class="toast-icon"><i data-lucide="${iconMap[type] || 'info'}" style="width:16px;height:16px;"></i></div>
-        <span class="toast-msg">${message}</span>
-        <button class="toast-close" onclick="this.parentElement.classList.add('toast-exit');setTimeout(()=>this.parentElement.remove(),300)">&times;</button>
-        <div class="toast-progress"></div>
-    `;
-    container.appendChild(toast);
-    if (typeof lucide !== 'undefined') lucide.createIcons();
-
-    setTimeout(() => {
-        if (toast.parentElement) {
-            toast.classList.add('toast-exit');
-            setTimeout(() => toast.remove(), 300);
+    try {
+        const res = await fetch('/api/patient-nudge', {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({ patient, patientName, language }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+            document.getElementById('nudge-result').style.display = 'block';
+            document.getElementById('nudge-message-text').textContent = data.message;
+            document.getElementById('nudge-type-badge').textContent = data.nudge_type;
+            document.getElementById('nudge-risk-info').textContent = 'Risk: ' + data.risk_probability + ' (' + data.risk_tier + ')';
+            document.getElementById('nudge-factors').innerHTML = data.personalisation_factors.map(function(f) {
+                return '<span class="nudge-factor-tag">' + f.replace(/_/g, ' ') + '</span>';
+            }).join(' ');
+        } else {
+            alert(data.error || 'Nudge generation failed.');
         }
-    }, duration);
-}
-
-// ══════════════════════════════════════════════════════
-// SESSION COUNTDOWN TIMER
-// ══════════════════════════════════════════════════════
-
-let sessionCountdownInterval = null;
-let sessionExpiresAt = null;
-
-const _origResetTimer = resetSessionTimer;
-resetSessionTimer = function() {
-    _origResetTimer();
-    sessionExpiresAt = Date.now() + SESSION_TIMEOUT_MS;
-    startCountdown();
-};
-
-function startCountdown() {
-    if (sessionCountdownInterval) clearInterval(sessionCountdownInterval);
-    sessionCountdownInterval = setInterval(updateCountdown, 1000);
-}
-
-function updateCountdown() {
-    if (!sessionExpiresAt) return;
-    const remaining = Math.max(0, sessionExpiresAt - Date.now());
-    const mins = Math.floor(remaining / 60000);
-    const secs = Math.floor((remaining % 60000) / 1000);
-    const display = document.getElementById('session-countdown');
-    const timer = document.getElementById('session-timer');
-    if (display) display.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
-    if (timer) {
-        timer.classList.remove('warning', 'critical');
-        if (mins < 2) timer.classList.add('critical');
-        else if (mins < 5) timer.classList.add('warning');
-    }
-    if (remaining <= 0) {
-        clearInterval(sessionCountdownInterval);
+    } catch {
+        alert('Connection error.');
     }
 }
 
-// ══════════════════════════════════════════════════════
-// DARK MODE ICON TOGGLE
-// ══════════════════════════════════════════════════════
-
-const _origToggleDark = toggleDarkMode;
-toggleDarkMode = function() {
-    _origToggleDark();
-    updateDarkModeIcon();
-};
-
-function updateDarkModeIcon() {
-    const icon = document.getElementById('dark-mode-icon');
-    if (icon) {
-        const isDark = document.body.classList.contains('dark-mode');
-        icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
-        if (typeof lucide !== 'undefined') lucide.createIcons();
-    }
+function copyNudgeMessage() {
+    const text = document.getElementById('nudge-message-text').textContent;
+    navigator.clipboard.writeText(text).then(function() {
+        alert('Message copied to clipboard.');
+    });
 }
 
-// ══════════════════════════════════════════════════════
-// KEYBOARD SHORTCUTS
-// ══════════════════════════════════════════════════════
 
-document.addEventListener('keydown', (e) => {
+// ── Keyboard Shortcuts ──
+
+document.addEventListener('keydown', function(e) {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
     if (!authToken) return;
 
-    const tabs = ['assessment', 'results', 'dashboard', 'batch', 'bias', 'ethics'];
+    const tabs = ['assessment', 'results', 'dashboard', 'batch', 'bias', 'ethics', 'slots', 'nudge'];
     const key = e.key;
 
-    if (key >= '1' && key <= '6') {
+    if (key >= '1' && key <= '8') {
         e.preventDefault();
         switchTab(tabs[parseInt(key) - 1]);
-    } else if (key === '?') {
-        e.preventDefault();
-        openShortcuts();
     } else if (key.toLowerCase() === 'n') {
         e.preventDefault();
         switchTab('assessment');
@@ -1633,156 +1335,165 @@ document.addEventListener('keydown', (e) => {
     } else if (key.toLowerCase() === 'd') {
         e.preventDefault();
         toggleDarkMode();
-    } else if (key === 'Escape') {
-        closeProfile();
-        closeShortcuts();
-        if (chatbotOpen) toggleChatbot();
-        document.getElementById('notification-dropdown').style.display = 'none';
     }
 });
 
-function openShortcuts() {
-    document.getElementById('shortcuts-overlay').style.display = 'flex';
-    if (typeof lucide !== 'undefined') lucide.createIcons();
-}
-function closeShortcuts() {
-    document.getElementById('shortcuts-overlay').style.display = 'none';
+
+// ── 2FA Functions ──
+
+async function start2FASetup() {
+    try {
+        const res = await fetch('/api/profile/2fa/setup', {
+            method: 'POST',
+            headers: authHeaders(),
+        });
+        const data = await res.json();
+        if (res.ok) {
+            document.getElementById('2fa-setup-area').style.display = 'none';
+            document.getElementById('2fa-qr-area').style.display = 'block';
+            document.getElementById('2fa-secret-key').textContent = data.secret;
+        } else {
+            alert(data.error || '2FA setup failed.');
+        }
+    } catch {
+        alert('Failed to start 2FA setup.');
+    }
 }
 
-// ══════════════════════════════════════════════════════
-// PATIENT RISK REPORT PDF EXPORT
-// ══════════════════════════════════════════════════════
-
-function exportPatientPDF() {
-    if (!lastResult) {
-        showToast('No assessment to export. Run an assessment first.', 'warning');
+async function verify2FA() {
+    const code = document.getElementById('2fa-verify-code').value.trim();
+    if (code.length !== 6) {
+        alert('Enter 6-digit code from authenticator app.');
         return;
     }
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    const r = lastResult;
-    const p = r.patient_summary;
-    let y = 20;
-
-    doc.setFontSize(20);
-    doc.setTextColor(0, 48, 135);
-    doc.text('Care Attend - Patient Risk Report', 14, y);
-    y += 10;
-
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(`Generated: ${new Date().toLocaleString()} | Session: ${r.sessionId?.substring(0, 8) || '---'}`, 14, y);
-    y += 12;
-
-    doc.setFontSize(14);
-    doc.setTextColor(0, 48, 135);
-    doc.text('Risk Assessment Result', 14, y);
-    y += 8;
-
-    const tierColors = { High: [218,41,28], Medium: [184,134,11], Low: [0,127,59] };
-    doc.setFontSize(28);
-    doc.setTextColor(...(tierColors[r.risk_tier] || [0,0,0]));
-    doc.text(`${r.percentage}% — ${r.risk_tier.toUpperCase()} RISK`, 14, y);
-    y += 14;
-
-    doc.setFontSize(12);
-    doc.setTextColor(0, 48, 135);
-    doc.text('Patient Summary', 14, y);
-    y += 6;
-    doc.autoTable({
-        startY: y,
-        head: [['Field', 'Value']],
-        body: [
-            ['Age', `${p.Age} (${r.age_group})`],
-            ['Gender', p.Gender === 1 ? 'Male' : 'Female'],
-            ['IMD Decile', p.IMDDecile.toString()],
-            ['Lead Time', `${p.AppointmentLeadTimeDays} days`],
-            ['Prior DNAs', p.PriorDNACount.toString()],
-            ['SMS Received', p.SMSReceived ? 'Yes' : 'No'],
-            ['Hypertension', p.Hypertension ? 'Yes' : 'No'],
-            ['Diabetes', p.Diabetes ? 'Yes' : 'No'],
-        ],
-        theme: 'grid',
-        headStyles: { fillColor: [0, 48, 135] },
-        margin: { left: 14 },
-    });
-    y = doc.lastAutoTable.finalY + 10;
-
-    doc.setFontSize(12);
-    doc.setTextColor(0, 48, 135);
-    doc.text('SHAP Feature Attribution (Top Factors)', 14, y);
-    y += 6;
-    doc.autoTable({
-        startY: y,
-        head: [['Factor', 'SHAP Value', 'Direction']],
-        body: r.shap_values.slice(0, 5).map(s => [
-            s.label,
-            s.value.toFixed(4),
-            s.value > 0 ? 'Increases Risk' : 'Reduces Risk',
-        ]),
-        theme: 'grid',
-        headStyles: { fillColor: [0, 48, 135] },
-        margin: { left: 14 },
-    });
-    y = doc.lastAutoTable.finalY + 10;
-
-    if (r.interventions && r.interventions.length > 0) {
-        doc.setFontSize(12);
-        doc.setTextColor(0, 48, 135);
-        doc.text('Recommended Interventions', 14, y);
-        y += 6;
-        doc.autoTable({
-            startY: y,
-            head: [['Priority', 'Action', 'Details']],
-            body: r.interventions.map(iv => [
-                `P${iv.priority}`,
-                iv.title,
-                iv.description,
-            ]),
-            theme: 'grid',
-            headStyles: { fillColor: [0, 48, 135] },
-            margin: { left: 14 },
-            columnStyles: { 2: { cellWidth: 90 } },
+    try {
+        const res = await fetch('/api/profile/2fa/enable', {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({ code }),
         });
-        y = doc.lastAutoTable.finalY + 10;
+        const data = await res.json();
+        if (res.ok) {
+            alert('2FA enabled! Your account is now more secure.');
+            document.getElementById('2fa-qr-area').style.display = 'none';
+            document.getElementById('2fa-disable-area').style.display = 'block';
+            const badge = document.getElementById('2fa-badge');
+            badge.className = 'ac-2fa-badge enabled';
+            badge.innerHTML = '&#128274; Enabled';
+        } else {
+            alert(data.error || 'Verification failed.');
+        }
+    } catch {
+        alert('Verification failed.');
     }
-
-    if (r.nl_summary) {
-        if (y > 240) { doc.addPage(); y = 20; }
-        doc.setFontSize(12);
-        doc.setTextColor(0, 48, 135);
-        doc.text('Plain-English Summary', 14, y);
-        y += 6;
-        doc.setFontSize(10);
-        doc.setTextColor(66, 85, 99);
-        const splitNL = doc.splitTextToSize(r.nl_summary, 180);
-        doc.text(splitNL, 14, y);
-    }
-
-    doc.setFontSize(8);
-    doc.setTextColor(150);
-    doc.text('Care Attend | COM668 | Ulster University | Session-scoped only | GDPR Art 5(1)(c)', 14, 285);
-
-    doc.save(`CareAttend_Risk_Report_${r.sessionId?.substring(0, 8) || 'unknown'}.pdf`);
-    showToast('Risk report exported as PDF.', 'success');
 }
 
-function printResults() {
-    window.print();
+async function disable2FA() {
+    const pw = document.getElementById('2fa-disable-pw').value;
+    if (!pw) { alert('Enter password.'); return; }
+    try {
+        const res = await fetch('/api/profile/2fa/disable', {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({ password: pw }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+            alert('2FA disabled.');
+            document.getElementById('2fa-disable-area').style.display = 'none';
+            document.getElementById('2fa-setup-area').style.display = 'block';
+            document.getElementById('2fa-disable-pw').value = '';
+            const badge = document.getElementById('2fa-badge');
+            badge.className = 'ac-2fa-badge disabled';
+            badge.innerHTML = '&#128274; Disabled';
+        } else {
+            alert(data.error || 'Failed to disable 2FA.');
+        }
+    } catch {
+        alert('Failed to disable 2FA.');
+    }
 }
 
-// ══════════════════════════════════════════════════════
-// REPLACE alert() WITH TOAST
-// ══════════════════════════════════════════════════════
 
-document.addEventListener('DOMContentLoaded', () => {
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
+// ── Guided Tour ──
+
+const TOUR_STEPS = [
+    { title: 'Welcome to Care Attend', description: 'This NHS tool uses AI to predict which patients are at risk of missing their appointments (DNAs). It explains predictions using SHAP and monitors for demographic bias.', tab: null },
+    { title: '1. Patient Assessment', description: 'Enter patient details here — age, gender, appointment lead time, prior DNA count, clinical flags, and IMD deprivation decile. You can also use the EHR auto-fill or Carer Proxy mode for digitally excluded patients.', tab: 'assessment' },
+    { title: '2. Risk Results', description: 'After assessment, view the DNA risk gauge, SHAP explainability chart showing WHY the score was given, and recommended interventions tailored to the patient\'s profile.', tab: 'results' },
+    { title: '3. Practice Dashboard', description: 'See practice-wide DNA risk overview — total assessments, risk breakdown by age group, recent assessments, and feedback accuracy. All session-scoped.', tab: 'dashboard' },
+    { title: '4. Batch Upload', description: 'Upload a CSV of up to 100 patients for bulk risk assessment. Download results as CSV with risk scores, tiers, and top risk factors.', tab: 'batch' },
+    { title: '5. Bias Monitor', description: 'Run fairness audits across age, gender, and IMD groups. Checks demographic parity and equalised odds with 0.10 threshold per NHS AI ethics guidance. Export PDF reports.', tab: 'bias' },
+    { title: '6. Slot Optimisation', description: 'Analyse appointment slots to find overbooking opportunities. Slots with 40%+ DNA risk can be double-booked to recover wasted clinical time.', tab: 'slots' },
+    { title: '7. Patient Nudge', description: 'Generate personalised, non-stigmatising messages for at-risk patients in English, Welsh, Urdu, or Polish. Messages are tailored to patient circumstances.', tab: 'nudge' },
+];
+
+let currentTourStep = 0;
+
+function startGuidedTour() {
+    currentTourStep = 0;
+    document.getElementById('tour-overlay').style.display = 'flex';
+    renderTourStep();
+}
+
+function renderTourStep() {
+    const step = TOUR_STEPS[currentTourStep];
+    document.getElementById('tour-title').textContent = step.title;
+    document.getElementById('tour-description').textContent = step.description;
+    document.getElementById('tour-step-label').textContent = 'Step ' + (currentTourStep + 1) + ' of ' + TOUR_STEPS.length;
+    document.getElementById('tour-progress-fill').style.width = ((currentTourStep + 1) / TOUR_STEPS.length * 100) + '%';
+    document.getElementById('tour-prev-btn').style.display = currentTourStep === 0 ? 'none' : 'inline-block';
+    document.getElementById('tour-next-btn').textContent = currentTourStep === TOUR_STEPS.length - 1 ? 'Finish' : 'Next →';
+
+    if (step.tab) switchTab(step.tab);
+}
+
+function tourNext() {
+    if (currentTourStep < TOUR_STEPS.length - 1) {
+        currentTourStep++;
+        renderTourStep();
+    } else {
+        endTour();
     }
-    updateDarkModeIcon();
-    addNotification(
-        'Welcome to Care Attend',
-        'NHS Predictive Risk Assessment system ready. All data is session-scoped.',
-        'info'
-    );
-});
+}
+
+function tourPrev() {
+    if (currentTourStep > 0) {
+        currentTourStep--;
+        renderTourStep();
+    }
+}
+
+function endTour() {
+    document.getElementById('tour-overlay').style.display = 'none';
+    switchTab('assessment');
+}
+
+
+// ── Session Timer ──
+
+let countdownInterval = null;
+
+function startSessionCountdown() {
+    let remaining = 1800;
+    const el = document.getElementById('session-countdown');
+    if (!el) return;
+    clearInterval(countdownInterval);
+    countdownInterval = setInterval(function() {
+        remaining--;
+        if (remaining <= 0) {
+            clearInterval(countdownInterval);
+            handleLogout();
+            return;
+        }
+        const m = Math.floor(remaining / 60);
+        const s = remaining % 60;
+        el.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+    }, 1000);
+}
+
+const _origShowMainApp = showMainApp;
+showMainApp = function(username) {
+    _origShowMainApp(username);
+    startSessionCountdown();
+};
