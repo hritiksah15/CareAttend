@@ -59,7 +59,9 @@ class TestCTGANSupplement:
             assert col in df.columns
 
     def test_elderly_heavy(self):
-        df = generate_ctgan_uk_supplement(n_samples=1000)
+        # rural_elderly is the elderly-skewed trust profile (elderly_pct=0.55);
+        # the default urban_deprived profile is intentionally younger.
+        df = generate_ctgan_uk_supplement(n_samples=1000, trust_profile="rural_elderly")
         elderly_pct = (df["Age"] >= 65).mean()
         assert elderly_pct > 0.35
 

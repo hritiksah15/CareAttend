@@ -270,7 +270,7 @@ function authHeaders() {
 function resetSessionTimer() {
     clearSessionTimer();
     sessionTimer = setTimeout(() => {
-        alert('Session expired due to 30 minutes of inactivity.');
+        alert('Session expired due to inactivity.');
         handleLogout();
     }, SESSION_TIMEOUT_MS);
 }
@@ -300,9 +300,11 @@ function switchTab(tabName) {
         b.setAttribute('aria-selected', 'false');
     });
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    const tabBtn = document.querySelector(`[data-tab="${tabName}"]`);
-    tabBtn.classList.add('active');
-    tabBtn.setAttribute('aria-selected', 'true');
+    const tabBtn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+    if (tabBtn) {
+        tabBtn.classList.add('active');
+        tabBtn.setAttribute('aria-selected', 'true');
+    }
     document.getElementById(`tab-${tabName}`).classList.add('active');
 }
 
@@ -1427,14 +1429,14 @@ async function disable2FA() {
 // ── Guided Tour ──
 
 const TOUR_STEPS = [
-    { title: 'Welcome to Care Attend', description: 'This NHS tool uses AI to predict which patients are at risk of missing their appointments (DNAs). It explains predictions using SHAP and monitors for demographic bias.', tab: null },
-    { title: '1. Patient Assessment', description: 'Enter patient details here — age, gender, appointment lead time, prior DNA count, clinical flags, and IMD deprivation decile. You can also use the EHR auto-fill or Carer Proxy mode for digitally excluded patients.', tab: 'assessment' },
-    { title: '2. Risk Results', description: 'After assessment, view the DNA risk gauge, SHAP explainability chart showing WHY the score was given, and recommended interventions tailored to the patient\'s profile.', tab: 'results' },
-    { title: '3. Practice Dashboard', description: 'See practice-wide DNA risk overview — total assessments, risk breakdown by age group, recent assessments, and feedback accuracy. All session-scoped.', tab: 'dashboard' },
-    { title: '4. Batch Upload', description: 'Upload a CSV of up to 100 patients for bulk risk assessment. Download results as CSV with risk scores, tiers, and top risk factors.', tab: 'batch' },
-    { title: '5. Bias Monitor', description: 'Run fairness audits across age, gender, and IMD groups. Checks demographic parity and equalised odds with 0.10 threshold per NHS AI ethics guidance. Export PDF reports.', tab: 'bias' },
-    { title: '6. Slot Optimisation', description: 'Analyse appointment slots to find overbooking opportunities. Slots with 40%+ DNA risk can be double-booked to recover wasted clinical time.', tab: 'slots' },
-    { title: '7. Patient Nudge', description: 'Generate personalised, non-stigmatising messages for at-risk patients in English, Welsh, Urdu, or Polish. Messages are tailored to patient circumstances.', tab: 'nudge' },
+    { title: 'Welcome to Care Attend', description: 'This NHS tool uses AI to predict which patients are at risk of missing their appointments (DNAs). It explains predictions using SHAP and monitors for demographic bias. This quick tour spotlights each feature in turn.', tab: null, selector: null },
+    { title: '1. Patient Assessment', description: 'Enter patient details here — age, gender, appointment lead time, prior DNA count, clinical flags, and IMD deprivation decile. You can also use the EHR auto-fill or Carer Proxy mode for digitally excluded patients.', tab: 'assessment', selector: '[data-tab="assessment"]' },
+    { title: '2. Risk Results', description: 'After assessment, view the DNA risk gauge, SHAP explainability chart showing WHY the score was given, and recommended interventions tailored to the patient\'s profile.', tab: 'results', selector: '[data-tab="results"]' },
+    { title: '3. Practice Dashboard', description: 'See practice-wide DNA risk overview — total assessments, risk breakdown by age group, recent assessments, and feedback accuracy. All session-scoped.', tab: 'dashboard', selector: '[data-tab="dashboard"]' },
+    { title: '4. Batch Upload', description: 'Upload a CSV of up to 100 patients for bulk risk assessment. Download results as CSV with risk scores, tiers, and top risk factors.', tab: 'batch', selector: '[data-tab="batch"]' },
+    { title: '5. Bias Monitor', description: 'Run fairness audits across age, gender, and IMD groups. Checks demographic parity and equalised odds with 0.10 threshold per NHS AI ethics guidance. Export PDF reports.', tab: 'bias', selector: '[data-tab="bias"]' },
+    { title: '6. Slot Optimisation', description: 'Analyse appointment slots to find overbooking opportunities. Slots with 40%+ DNA risk can be double-booked to recover wasted clinical time.', tab: 'slots', selector: '[data-tab="slots"]' },
+    { title: '7. Patient Nudge', description: 'Generate personalised, non-stigmatising messages for at-risk patients in English, Welsh, Urdu, or Polish. Messages are tailored to patient circumstances.', tab: 'nudge', selector: '[data-tab="nudge"]' },
 ];
 
 let currentTourStep = 0;
@@ -1443,6 +1445,11 @@ function startGuidedTour() {
     currentTourStep = 0;
     document.getElementById('tour-overlay').style.display = 'flex';
     renderTourStep();
+}
+
+function clearTourHighlight() {
+    document.querySelectorAll('.tour-highlight').forEach(el =>
+        el.classList.remove('tour-highlight', 'tour-highlight-pulse'));
 }
 
 function renderTourStep() {
@@ -1455,6 +1462,52 @@ function renderTourStep() {
     document.getElementById('tour-next-btn').textContent = currentTourStep === TOUR_STEPS.length - 1 ? 'Finish' : 'Next →';
 
     if (step.tab) switchTab(step.tab);
+
+    // Reset previous spotlight + card positioning.
+    clearTourHighlight();
+    const overlay = document.getElementById('tour-overlay');
+    const card = document.getElementById('tour-card');
+    card.classList.remove('positioned', 'pos-bottom', 'pos-top');
+    card.style.left = '';
+    card.style.top = '';
+
+    const target = step.selector ? document.querySelector(step.selector) : null;
+    if (target) {
+        // Anchored mode: spotlight the element, position the card beside it.
+        overlay.classList.add('anchored');
+        target.classList.add('tour-highlight', 'tour-highlight-pulse');
+        target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+        positionTourCard(card, target);
+    } else {
+        // Centred modal for intro/finish steps.
+        overlay.classList.remove('anchored');
+    }
+}
+
+function positionTourCard(card, target) {
+    // Position after layout settles so offsetWidth/Height are correct.
+    requestAnimationFrame(() => {
+        const r = target.getBoundingClientRect();
+        card.classList.add('positioned');
+        const cw = card.offsetWidth;
+        const ch = card.offsetHeight;
+        const margin = 12;
+
+        let left = r.left + r.width / 2 - cw / 2;
+        left = Math.max(margin, Math.min(left, window.innerWidth - cw - margin));
+
+        let top = r.bottom + margin;
+        let pos = 'pos-bottom';
+        if (top + ch > window.innerHeight - margin) {
+            top = r.top - ch - margin;
+            pos = 'pos-top';
+        }
+        top = Math.max(margin, top);
+
+        card.classList.add(pos);
+        card.style.left = left + 'px';
+        card.style.top = top + 'px';
+    });
 }
 
 function tourNext() {
@@ -1474,7 +1527,14 @@ function tourPrev() {
 }
 
 function endTour() {
-    document.getElementById('tour-overlay').style.display = 'none';
+    clearTourHighlight();
+    const overlay = document.getElementById('tour-overlay');
+    const card = document.getElementById('tour-card');
+    overlay.classList.remove('anchored');
+    overlay.style.display = 'none';
+    card.classList.remove('positioned', 'pos-bottom', 'pos-top');
+    card.style.left = '';
+    card.style.top = '';
     switchTab('assessment');
 }
 
@@ -1484,20 +1544,20 @@ function endTour() {
 let countdownInterval = null;
 
 function startSessionCountdown() {
-    let remaining = 1800;
+    let elapsed = 0;
     const el = document.getElementById('session-countdown');
     if (!el) return;
     clearInterval(countdownInterval);
     countdownInterval = setInterval(function() {
-        remaining--;
-        if (remaining <= 0) {
-            clearInterval(countdownInterval);
-            handleLogout();
-            return;
+        elapsed++;
+        const h = Math.floor(elapsed / 3600);
+        const m = Math.floor((elapsed % 3600) / 60);
+        const s = elapsed % 60;
+        if (h > 0) {
+            el.textContent = h + ':' + (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+        } else {
+            el.textContent = m + ':' + (s < 10 ? '0' : '') + s;
         }
-        const m = Math.floor(remaining / 60);
-        const s = remaining % 60;
-        el.textContent = m + ':' + (s < 10 ? '0' : '') + s;
     }, 1000);
 }
 
