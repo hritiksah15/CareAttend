@@ -1884,12 +1884,23 @@ document.addEventListener('DOMContentLoaded', async function() {
                 addNotification('Session Restored', 'Welcome back, ' + savedUser + '.', 'success');
                 return;
             }
-            console.warn('Session restore failed:', res.status);
+            // Only discard the token when the server says it is genuinely
+            // invalid/expired (401/403). A 5xx or network blip (e.g. the dev
+            // server restarting after a code change) must NOT log the user out
+            // — keep the token so the next refresh restores the session.
+            if (res.status === 401 || res.status === 403) {
+                localStorage.removeItem('careattend_token');
+                localStorage.removeItem('careattend_user');
+                console.warn('Session expired or invalid; please log in again.');
+            } else {
+                console.warn('Server unavailable (' + res.status + '); token kept for retry.');
+                addNotification('Server Unavailable', 'Could not reach the server. Your session is kept — refresh once it is back.', 'warning');
+            }
         } catch (err) {
-            console.warn('Session restore error:', err.message);
+            // Network error — keep the token, do not force logout.
+            console.warn('Session restore network error; token kept:', err.message);
+            addNotification('Connection Issue', 'Could not reach the server. Your session is preserved.', 'warning');
         }
-        localStorage.removeItem('careattend_token');
-        localStorage.removeItem('careattend_user');
     }
 
     addNotification('Welcome to Care Attend', 'NHS Predictive Risk Assessment system ready. All data is session-scoped.', 'info');
