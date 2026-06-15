@@ -1030,9 +1030,23 @@ def _generate_nl_summary(patient, result, age_group):
             f"The main contributing factors are that the patient {factors_text}.")
 
 
+def ensure_database():
+    """Guarantee the schema exists so the DB 'just works' when the backend
+    starts — create_all is idempotent and complements Alembic migrations."""
+    with app.app_context():
+        try:
+            db.create_all()
+            print("Database ready (schema ensured).")
+        except Exception as exc:  # pragma: no cover
+            print(f"WARNING: could not initialise database: {exc}")
+
+
 if __name__ == "__main__":
     print("Loading Care Attend models...")
     load_models()
+    ensure_database()
     print("Models loaded. Starting server...")
-    print("Open http://127.0.0.1:5000 in your browser")
-    app.run(debug=True, host="127.0.0.1", port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    debug = os.environ.get("FLASK_DEBUG", "1") == "1"
+    print(f"Open http://127.0.0.1:{port} in your browser")
+    app.run(debug=debug, host="127.0.0.1", port=port)
