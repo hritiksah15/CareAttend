@@ -18,6 +18,8 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
   final _leadTimeCtrl = TextEditingController();
   final _priorDNACtrl = TextEditingController();
   final _imdCtrl = TextEditingController();
+  final _nhsCtrl = TextEditingController();
+  bool _ehrLoading = false;
 
   int _gender = -1;
   bool _smsReceived = false;
@@ -34,6 +36,48 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
       setState(() => _ageGroup = NHSTheme.ageGroup(age));
     } else {
       setState(() => _ageGroup = null);
+    }
+  }
+
+  Future<void> _autofillEhr() async {
+    final nhs = _nhsCtrl.text.trim();
+    if (nhs.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter an NHS number (e.g. NHS001)')),
+      );
+      return;
+    }
+    setState(() => _ehrLoading = true);
+    try {
+      final res = await ApiService.ehrLookup(nhs);
+      final p = (res['patient'] as Map?) ?? {};
+      setState(() {
+        if (p['Age'] != null) _ageCtrl.text = '${p['Age']}';
+        if (p['Gender'] != null) _gender = p['Gender'] as int;
+        if (p['IMDDecile'] != null) _imdCtrl.text = '${p['IMDDecile']}';
+        if (p['PriorDNACount'] != null) {
+          _priorDNACtrl.text = '${p['PriorDNACount']}';
+        }
+        _hypertension = (p['Hypertension'] ?? 0) == 1;
+        _diabetes = (p['Diabetes'] ?? 0) == 1;
+        _disability = (p['Disability'] ?? 0) == 1;
+      });
+      _updateAgeGroup();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Loaded ${p['name'] ?? nhs} from mock EHR')),
+      );
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('EHR lookup failed')),
+      );
+    } finally {
+      if (mounted) setState(() => _ehrLoading = false);
     }
   }
 
@@ -98,6 +142,41 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                       'Enter patient details to generate a DNA risk prediction with explainable AI outputs.',
                       style:
                           TextStyle(fontSize: 14, color: NHSTheme.darkGrey)),
+                  const SizedBox(height: 16),
+
+                  // EHR AUTO-FILL
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: NHSTheme.paleGrey,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: NHSTheme.lightBlue, width: 1),
+                    ),
+                    child: Row(children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _nhsCtrl,
+                          decoration: const InputDecoration(
+                            labelText: 'NHS Number (e.g. NHS001)',
+                            isDense: true,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(120, 44)),
+                        onPressed: _ehrLoading ? null : _autofillEhr,
+                        child: _ehrLoading
+                            ? const SizedBox(
+                                height: 18,
+                                width: 18,
+                                child: CircularProgressIndicator(
+                                    color: Colors.white, strokeWidth: 2))
+                            : const Text('Auto-fill'),
+                      ),
+                    ]),
+                  ),
                   const SizedBox(height: 20),
 
                   // DEMOGRAPHICS
@@ -342,6 +421,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
     _leadTimeCtrl.dispose();
     _priorDNACtrl.dispose();
     _imdCtrl.dispose();
+    _nhsCtrl.dispose();
     super.dispose();
   }
 }

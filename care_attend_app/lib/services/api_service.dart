@@ -1,9 +1,17 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  // Change this to your Flask backend URL
-  static const String baseUrl = 'http://10.0.2.2:5000'; // Android emulator -> localhost
+  // Backend host differs per platform:
+  //   - Web / iOS simulator / desktop: localhost
+  //   - Android emulator: 10.0.2.2 maps to the host's localhost
+  // Override at build time with --dart-define=API_BASE=http://<ip>:5000.
+  static const String _envBase =
+      String.fromEnvironment('API_BASE', defaultValue: '');
+  static final String baseUrl = _envBase.isNotEmpty
+      ? _envBase
+      : (kIsWeb ? 'http://127.0.0.1:5000' : 'http://10.0.2.2:5000');
   static String? _token;
 
   static Map<String, String> get _headers => {
@@ -112,6 +120,67 @@ class ApiService {
   static Future<Map<String, dynamic>> modelInfo() async {
     final res = await http.get(
       Uri.parse('$baseUrl/api/model-info'),
+      headers: _headers,
+    );
+    return _handleResponse(res);
+  }
+
+  // ── Practice Dashboard ──
+
+  static Future<Map<String, dynamic>> dashboard() async {
+    final res = await http.get(
+      Uri.parse('$baseUrl/api/dashboard'),
+      headers: _headers,
+    );
+    return _handleResponse(res);
+  }
+
+  // ── NHSX Ethics Framework ──
+
+  static Future<Map<String, dynamic>> ethicsFramework() async {
+    final res = await http.get(
+      Uri.parse('$baseUrl/api/ethics-framework'),
+      headers: _headers,
+    );
+    return _handleResponse(res);
+  }
+
+  // ── Slot Optimisation ──
+
+  static Future<Map<String, dynamic>> slotOptimisation(
+      List<Map<String, dynamic>> appointments) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/api/slot-optimisation'),
+      headers: _headers,
+      body: jsonEncode({'appointments': appointments}),
+    );
+    return _handleResponse(res);
+  }
+
+  // ── Patient Nudge ──
+
+  static Future<Map<String, dynamic>> patientNudge({
+    required Map<String, dynamic> patient,
+    String language = 'en',
+    String patientName = '',
+  }) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/api/patient-nudge'),
+      headers: _headers,
+      body: jsonEncode({
+        'patient': patient,
+        'language': language,
+        if (patientName.isNotEmpty) 'patientName': patientName,
+      }),
+    );
+    return _handleResponse(res);
+  }
+
+  // ── Mock EHR ──
+
+  static Future<Map<String, dynamic>> ehrLookup(String nhsNumber) async {
+    final res = await http.get(
+      Uri.parse('$baseUrl/api/ehr/lookup/$nhsNumber'),
       headers: _headers,
     );
     return _handleResponse(res);
