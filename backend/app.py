@@ -9,13 +9,16 @@ Routes: /predict, /bias-audit, /auth/login, /auth/register, /batch
 import csv
 import io
 import json
+import logging
 import os
+import time
 import uuid
 
 from flask import Flask, render_template, request, jsonify, make_response
 from flask_cors import CORS
+from sqlalchemy import text as _sql_text
 
-from models import db, migrate, User
+from models import db, migrate, User, AuditLog, CarerProxy, PersistentFeedback
 from auth import (register_user, authenticate, logout, token_required,
                   _hash_password, _verify_password,
                   setup_totp, enable_totp, disable_totp)
@@ -41,12 +44,56 @@ CORS(app)
 db.init_app(app)
 migrate.init_app(app, db)
 
+# ── Structured request logging + uniform JSON errors (NFR robustness) ──
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s %(message)s",
+)
+logger = logging.getLogger("careattend")
+
+_START_TIME = time.time()
+
+
+@app.after_request
+def _log_request(response):
+    logger.info("%s %s -> %s", request.method, request.path, response.status_code)
+    return response
+
+
+@app.errorhandler(400)
+def _err_400(e):
+    return jsonify({"error": "Bad request", "detail": str(getattr(e, "description", e))}), 400
+
+
+@app.errorhandler(404)
+def _err_404(e):
+    return jsonify({"error": "Not found", "path": request.path}), 404
+
+
+@app.errorhandler(405)
+def _err_405(e):
+    return jsonify({"error": "Method not allowed", "method": request.method}), 405
+
+
+@app.errorhandler(500)
+def _err_500(e):
+    logger.exception("Unhandled server error")
+    return jsonify({"error": "Internal server error"}), 500
+
+
+@app.errorhandler(Exception)
+def _err_unhandled(e):
+    # Let Flask's own HTTP exceptions (404/405/etc.) pass through to their handlers.
+    from werkzeug.exceptions import HTTPException
+    if isinstance(e, HTTPException):
+        return e
+    logger.exception("Unhandled exception")
+    return jsonify({"error": "Internal server error"}), 500
+
 predictor = None
 bias_monitor = None
 training_results = None
-_prediction_log = []  # session-scoped assessment history for dashboard
-_carer_proxies = []
-_audit_log = []
+_prediction_log = []  # session-scoped assessment history for dashboard (NFR-01: not persisted)
 
 
 def load_models():
@@ -64,6 +111,24 @@ def load_models():
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+# ── Health / readiness probe (no auth — for load balancers & Docker) ──
+
+@app.route("/health", methods=["GET"])
+def health():
+    db_ok = True
+    try:
+        db.session.execute(_sql_text("SELECT 1"))
+    except Exception:
+        db_ok = False
+    healthy = predictor is not None and db_ok
+    return jsonify({
+        "status": "ok" if healthy else "degraded",
+        "model_loaded": predictor is not None,
+        "database": "ok" if db_ok else "unavailable",
+        "uptime_seconds": round(time.time() - _START_TIME, 1),
+    }), (200 if healthy else 503)
 
 
 # ── Auth Endpoints (FR-04, NFR-06) ──
@@ -340,6 +405,17 @@ def submit_feedback():
     for p in _prediction_log:
         if p["id"] == prediction_id:
             p["feedback"] = outcome
+            # Persist an anonymised feedback record (tier/prob/outcome only — no
+            # patient data) for cross-session accuracy tracking & audit.
+            db.session.add(PersistentFeedback(
+                user_id=request.current_user["userId"],
+                prediction_risk_tier=p["risk_tier"],
+                prediction_probability=p["probability"],
+                outcome=outcome,
+            ))
+            db.session.add(_audit(request.current_user["userId"], "feedback_recorded",
+                                  f"{outcome} for {p['risk_tier']} risk prediction"))
+            db.session.commit()
             return jsonify({"message": "Feedback recorded", "prediction_id": prediction_id})
 
     return jsonify({"error": "Prediction not found"}), 404
@@ -701,33 +777,30 @@ def create_carer_proxy():
         return jsonify({"error": "carerName, relationship, and patientIdentifier required"}), 400
     if relationship not in ("family", "carer", "social_worker", "neighbour", "volunteer"):
         return jsonify({"error": "Invalid relationship type"}), 400
-    proxy = {
-        "id": str(uuid.uuid4()),
-        "staffUser": request.current_user.get("username", ""),
-        "carerName": carer_name,
-        "carerRelationship": relationship,
-        "carerContact": data.get("carerContact", "").strip(),
-        "patientIdentifier": patient_id,
-        "reason": data.get("reason", "").strip(),
-        "createdAt": __import__("time").time(),
-    }
-    _carer_proxies.append(proxy)
-    _audit_log.append({
-        "id": str(uuid.uuid4()),
-        "user": request.current_user.get("username", ""),
-        "action": "carer_proxy_created",
-        "detail": f"Proxy for {patient_id} by {carer_name} ({relationship})",
-        "timestamp": __import__("time").time(),
-    })
-    return jsonify({"message": "Carer proxy registered", "proxy": proxy}), 201
+
+    user_id = request.current_user["userId"]
+    proxy = CarerProxy(
+        staff_user_id=user_id,
+        carer_name=carer_name,
+        carer_relationship=relationship,
+        carer_contact=data.get("carerContact", "").strip() or None,
+        patient_identifier=patient_id,
+        reason=data.get("reason", "").strip() or None,
+    )
+    db.session.add(proxy)
+    db.session.add(_audit(user_id, "carer_proxy_created",
+                          f"Proxy for {patient_id} by {carer_name} ({relationship})"))
+    db.session.commit()
+    return jsonify({"message": "Carer proxy registered", "proxy": proxy.to_dict()}), 201
 
 
 @app.route("/api/carer-proxy/list", methods=["GET"])
 @token_required
 def list_carer_proxies():
-    user = request.current_user.get("username", "")
-    proxies = [p for p in _carer_proxies if p["staffUser"] == user]
-    return jsonify({"proxies": proxies})
+    proxies = (CarerProxy.query
+               .filter_by(staff_user_id=request.current_user["userId"])
+               .order_by(CarerProxy.created_at.desc()).all())
+    return jsonify({"proxies": [p.to_dict() for p in proxies]})
 
 
 # ── Appointment Slot Optimisation ──
@@ -870,7 +943,16 @@ def generate_patient_nudge():
 def get_audit_log():
     if request.current_user.get("role") != "admin":
         return jsonify({"error": "Admin access required"}), 403
-    return jsonify({"logs": _audit_log[-100:]})
+    logs = (AuditLog.query.order_by(AuditLog.created_at.desc()).limit(100).all())
+    return jsonify({"logs": [log.to_dict() for log in logs]})
+
+
+def _audit(user_id, action, detail=None):
+    """Build an AuditLog row (caller commits)."""
+    return AuditLog(
+        user_id=user_id, action=action, detail=detail,
+        ip_address=request.remote_addr,
+    )
 
 
 # ── Helpers ──

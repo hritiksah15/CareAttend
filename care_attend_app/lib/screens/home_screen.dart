@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../nhs_theme.dart';
 import '../services/api_service.dart';
 import 'login_screen.dart';
 import 'patient_form_screen.dart';
@@ -114,18 +113,25 @@ class _HomeScreenState extends State<HomeScreen> {
             const BiasScreen(),
           ],
         ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (i) => setState(() => _currentIndex = i),
-          selectedItemColor: NHSTheme.blue,
-          unselectedItemColor: NHSTheme.grey,
-          items: const [
-            BottomNavigationBarItem(
-                icon: Icon(Icons.edit_note), label: 'Assessment'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.dashboard), label: 'Results'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.balance), label: 'Bias Monitor'),
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: _currentIndex,
+          onDestinationSelected: (i) => setState(() => _currentIndex = i),
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.edit_note_outlined),
+              selectedIcon: Icon(Icons.edit_note),
+              label: 'Assessment',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.insights_outlined),
+              selectedIcon: Icon(Icons.insights),
+              label: 'Results',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.balance_outlined),
+              selectedIcon: Icon(Icons.balance),
+              label: 'Bias',
+            ),
           ],
         ),
       ),

@@ -1090,18 +1090,7 @@ body.dark-mode .user-badge { background: rgba(255,255,255,0.1); color: #ccc; }
 body.dark-mode .auth-error { background: #3a1e1e; color: #ff7777; }
 body.dark-mode .auth-success { background: #1e3a1e; color: #6fcf6f; }
 
-/* ── RESPONSIVE ── */
-@media (max-width: 640px) {
-    .header-content { flex-direction: column; align-items: flex-start; gap: 4px; }
-    .header-right { margin-top: 8px; }
-    .risk-header { flex-direction: column; align-items: center; text-align: center; }
-    .form-grid { grid-template-columns: 1fr; }
-    .checkbox-grid { grid-template-columns: 1fr; }
-    .tab-btn { font-size: 11px; padding: 10px 6px; }
-    .tab-icon { display: none; }
-    .result-actions { flex-direction: column; }
-    .bias-bar-label { width: 60px; font-size: 12px; }
-}
+/* Responsive rules moved to mobile-responsive.css */
 
 /* ── Account Centre ── */
 

@@ -18,6 +18,7 @@ class NHSTheme {
   static const Color riskHighBg = Color(0xFFFFEBEE);
 
   static ThemeData get theme => ThemeData(
+        useMaterial3: true,
         primaryColor: blue,
         scaffoldBackgroundColor: paleGrey,
         fontFamily: 'Arial',
@@ -25,6 +26,40 @@ class NHSTheme {
           primary: blue,
           secondary: lightBlue,
           error: riskHigh,
+          surface: white,
+        ),
+        // Material 3 bottom navigation — the app's signature chrome,
+        // visually distinct from the website's top tab bar.
+        navigationBarTheme: NavigationBarThemeData(
+          backgroundColor: white,
+          indicatorColor: lightBlue.withValues(alpha: 0.22),
+          elevation: 3,
+          height: 68,
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+          iconTheme: WidgetStateProperty.resolveWith((states) {
+            final selected = states.contains(WidgetState.selected);
+            return IconThemeData(
+              size: 26,
+              color: selected ? blue : darkGrey,
+            );
+          }),
+          labelTextStyle: WidgetStateProperty.resolveWith((states) {
+            final selected = states.contains(WidgetState.selected);
+            return TextStyle(
+              fontFamily: 'Arial',
+              fontSize: 12,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              color: selected ? blue : darkGrey,
+            );
+          }),
+        ),
+        cardTheme: CardThemeData(
+          color: white,
+          elevation: 1.5,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         ),
         appBarTheme: const AppBarTheme(
           backgroundColor: blue,

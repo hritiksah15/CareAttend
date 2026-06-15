@@ -1,0 +1,400 @@
+openapi: 3.0.3
+info:
+  title: CareAttend API
+  version: "1.0.0"
+  description: >
+    REST API for CareAttend — an NHS staff-facing decision-support tool that
+    predicts patient DNA ("Did Not Attend") risk, explains each prediction
+    (SHAP), audits fairness, and recommends interventions.
+    All `/api/*` endpoints require a Bearer session token from `/auth/login`.
+  contact:
+    name: Hritik Kumar Sah (B00923557)
+  license:
+    name: Prototype — academic use (COM668)
+servers:
+  - url: http://127.0.0.1:5000
+    description: Local development
+
+tags:
+  - name: System
+  - name: Auth
+  - name: Prediction
+  - name: Fairness
+  - name: Model
+  - name: Dashboard & Feedback
+  - name: EHR
+  - name: Config
+  - name: Account & Security
+  - name: Outreach
+  - name: Admin
+
+security:
+  - bearerAuth: []
+
+paths:
+  /health:
+    get:
+      tags: [System]
+      summary: Readiness probe (no auth)
+      security: []
+      responses:
+        "200": { description: Healthy, content: { application/json: { schema: { $ref: "#/components/schemas/Health" } } } }
+        "503": { description: Degraded (model or DB unavailable) }
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, email, password]
+              properties:
+                username: { type: string }
+                email: { type: string, format: email }
+                password: { type: string, minLength: 8 }
+                role: { type: string, enum: [staff, admin], default: staff }
+      responses:
+        "201": { description: Created }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login (returns token; may require 2FA)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string }
+                password: { type: string }
+                totp_code: { type: string, description: Required if 2FA enabled }
+      responses:
+        "200":
+          description: Token issued, or 2FA challenge
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties: { token: { type: string }, message: { type: string } }
+                  - type: object
+                    properties: { requires_2fa: { type: boolean }, message: { type: string } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout / invalidate session
+      responses:
+        "200": { description: Logged out }
+
+  /api/predict:
+    post:
+      tags: [Prediction]
+      summary: Predict DNA risk for one patient (FR-01/02/03)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Patient" }
+      responses:
+        "200": { description: Prediction, content: { application/json: { schema: { $ref: "#/components/schemas/PredictionResponse" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /api/batch:
+    post:
+      tags: [Prediction]
+      summary: Batch predict from CSV (≤100 rows, FR-08)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        "200": { description: CSV of results, content: { text/csv: {} } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /api/bias-audit:
+    get:
+      tags: [Fairness]
+      summary: Demographic parity + equalised odds audit (FR-07)
+      responses:
+        "200": { description: Audit by age/gender/IMD }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /api/model-info:
+    get: { tags: [Model], summary: Full training results, responses: { "200": { description: OK }, "404": { description: None } } }
+  /api/model-comparison:
+    get: { tags: [Model], summary: 4-model comparison summary, responses: { "200": { description: OK }, "404": { description: None } } }
+  /api/export-model:
+    get: { tags: [Model], summary: Model export metadata, responses: { "200": { description: OK }, "404": { description: None } } }
+
+  /api/dashboard:
+    get: { tags: [Dashboard & Feedback], summary: Practice dashboard (US-002), responses: { "200": { description: OK } } }
+  /api/feedback:
+    post:
+      tags: [Dashboard & Feedback]
+      summary: Record prediction outcome (Feature 12)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [prediction_id, outcome]
+              properties:
+                prediction_id: { type: string }
+                outcome: { type: string, enum: [correct, incorrect, attended, dna] }
+      responses:
+        "200": { description: Recorded }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "404": { description: Prediction not found }
+  /api/feedback/summary:
+    get: { tags: [Dashboard & Feedback], summary: Feedback accuracy summary, responses: { "200": { description: OK } } }
+
+  /api/ehr/lookup/{nhs_number}:
+    get:
+      tags: [EHR]
+      summary: Mock EHR patient lookup (Feature 10)
+      parameters:
+        - { name: nhs_number, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: Patient }
+        "404": { description: Not found }
+  /api/ehr/patients:
+    get: { tags: [EHR], summary: List mock EHR patients, responses: { "200": { description: OK } } }
+
+  /api/trusts:
+    get: { tags: [Config], summary: List trust configs (Feature 14), responses: { "200": { description: OK } } }
+  /api/trusts/{trust_id}:
+    get:
+      tags: [Config]
+      summary: Get one trust config
+      parameters:
+        - { name: trust_id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: OK }
+        "404": { description: Not found }
+
+  /api/evaluation/cross-validation:
+    post: { tags: [Model], summary: 5-fold CV with CIs + McNemar (Feature 15), responses: { "200": { description: OK }, "404": { description: Data missing } } }
+
+  /api/ethics-framework:
+    get: { tags: [Config], summary: NHSX 6-principle ethics mapping (Feature 19), responses: { "200": { description: OK } } }
+
+  /api/notifications/schedule:
+    post:
+      tags: [Outreach]
+      summary: Schedule high/medium-risk alert
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                patient_id: { type: string }
+                risk_tier: { type: string, enum: [High, Medium] }
+                appointment_date: { type: string }
+                notify_at: { type: string }
+      responses:
+        "201": { description: Scheduled }
+        "400": { $ref: "#/components/responses/BadRequest" }
+  /api/notifications:
+    get: { tags: [Outreach], summary: List scheduled notifications, responses: { "200": { description: OK } } }
+
+  /api/profile:
+    get: { tags: [Account & Security], summary: Get profile, responses: { "200": { description: OK }, "404": { description: Not found } } }
+    put:
+      tags: [Account & Security]
+      summary: Update display name
+      requestBody:
+        content: { application/json: { schema: { type: object, properties: { displayName: { type: string } } } } }
+      responses:
+        "200": { description: Updated }
+  /api/profile/change-password:
+    post:
+      tags: [Account & Security]
+      summary: Change password (NFR-06)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [currentPassword, newPassword]
+              properties:
+                currentPassword: { type: string }
+                newPassword: { type: string, minLength: 8 }
+      responses:
+        "200": { description: Changed }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /api/profile/2fa/setup:
+    post: { tags: [Account & Security], summary: Generate TOTP secret + provisioning URI, responses: { "200": { description: OK }, "400": { $ref: "#/components/responses/BadRequest" } } }
+  /api/profile/2fa/enable:
+    post:
+      tags: [Account & Security]
+      summary: Enable 2FA with a verification code
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, required: [code], properties: { code: { type: string } } } } }
+      responses:
+        "200": { description: Enabled }
+        "400": { $ref: "#/components/responses/BadRequest" }
+  /api/profile/2fa/disable:
+    post:
+      tags: [Account & Security]
+      summary: Disable 2FA (password required)
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, required: [password], properties: { password: { type: string } } } } }
+      responses:
+        "200": { description: Disabled }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /api/carer-proxy:
+    post:
+      tags: [Outreach]
+      summary: Register a carer/family proxy (digital inclusion)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [carerName, relationship, patientIdentifier]
+              properties:
+                carerName: { type: string }
+                relationship: { type: string, enum: [family, carer, social_worker, neighbour, volunteer] }
+                patientIdentifier: { type: string }
+                carerContact: { type: string }
+                reason: { type: string }
+      responses:
+        "201": { description: Registered }
+        "400": { $ref: "#/components/responses/BadRequest" }
+  /api/carer-proxy/list:
+    get: { tags: [Outreach], summary: List proxies for current user, responses: { "200": { description: OK } } }
+
+  /api/slot-optimisation:
+    post:
+      tags: [Outreach]
+      summary: Overbooking recommendations from DNA risk (1–50 appts)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                appointments:
+                  type: array
+                  items: { $ref: "#/components/schemas/Patient" }
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /api/patient-nudge:
+    post:
+      tags: [Outreach]
+      summary: Generate a personalised, multilingual outreach message
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [patient]
+              properties:
+                patient: { $ref: "#/components/schemas/Patient" }
+                language: { type: string, enum: [en, cy, ur, pl], default: en }
+                patientName: { type: string }
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /api/audit-log:
+    get:
+      tags: [Admin]
+      summary: Read audit log (admin only)
+      responses:
+        "200": { description: OK }
+        "403": { description: Admin access required }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Session token from /auth/login
+
+  responses:
+    BadRequest:
+      description: Validation error
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    Unauthorized:
+      description: Missing or invalid session
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+        detail: { type: string }
+
+    Health:
+      type: object
+      properties:
+        status: { type: string, example: ok }
+        model_loaded: { type: boolean }
+        database: { type: string, example: ok }
+        uptime_seconds: { type: number }
+
+    Patient:
+      type: object
+      required: [Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile]
+      properties:
+        Age: { type: integer, minimum: 0, maximum: 120 }
+        Gender: { type: integer, enum: [0, 1], description: "0=female, 1=male" }
+        AppointmentLeadTimeDays: { type: integer, minimum: 0 }
+        SMSReceived: { type: integer, enum: [0, 1] }
+        PriorDNACount: { type: integer, minimum: 0 }
+        IMDDecile: { type: integer, minimum: 1, maximum: 10 }
+        Hypertension: { type: integer, enum: [0, 1], default: 0 }
+        Diabetes: { type: integer, enum: [0, 1], default: 0 }
+        Alcoholism: { type: integer, enum: [0, 1], default: 0 }
+        Disability: { type: integer, enum: [0, 1], default: 0 }
+
+    PredictionResponse:
+      type: object
+      properties:
+        sessionId: { type: string }
+        probability: { type: number }
+        percentage: { type: number }
+        risk_tier: { type: string, enum: [Low, Medium, High] }
+        shap_values:
+          type: array
+          items:
+            type: object
+            properties:
+              feature: { type: string }
+              label: { type: string }
+              direction: { type: string, enum: [risk-increasing, risk-decreasing] }
+        interventions: { type: array, items: { type: object } }
+        age_group: { type: string }
+        nl_summary: { type: string }
