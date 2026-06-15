@@ -21,7 +21,8 @@ from sqlalchemy import text as _sql_text
 from models import db, migrate, User, AuditLog, CarerProxy, PersistentFeedback
 from auth import (register_user, authenticate, logout, token_required,
                   _hash_password, _verify_password,
-                  setup_totp, enable_totp, disable_totp)
+                  setup_totp, enable_totp, disable_totp,
+                  request_password_reset, reset_password)
 from ml.predictor import CareAttendPredictor
 from ml.bias_monitor import BiasMonitor
 from ml.interventions import generate_interventions
@@ -178,6 +179,39 @@ def auth_login():
         httponly=True, samesite="Strict", max_age=1800
     )
     return response
+
+
+@app.route("/auth/forgot-password", methods=["POST"])
+def auth_forgot_password():
+    data = request.get_json() or {}
+    email = data.get("email", "").strip()
+    if not email:
+        return jsonify({"error": "Email is required"}), 400
+
+    code, emailed = request_password_reset(email)
+    # Never reveal whether the account exists.
+    resp = {"message": "If that email is registered, a reset code has been sent."}
+    # Dev convenience: when SMTP is not configured, return the code so the
+    # reset flow is testable without an email server.
+    if code and not emailed:
+        resp["dev_code"] = code
+        resp["note"] = "Email is not configured (SMTP_HOST unset); code returned for testing only."
+    return jsonify(resp)
+
+
+@app.route("/auth/reset-password", methods=["POST"])
+def auth_reset_password():
+    data = request.get_json() or {}
+    email = data.get("email", "").strip()
+    code = data.get("code", "").strip()
+    new_password = data.get("newPassword", "")
+    if not email or not code or not new_password:
+        return jsonify({"error": "email, code and newPassword are required"}), 400
+
+    error = reset_password(email, code, new_password)
+    if error:
+        return jsonify({"error": error}), 400
+    return jsonify({"message": "Password reset successful. You can now log in."})
 
 
 @app.route("/auth/logout", methods=["POST"])

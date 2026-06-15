@@ -10,16 +10,25 @@ const SESSION_TIMEOUT_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 // ── Auth Functions ──
 
-function showLogin() {
-    document.getElementById('login-form-wrapper').style.display = 'block';
-    document.getElementById('register-form-wrapper').style.display = 'none';
+function _authWrapper(show) {
+    ['login-form-wrapper', 'register-form-wrapper', 'reset-form-wrapper'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = (id === show) ? 'block' : 'none';
+    });
     clearAuthErrors();
 }
 
-function showRegister() {
-    document.getElementById('login-form-wrapper').style.display = 'none';
-    document.getElementById('register-form-wrapper').style.display = 'block';
-    clearAuthErrors();
+function showLogin() { _authWrapper('login-form-wrapper'); }
+
+function showRegister() { _authWrapper('register-form-wrapper'); }
+
+function showReset() {
+    _authWrapper('reset-form-wrapper');
+    const cs = document.getElementById('reset-code-section');
+    if (cs) cs.style.display = 'none';
+    ['reset-error', 'reset-success'].forEach(id => {
+        const e = document.getElementById(id); if (e) e.style.display = 'none';
+    });
 }
 
 function clearAuthErrors() {
@@ -37,6 +46,83 @@ function togglePassword(inputId, btn) {
         input.type = 'password';
         btn.textContent = 'Show';
     }
+}
+
+// ── Forgot / Reset Password ──
+
+async function requestReset() {
+    const email = (document.getElementById('reset-email').value || '').trim();
+    const err = document.getElementById('reset-error');
+    const ok = document.getElementById('reset-success');
+    err.style.display = ok.style.display = 'none';
+    if (!email) { err.textContent = 'Enter your email address.'; err.style.display = 'block'; return; }
+    try {
+        const res = await fetch('/auth/forgot-password', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+        });
+        const data = await res.json();
+        document.getElementById('reset-code-section').style.display = 'block';
+        ok.textContent = data.dev_code
+            ? `Email not configured — your test code is ${data.dev_code}`
+            : 'If that email is registered, a 6-digit code has been sent.';
+        ok.style.display = 'block';
+        if (data.dev_code) document.getElementById('reset-code').value = data.dev_code;
+    } catch (e) {
+        err.textContent = 'Could not reach the server.'; err.style.display = 'block';
+    }
+}
+
+async function submitReset() {
+    const email = (document.getElementById('reset-email').value || '').trim();
+    const code = (document.getElementById('reset-code').value || '').trim();
+    const newPassword = document.getElementById('reset-newpw').value || '';
+    const err = document.getElementById('reset-error');
+    const ok = document.getElementById('reset-success');
+    err.style.display = ok.style.display = 'none';
+    if (!code || newPassword.length < 8) {
+        err.textContent = 'Enter the code and a new password (min 8 chars).';
+        err.style.display = 'block'; return;
+    }
+    try {
+        const res = await fetch('/auth/reset-password', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, code, newPassword }),
+        });
+        const data = await res.json();
+        if (!res.ok) { err.textContent = data.error || 'Reset failed.'; err.style.display = 'block'; return; }
+        ok.textContent = 'Password reset! You can now log in.'; ok.style.display = 'block';
+        setTimeout(showLogin, 1800);
+    } catch (e) {
+        err.textContent = 'Could not reach the server.'; err.style.display = 'block';
+    }
+}
+
+// ── Auto show/hide eye on every password field ──
+
+function enhancePasswordFields() {
+    document.querySelectorAll('input[type="password"]').forEach(function (inp) {
+        if (inp.dataset.eye) return;
+        inp.dataset.eye = '1';
+        const host = document.createElement('span');
+        host.className = 'pw-eye-host';
+        inp.parentNode.insertBefore(host, inp);
+        host.appendChild(inp);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'pw-eye-btn';
+        btn.setAttribute('aria-label', 'Show password');
+        btn.innerHTML = '<i data-lucide="eye"></i>';
+        btn.addEventListener('click', function () {
+            const showing = inp.type === 'password';
+            inp.type = showing ? 'text' : 'password';
+            btn.innerHTML = '<i data-lucide="' + (showing ? 'eye-off' : 'eye') + '"></i>';
+            btn.setAttribute('aria-label', showing ? 'Hide password' : 'Show password');
+            if (window.lucide) lucide.createIcons();
+        });
+        host.appendChild(btn);
+    });
+    if (window.lucide) lucide.createIcons();
 }
 
 document.getElementById('login-form').addEventListener('submit', async (e) => {
@@ -1869,6 +1955,7 @@ toggleDarkMode = function() {
 
 document.addEventListener('DOMContentLoaded', async function() {
     if (typeof lucide !== 'undefined') lucide.createIcons();
+    enhancePasswordFields();
     updateDarkModeIcon();
 
     var savedToken = localStorage.getItem('careattend_token');

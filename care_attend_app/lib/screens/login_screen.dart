@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../nhs_theme.dart';
 import '../services/api_service.dart';
+import '../widgets/password_field.dart';
 import 'home_screen.dart';
+import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,7 +15,6 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   bool _showRegister = false;
   bool _loading = false;
-  bool _obscurePassword = true;
   String? _error;
   String? _success;
 
@@ -209,22 +210,18 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        TextField(
-          controller: _loginPassword,
-          obscureText: _obscurePassword,
-          decoration: InputDecoration(
-            labelText: 'Password',
-            hintText: '••••••••',
-            suffixIcon: TextButton(
-              onPressed: () =>
-                  setState(() => _obscurePassword = !_obscurePassword),
-              child: Text(_obscurePassword ? 'Show' : 'Hide',
-                  style: const TextStyle(
-                      color: NHSTheme.blue, fontWeight: FontWeight.w600)),
+        PasswordField(controller: _loginPassword, label: 'Password'),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
             ),
+            child: const Text('Forgot password?'),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 8),
         if (_error != null) _buildError(_error!),
         const SizedBox(height: 8),
         ElevatedButton(
@@ -285,14 +282,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        TextField(
-          controller: _regPassword,
-          obscureText: true,
-          decoration: const InputDecoration(
-            labelText: 'Password',
-            hintText: 'Minimum 8 characters',
-          ),
-        ),
+        PasswordField(controller: _regPassword, label: 'Password (min 8)'),
         const SizedBox(height: 16),
         DropdownButtonFormField<String>(
           value: _regRole,
