@@ -11,6 +11,7 @@ import 'dashboard_screen.dart';
 import 'slots_screen.dart';
 import 'nudge_screen.dart';
 import 'ethics_screen.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String username;
@@ -43,6 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _NavItem('Slot Optimisation', Icons.event_available, 4),
     _NavItem('Patient Nudge', Icons.message, 5),
     _NavItem('Ethics', Icons.verified_user, 6),
+    _NavItem('Personal Account', Icons.account_circle, 7),
   ];
 
   // The four core destinations shown in the bottom bar (index 4 = More).
@@ -150,6 +152,8 @@ class _HomeScreenState extends State<HomeScreen> {
         return const NudgeScreen();
       case 6:
         return const EthicsScreen();
+      case 7:
+        return const ProfileScreen();
       default:
         return const SizedBox.shrink();
     }

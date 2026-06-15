@@ -5,14 +5,23 @@ backed by PostgreSQL via SQLAlchemy.
 Maps to: FR-04, NFR-01, NFR-06 in Requirements Traceability Matrix.
 """
 
+import os
 import time
 import secrets
 import hashlib
+import random
+import smtplib
+from email.message import EmailMessage
 from functools import wraps
 
 from flask import request, jsonify
 
 from models import db, User, Session
+
+# Password-reset OTP store: email -> {"code": str, "expires": float, "tries": int}
+_reset_codes = {}
+RESET_TTL = 600  # 10 minutes
+RESET_MAX_TRIES = 5
 
 try:
     import bcrypt
@@ -138,6 +147,78 @@ def get_role(token):
     session = validate_token(token)
     if session:
         return session.get("role")
+    return None
+
+
+def _send_email(to_addr, subject, body):
+    """Send an email via SMTP if configured (env SMTP_HOST/PORT/USER/PASS/FROM).
+    Returns True if sent, False if SMTP is not configured / failed."""
+    host = os.environ.get("SMTP_HOST")
+    if not host:
+        return False
+    try:
+        msg = EmailMessage()
+        msg["Subject"] = subject
+        msg["From"] = os.environ.get("SMTP_FROM", os.environ.get("SMTP_USER", "noreply@careattend.local"))
+        msg["To"] = to_addr
+        msg.set_content(body)
+        port = int(os.environ.get("SMTP_PORT", "587"))
+        with smtplib.SMTP(host, port, timeout=10) as server:
+            server.starttls()
+            user = os.environ.get("SMTP_USER")
+            pw = os.environ.get("SMTP_PASS")
+            if user and pw:
+                server.login(user, pw)
+            server.send_message(msg)
+        return True
+    except Exception as exc:  # pragma: no cover
+        print(f"WARNING: reset email failed: {exc}")
+        return False
+
+
+def request_password_reset(email):
+    """Generate a 6-digit reset code for the email and try to send it.
+    Returns (code_or_None, emailed_bool). code is returned only so the API can
+    expose it in dev mode when SMTP is not configured. Does not reveal whether
+    the account exists."""
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return None, False
+    code = f"{random.randint(0, 999999):06d}"
+    _reset_codes[email] = {"code": code, "expires": time.time() + RESET_TTL, "tries": 0}
+    emailed = _send_email(
+        email,
+        "CareAttend password reset code",
+        f"Your CareAttend password reset code is {code}. It expires in 10 minutes.\n"
+        "If you did not request this, ignore this email.",
+    )
+    return code, emailed
+
+
+def reset_password(email, code, new_password):
+    """Verify the reset code and set a new password. Returns an error string or
+    None on success."""
+    entry = _reset_codes.get(email)
+    if not entry:
+        return "No reset request found. Request a new code."
+    if time.time() > entry["expires"]:
+        _reset_codes.pop(email, None)
+        return "Code expired. Request a new one."
+    if entry["tries"] >= RESET_MAX_TRIES:
+        _reset_codes.pop(email, None)
+        return "Too many attempts. Request a new code."
+    if code != entry["code"]:
+        entry["tries"] += 1
+        return "Invalid code."
+    if len(new_password) < 8:
+        return "Password must be at least 8 characters"
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return "User not found"
+    user.password_hash = _hash_password(new_password)
+    user.last_password_change = time.time()
+    db.session.commit()
+    _reset_codes.pop(email, None)
     return None
 
 

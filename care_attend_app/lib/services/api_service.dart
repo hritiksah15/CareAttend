@@ -62,6 +62,51 @@ class ApiService {
     return data;
   }
 
+  static Future<Map<String, dynamic>> forgotPassword(String email) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/auth/forgot-password'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email}),
+    );
+    return _handleResponse(res);
+  }
+
+  static Future<Map<String, dynamic>> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/auth/reset-password'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email, 'code': code, 'newPassword': newPassword}),
+    );
+    return _handleResponse(res);
+  }
+
+  static Future<Map<String, dynamic>> getProfile() async {
+    final res = await http.get(
+      Uri.parse('$baseUrl/api/profile'),
+      headers: _headers,
+    );
+    return _handleResponse(res);
+  }
+
+  static Future<Map<String, dynamic>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/api/profile/change-password'),
+      headers: _headers,
+      body: jsonEncode({
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+      }),
+    );
+    return _handleResponse(res);
+  }
+
   static Future<void> logout() async {
     try {
       await http.post(

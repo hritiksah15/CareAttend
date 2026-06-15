@@ -39,16 +39,14 @@
                     </div>
                     <div class="form-group">
                         <label for="login-password">Password</label>
-                        <div class="password-wrapper">
-                            <input type="password" id="login-password" placeholder="••••••••" required>
-                            <button type="button" class="password-toggle" onclick="togglePassword('login-password', this)">Show</button>
-                        </div>
+                        <input type="password" id="login-password" placeholder="••••••••" required>
                     </div>
-                    <div class="form-row-inline">
+                    <div class="form-row-inline" style="justify-content:space-between;">
                         <label class="checkbox-label compact">
                             <input type="checkbox" id="remember-me">
                             <span>Remember me</span>
                         </label>
+                        <a href="#" class="forgot-link" onclick="showReset();return false;">Forgot password?</a>
                     </div>
                     <!-- 2FA Code Field (shown when needed) -->
                     <div class="form-group" id="login-2fa-group" style="display:none;">
@@ -91,6 +89,38 @@
                     <div id="register-error" class="auth-error" style="display:none;"></div>
                     <div id="register-success" class="auth-success" style="display:none;"></div>
                     <button type="submit" class="btn-primary btn-login">CREATE ACCOUNT</button>
+                </form>
+
+                <div class="auth-divider"><span>OR</span></div>
+                <button class="btn-outline" onclick="showLogin()">BACK TO LOGIN</button>
+            </div>
+
+            <!-- Reset Password Form -->
+            <div id="reset-form-wrapper" style="display:none;">
+                <h2 class="login-heading">Reset Password</h2>
+                <p class="login-desc">We'll email you a 6-digit code to reset your password.</p>
+
+                <form id="reset-form" class="auth-form" onsubmit="return false;">
+                    <div class="form-group">
+                        <label for="reset-email">Email Address</label>
+                        <input type="email" id="reset-email" placeholder="you@nhspractice.nhs.uk" required>
+                    </div>
+                    <button type="button" class="btn-outline" onclick="requestReset()">SEND RESET CODE</button>
+
+                    <div id="reset-code-section" style="display:none; margin-top:16px;">
+                        <div class="form-group">
+                            <label for="reset-code">6-digit Code</label>
+                            <input type="text" id="reset-code" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" placeholder="123456">
+                        </div>
+                        <div class="form-group">
+                            <label for="reset-newpw">New Password</label>
+                            <input type="password" id="reset-newpw" minlength="8" placeholder="Minimum 8 characters">
+                        </div>
+                        <button type="button" class="btn-primary btn-login" onclick="submitReset()">RESET PASSWORD</button>
+                    </div>
+
+                    <div id="reset-error" class="auth-error" style="display:none;"></div>
+                    <div id="reset-success" class="auth-success" style="display:none;"></div>
                 </form>
 
                 <div class="auth-divider"><span>OR</span></div>

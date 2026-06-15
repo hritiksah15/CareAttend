@@ -336,6 +336,54 @@ class TestAuditLog:
         assert any(log["action"] == "carer_proxy_created" for log in logs)
 
 
+# ── Forgot / Reset Password ──
+
+class TestPasswordReset:
+    def test_forgot_unknown_email_no_leak(self, client):
+        # Should not reveal that the account does not exist, and no dev_code.
+        res = client.post("/auth/forgot-password", json={"email": "nobody@nhs.uk"})
+        assert res.status_code == 200
+        assert "dev_code" not in json.loads(res.data)
+
+    def test_forgot_missing_email(self, client):
+        res = client.post("/auth/forgot-password", json={})
+        assert res.status_code == 400
+
+    def test_full_reset_flow(self, client):
+        login(client, username="resetme")  # registers resetme@nhs.uk
+        forgot = client.post("/auth/forgot-password",
+                             json={"email": "resetme@nhs.uk"})
+        code = json.loads(forgot.data)["dev_code"]  # SMTP unset in tests
+        reset = client.post("/auth/reset-password", json={
+            "email": "resetme@nhs.uk", "code": code, "newPassword": "brandnew123",
+        })
+        assert reset.status_code == 200
+        # Old password rejected, new password works.
+        old = client.post("/auth/login",
+                          json={"username": "resetme", "password": "password123"})
+        assert old.status_code == 401
+        new = client.post("/auth/login",
+                          json={"username": "resetme", "password": "brandnew123"})
+        assert "token" in json.loads(new.data)
+
+    def test_reset_wrong_code(self, client):
+        login(client, username="resetme2")
+        client.post("/auth/forgot-password", json={"email": "resetme2@nhs.uk"})
+        res = client.post("/auth/reset-password", json={
+            "email": "resetme2@nhs.uk", "code": "000000", "newPassword": "brandnew123",
+        })
+        assert res.status_code == 400
+
+    def test_reset_short_password(self, client):
+        login(client, username="resetme3")
+        code = json.loads(client.post("/auth/forgot-password",
+                          json={"email": "resetme3@nhs.uk"}).data)["dev_code"]
+        res = client.post("/auth/reset-password", json={
+            "email": "resetme3@nhs.uk", "code": code, "newPassword": "short",
+        })
+        assert res.status_code == 400
+
+
 # ── Push Notification Scheduling ──
 
 class TestNotifications:
