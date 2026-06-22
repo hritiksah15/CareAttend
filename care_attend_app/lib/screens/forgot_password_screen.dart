@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../nhs_theme.dart';
 import '../services/api_service.dart';
+import '../utils/validators.dart';
 import '../widgets/password_field.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -48,8 +49,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   Future<void> _reset() async {
-    if (_code.text.trim().isEmpty || _newPw.text.length < 8) {
-      setState(() => _error = 'Enter the code and a new password (min 8).');
+    if (_code.text.trim().isEmpty) {
+      setState(() => _error = 'Enter the reset code.');
+      return;
+    }
+    final pwErr = passwordError(_newPw.text);
+    if (pwErr != null) {
+      setState(() => _error = pwErr);
       return;
     }
     setState(() {
@@ -112,7 +118,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               decoration: const InputDecoration(labelText: '6-digit code'),
             ),
             const SizedBox(height: 8),
-            PasswordField(controller: _newPw, label: 'New password (min 8)'),
+            PasswordField(controller: _newPw, label: 'New password'),
+            const Padding(
+              padding: EdgeInsets.only(top: 4),
+              child: Text(passwordHint,
+                  style: TextStyle(fontSize: 11, color: NHSTheme.darkGrey)),
+            ),
             const SizedBox(height: 14),
             ElevatedButton(
               onPressed: _busy ? null : _reset,

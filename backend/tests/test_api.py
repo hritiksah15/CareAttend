@@ -13,7 +13,7 @@ pytestmark = pytest.mark.skipif(
 )
 
 from app import app as flask_app, load_models
-from models import db
+from models import db, User
 
 
 @pytest.fixture(scope="module")
@@ -43,13 +43,19 @@ def clean_auth(app):
         db.session.commit()
 
 
-def register_and_login(client):
+def register_and_login(client, role="staff"):
     client.post("/auth/register", json={
         "username": "test", "email": "test@nhs.uk",
-        "password": "password123", "role": "staff"
+        "password": "Password123!"
     })
+    # Public register always creates a 'user'; promote in the DB so role-gated
+    # endpoint tests get the privilege they need (admins do this via the Admin tab).
+    if role != "user":
+        u = User.query.filter_by(username="test").first()
+        u.role = role
+        db.session.commit()
     res = client.post("/auth/login", json={
-        "username": "test", "password": "password123"
+        "username": "test", "password": "Password123!"
     })
     return json.loads(res.data)["token"]
 
@@ -58,9 +64,19 @@ class TestAuthEndpoints:
     def test_register(self, client):
         res = client.post("/auth/register", json={
             "username": "asha", "email": "asha@nhs.uk",
-            "password": "password123", "role": "staff"
+            "password": "Password123!"
         })
         assert res.status_code == 201
+
+    def test_register_forces_user_role(self, client):
+        # Privilege-escalation guard: a 'role' in the body must be ignored.
+        res = client.post("/auth/register", json={
+            "username": "sneaky", "email": "sneaky@nhs.uk",
+            "password": "Password123!", "role": "admin"
+        })
+        assert res.status_code == 201
+        with client.application.app_context():
+            assert User.query.filter_by(username="sneaky").first().role == "user"
 
     def test_register_missing_fields(self, client):
         res = client.post("/auth/register", json={
@@ -71,19 +87,50 @@ class TestAuthEndpoints:
     def test_login(self, client):
         client.post("/auth/register", json={
             "username": "asha", "email": "asha@nhs.uk",
-            "password": "password123"
+            "password": "Password123!"
         })
         res = client.post("/auth/login", json={
-            "username": "asha", "password": "password123"
+            "username": "asha", "password": "Password123!"
         })
         assert res.status_code == 200
         data = json.loads(res.data)
         assert "token" in data
 
+    def test_login_by_email(self, client):
+        client.post("/auth/register", json={
+            "username": "asha", "email": "asha@nhs.uk",
+            "password": "Password123!"
+        })
+        res = client.post("/auth/login", json={
+            "username": "asha@nhs.uk", "password": "Password123!"
+        })
+        assert res.status_code == 200
+        assert "token" in json.loads(res.data)
+
+    def test_update_profile_fields(self, client):
+        token = register_and_login(client, role="user")
+        res = client.put("/api/profile",
+                         headers={"Authorization": f"Bearer {token}"},
+                         json={"jobTitle": "Practice Nurse",
+                               "department": "Cardiology",
+                               "pronouns": "she/her", "bio": "Hi"})
+        assert res.status_code == 200
+        data = json.loads(res.data)
+        assert data["jobTitle"] == "Practice Nurse"
+        assert data["department"] == "Cardiology"
+        assert data["pronouns"] == "she/her"
+
+    def test_update_profile_rejects_bad_avatar(self, client):
+        token = register_and_login(client, role="user")
+        res = client.put("/api/profile",
+                         headers={"Authorization": f"Bearer {token}"},
+                         json={"avatar": "not-an-image"})
+        assert res.status_code == 400
+
     def test_login_wrong_password(self, client):
         client.post("/auth/register", json={
             "username": "asha", "email": "asha@nhs.uk",
-            "password": "password123"
+            "password": "Password123!"
         })
         res = client.post("/auth/login", json={
             "username": "asha", "password": "wrong"
@@ -159,7 +206,7 @@ class TestBiasEndpoint:
         assert res.status_code == 401
 
     def test_bias_audit_success(self, client):
-        token = register_and_login(client)
+        token = register_and_login(client, role="admin")
         res = client.get("/api/bias-audit",
                          headers={"Authorization": f"Bearer {token}"})
         assert res.status_code == 200

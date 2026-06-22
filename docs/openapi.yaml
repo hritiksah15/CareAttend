@@ -45,6 +45,7 @@ paths:
     post:
       tags: [Auth]
       summary: Register a user
+      description: "Public self-registration. New accounts are always created with role 'user'; any role in the body is ignored. Admins elevate roles via /api/admin/users/{id}/role."
       security: []
       requestBody:
         required: true
@@ -57,7 +58,6 @@ paths:
                 username: { type: string }
                 email: { type: string, format: email }
                 password: { type: string, minLength: 8 }
-                role: { type: string, enum: [staff, admin], default: staff }
       responses:
         "201": { description: Created }
         "400": { $ref: "#/components/responses/BadRequest" }
@@ -78,6 +78,7 @@ paths:
                 username: { type: string }
                 password: { type: string }
                 totp_code: { type: string, description: Required if 2FA enabled }
+                remember: { type: boolean, description: "Keep session for 30 days instead of 30 min idle expiry" }
       responses:
         "200":
           description: Token issued, or 2FA challenge
