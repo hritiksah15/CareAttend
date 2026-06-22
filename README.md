@@ -179,4 +179,4 @@ clients — with production hardening and automated CI/CD.
 
 Released under the [MIT License](LICENSE). Note: CareAttend is an academic COM668
 demonstrator — **not certified or licensed for clinical, diagnostic, or commercial use**.
-Its predictions must not drive real patient-care decisions.
+Its predictions must not drive real patient-care decisions. See [NOTICE](NOTICE).
