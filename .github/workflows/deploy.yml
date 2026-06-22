@@ -1,0 +1,123 @@
+name: Publish Backend Image (GHCR)
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:   # allow manual trigger from the GitHub UI
+
+# Need package write to push to GHCR; everything else read-only.
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/${{ github.repository_owner }}/careattend-backend
+
+jobs:
+  publish:
+    name: Build, verify & publish image
+    runs-on: ubuntu-latest
+    steps:
+      # ── 1. Checkout ───────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Normalise the image name to lowercase (GHCR requires it) ───
+      - name: Compute image tags
+        id: tags
+        run: |
+          IMAGE_LC=$(echo "${IMAGE}" | tr '[:upper:]' '[:lower:]')
+          SHA_SHORT=$(echo "${GITHUB_SHA}" | cut -c1-12)
+          echo "image=${IMAGE_LC}"            >> "$GITHUB_OUTPUT"
+          echo "sha_tag=${IMAGE_LC}:sha-${SHA_SHORT}" >> "$GITHUB_OUTPUT"
+          echo "latest_tag=${IMAGE_LC}:latest"        >> "$GITHUB_OUTPUT"
+
+      # ── 3. Authenticate to GHCR with the built-in token ──────────────
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── 4. Build the image (tagged but not yet pushed) ───────────────
+      - name: Build image
+        run: |
+          docker build \
+            -t "${{ steps.tags.outputs.sha_tag }}" \
+            -t "${{ steps.tags.outputs.latest_tag }}" \
+            ./backend
+
+      # ── 5. Health gate — boot the container, retry /health, smoke test ─
+      #     Only a container that comes up healthy gets published, so a
+      #     broken build can never become :latest in the registry.
+      - name: Health gate & smoke test
+        id: health_gate
+        run: |
+          docker run -d --name ca_verify -p 5000:5000 \
+            -e SECRET_KEY=ci-verify \
+            -e FLASK_DEBUG=0 \
+            "${{ steps.tags.outputs.sha_tag }}"
+
+          MAX_RETRIES=8
+          RETRY_DELAY=10
+          PASS=0
+          for i in $(seq 1 $MAX_RETRIES); do
+            echo "Health check attempt $i/$MAX_RETRIES..."
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 http://127.0.0.1:5000/health || true)
+            if [ "$STATUS" = "200" ]; then
+              echo "Health check passed (HTTP 200)."
+              PASS=1
+              break
+            fi
+            echo "Got HTTP ${STATUS:-none} — retrying in ${RETRY_DELAY}s..."
+            sleep $RETRY_DELAY
+          done
+
+          if [ "$PASS" -ne 1 ]; then
+            echo "HEALTH GATE FAILED — container never became healthy."
+            docker logs ca_verify || true
+            docker rm -f ca_verify || true
+            exit 1
+          fi
+
+          # Smoke test: /api/predict must require auth (401). A 500 here would
+          # mean the model never loaded (the WSGI bug) — fail the gate.
+          PREDICT=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 \
+            -X POST http://127.0.0.1:5000/api/predict \
+            -H "Content-Type: application/json" -d '{}' || true)
+          echo "POST /api/predict -> HTTP $PREDICT"
+          docker rm -f ca_verify || true
+
+          if [ "$PREDICT" != "401" ]; then
+            echo "SMOKE TEST FAILED — expected 401 (auth gate), got $PREDICT."
+            exit 1
+          fi
+          echo "Smoke test passed — predictor live, auth enforced."
+
+      # ── 6. Publish verified tags to GHCR ─────────────────────────────
+      - name: Push image
+        run: |
+          docker push "${{ steps.tags.outputs.sha_tag }}"
+          docker push "${{ steps.tags.outputs.latest_tag }}"
+
+      # ── 7. Summary ────────────────────────────────────────────────────
+      - name: Deploy summary
+        if: always()
+        run: |
+          {
+            echo "## CareAttend — Backend Image Publish"
+            echo ""
+            if [ "${{ steps.health_gate.outcome }}" = "success" ]; then
+              echo "**Published (verified healthy):**"
+              echo ""
+              echo "- \`${{ steps.tags.outputs.sha_tag }}\`"
+              echo "- \`${{ steps.tags.outputs.latest_tag }}\`"
+            else
+              echo "**Not published — health gate failed.**"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
