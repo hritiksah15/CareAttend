@@ -1,9 +1,10 @@
 # CareAttend — NHS Predictive Risk Assessment for Missed Appointments
 
 [![CI](https://github.com/hritiksah15/CareAttend/actions/workflows/ci.yml/badge.svg)](https://github.com/hritiksah15/CareAttend/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/hritiksah15/CareAttend/actions/workflows/codeql.yml/badge.svg)](https://github.com/hritiksah15/CareAttend/actions/workflows/codeql.yml)
 [![Python](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/)
 [![Flutter](https://img.shields.io/badge/flutter-stable-blue.svg)](https://flutter.dev/)
-[![License](https://img.shields.io/badge/license-Academic-lightgrey.svg)](#license)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 CareAttend predicts the likelihood that a patient will miss (**DNA — "Did Not Attend"**) an
 NHS outpatient appointment, explains *why*, audits the model for demographic bias, and
@@ -149,6 +150,20 @@ GitHub Actions ([.github/workflows/](.github/workflows/)):
 - **`deploy.yml`** — builds the backend image, gates it behind a live health + smoke test,
   then publishes to **GHCR** (`ghcr.io/hritiksah15/careattend-backend`) on push to `master`.
 
+## Documentation
+
+In-depth project docs live in [`docs/`](docs/):
+
+- [Architecture](docs/architecture.md) · [Model card](docs/model_card.md) ·
+  [OpenAPI spec](docs/openapi.yaml)
+- [Traceability matrix](docs/traceability_matrix.md) ·
+  [Literature review sources](docs/literature_review_sources.md) ·
+  [SUS testing template](docs/sus_testing_template.md)
+
+Contributing guidelines: [CONTRIBUTING.md](CONTRIBUTING.md) ·
+Security policy: [.github/SECURITY.md](.github/SECURITY.md) ·
+Changelog: [CHANGELOG.md](CHANGELOG.md)
+
 ## Project context
 
 Built for **COM668 Computing Project**, BSc (Hons) Computing, Ulster University.
@@ -162,4 +177,6 @@ clients — with production hardening and automated CI/CD.
 
 ## License
 
-Academic project for COM668. Not licensed for clinical or commercial use.
+Released under the [MIT License](LICENSE). Note: CareAttend is an academic COM668
+demonstrator — **not certified or licensed for clinical, diagnostic, or commercial use**.
+Its predictions must not drive real patient-care decisions.
