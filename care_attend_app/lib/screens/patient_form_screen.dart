@@ -104,6 +104,11 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
         disability: _disability ? 1 : 0,
         imdDecile: int.parse(_imdCtrl.text),
       );
+      // Append to the session risk trajectory (FR-09).
+      ApiService.riskHistory.add({
+        'percentage': result['percentage'],
+        'risk_tier': result['risk_tier'],
+      });
       widget.onResult(result);
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -117,6 +122,89 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  Future<void> _carerProxyDialog() async {
+    final name = TextEditingController();
+    final contact = TextEditingController();
+    final patientId = TextEditingController();
+    final reason = TextEditingController();
+    String relationship = 'family';
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) => AlertDialog(
+          title: const Text('Carer / Family Proxy'),
+          content: SingleChildScrollView(
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              TextField(
+                  controller: name,
+                  decoration: const InputDecoration(labelText: 'Carer name')),
+              DropdownButtonFormField<String>(
+                initialValue: relationship,
+                decoration: const InputDecoration(labelText: 'Relationship'),
+                items: const [
+                  DropdownMenuItem(value: 'family', child: Text('Family')),
+                  DropdownMenuItem(value: 'carer', child: Text('Registered carer')),
+                  DropdownMenuItem(
+                      value: 'social_worker', child: Text('Social worker')),
+                  DropdownMenuItem(value: 'neighbour', child: Text('Neighbour')),
+                  DropdownMenuItem(value: 'volunteer', child: Text('Volunteer')),
+                ],
+                onChanged: (v) => setLocal(() => relationship = v ?? 'family'),
+              ),
+              TextField(
+                  controller: patientId,
+                  decoration:
+                      const InputDecoration(labelText: 'Patient identifier')),
+              TextField(
+                  controller: contact,
+                  decoration:
+                      const InputDecoration(labelText: 'Carer contact (optional)')),
+              TextField(
+                  controller: reason,
+                  decoration:
+                      const InputDecoration(labelText: 'Reason (optional)')),
+            ]),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel')),
+            ElevatedButton(
+              onPressed: () async {
+                if (name.text.trim().isEmpty ||
+                    patientId.text.trim().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content: Text('Carer name and patient identifier required')));
+                  return;
+                }
+                try {
+                  await ApiService.createCarerProxy({
+                    'carerName': name.text.trim(),
+                    'relationship': relationship,
+                    'patientIdentifier': patientId.text.trim(),
+                    'carerContact': contact.text.trim(),
+                    'reason': reason.text.trim(),
+                  });
+                  if (ctx.mounted) Navigator.pop(ctx);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text('Carer proxy registered')));
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text(e.toString())));
+                  }
+                }
+              },
+              child: const Text('Register'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -176,6 +264,15 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                             : const Text('Auto-fill'),
                       ),
                     ]),
+                  ),
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: _carerProxyDialog,
+                      icon: const Icon(Icons.people_outline, size: 18),
+                      label: const Text('Carer / Family Proxy'),
+                    ),
                   ),
                   const SizedBox(height: 20),
 

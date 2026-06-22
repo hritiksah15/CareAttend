@@ -11,6 +11,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   Map<String, dynamic>? _data;
+  Map<String, dynamic>? _fb;
   String? _error;
   bool _loading = false;
 
@@ -21,7 +22,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
     try {
       final data = await ApiService.dashboard();
-      setState(() => _data = data);
+      Map<String, dynamic>? fb;
+      try {
+        fb = await ApiService.feedbackSummary();
+      } catch (_) {/* feedback optional */}
+      setState(() {
+        _data = data;
+        _fb = fb;
+      });
     } catch (e) {
       setState(() => _error = e.toString());
     } finally {
@@ -90,6 +98,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
             '${(((d['average_risk'] ?? 0) as num) * 100).toStringAsFixed(1)}%',
             style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
       )),
+      if (_fb != null && (_fb!['feedback_received'] ?? 0) > 0)
+        Card(child: ListTile(
+          leading: const Icon(Icons.fact_check_outlined, color: NHSTheme.blue),
+          title: Text('Feedback: ${_fb!['feedback_received']} of '
+              '${_fb!['total_predictions']}'),
+          trailing: Text(
+              _fb!['accuracy'] == null
+                  ? '—'
+                  : '${((_fb!['accuracy'] as num) * 100).toStringAsFixed(0)}% acc',
+              style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                  color: NHSTheme.riskLow)),
+        )),
       const SizedBox(height: 8),
       const Padding(
         padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),

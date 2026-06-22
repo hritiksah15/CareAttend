@@ -268,6 +268,8 @@ def reset_password(email, code, new_password):
     user = User.query.filter_by(email=email).first()
     if not user:
         return "User not found"
+    if _verify_password(new_password, user.password_hash):
+        return "New password must be different from your current password"
     user.password_hash = _hash_password(new_password)
     user.last_password_change = time.time()
     db.session.commit()

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../nhs_theme.dart';
 import '../services/api_service.dart';
+import '../utils/export.dart';
 
 class BiasScreen extends StatefulWidget {
   const BiasScreen({super.key});
@@ -105,6 +106,32 @@ class _BiasScreenState extends State<BiasScreen>
           const SizedBox(height: 16),
 
           if (_auditData != null) ...[
+            _card(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Export audit',
+                      style: TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 8),
+                  Wrap(spacing: 8, children: [
+                    OutlinedButton.icon(
+                      onPressed: () =>
+                          Exporter.biasPdf(_auditData!, _generateSummary()),
+                      icon: const Icon(Icons.picture_as_pdf, size: 18),
+                      label: const Text('PDF'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: () => Exporter.json(
+                          _auditData!, 'CareAttend_Bias_Audit.json'),
+                      icon: const Icon(Icons.data_object, size: 18),
+                      label: const Text('JSON'),
+                    ),
+                  ]),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
             // Overall metrics
             _card(
               child: Column(

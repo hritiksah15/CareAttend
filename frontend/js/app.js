@@ -193,6 +193,21 @@ function enhancePasswordFields() {
     });
 }
 
+// Persist interface-language preference (full i18n is applied where data-i18n exists).
+function setLanguage(lang) {
+    localStorage.setItem('careattend_lang', lang);
+    document.documentElement.lang = lang;
+    const names = { en: 'English', cy: 'Cymraeg', ur: 'اردو', pl: 'Polski' };
+    if (typeof showToast === 'function') showToast('Language: ' + (names[lang] || lang), 'success');
+}
+
+function initLanguage() {
+    const lang = localStorage.getItem('careattend_lang') || 'en';
+    document.documentElement.lang = lang;
+    const sel = document.getElementById('ac-lang');
+    if (sel) sel.value = lang;
+}
+
 // ── Password strength (mirrors backend validate_password) ──
 
 const PW_RULES = [
@@ -583,6 +598,7 @@ async function handleChangePassword(e) {
     }
     const pwErr = passwordError(newPw);
     if (pwErr) { alert(pwErr); return; }
+    if (newPw === currentPw) { alert('New password must be different from the current password.'); return; }
 
     try {
         const res = await fetch('/api/profile/change-password', {
@@ -2415,6 +2431,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     attachPwMeter('reg-password', 'reg-pw-meter');
     attachPwMeter('reset-newpw', 'reset-pw-meter');
     attachPwMeter('ac-new-pw', 'ac-pw-meter');
+    initLanguage();
     updateDarkModeIcon();
 
     var savedToken = localStorage.getItem('careattend_token');

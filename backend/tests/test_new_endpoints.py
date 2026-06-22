@@ -463,3 +463,11 @@ class TestProfile:
             "currentPassword": "Password123!", "newPassword": "Brandnewpass123!",
         })
         assert res.status_code == 200
+
+    def test_change_password_rejects_same(self, client):
+        token = login(client)
+        res = client.post("/api/profile/change-password", headers=auth(token), json={
+            "currentPassword": "Password123!", "newPassword": "Password123!",
+        })
+        assert res.status_code == 400
+        assert "different" in json.loads(res.data)["error"].lower()

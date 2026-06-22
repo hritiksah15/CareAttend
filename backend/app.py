@@ -793,10 +793,13 @@ def change_password():
         return jsonify({"error": "User not found"}), 404
     if not _verify_password(data.get("currentPassword", ""), user.password_hash):
         return jsonify({"error": "Current password is incorrect"}), 400
+    current_pw = data.get("currentPassword", "")
     new_pw = data.get("newPassword", "")
     pw_error = validate_password(new_pw)
     if pw_error:
         return jsonify({"error": pw_error}), 400
+    if new_pw == current_pw:
+        return jsonify({"error": "New password must be different from the current password"}), 400
     user.password_hash = _hash_password(new_pw)
     user.last_password_change = __import__("time").time()
     db.session.commit()
