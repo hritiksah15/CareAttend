@@ -117,7 +117,6 @@ def train_and_evaluate(save_dir="models"):
 
     # ── Select best model by F1 ──
     best_name = max(all_metrics, key=lambda k: all_metrics[k]["f1"])
-    best_metrics = all_metrics[best_name]
     models = {
         "Logistic Regression": lr,
         "Random Forest": rf,
@@ -137,7 +136,6 @@ def train_and_evaluate(save_dir="models"):
     print(f"F1: {threshold_metrics['f1']:.4f} | Recall: {threshold_metrics['recall']:.4f} | "
           f"Precision: {threshold_metrics['precision']:.4f} | ROC-AUC: {threshold_metrics['roc_auc']:.4f}")
 
-    best_metrics = threshold_metrics
     print(f"\n=== Selected Model: {best_name} (threshold={best_threshold:.2f}) ===")
 
     # ── Save selected model as primary ──

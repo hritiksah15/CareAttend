@@ -27,8 +27,8 @@ def main():
     print(f"  Recall:         {results['best_metrics']['recall']:.4f}")
     print(f"  Precision:      {results['best_metrics']['precision']:.4f}")
     print(f"  ROC-AUC:        {results['best_metrics']['roc_auc']:.4f}")
-    print(f"\n  Artifacts saved to models/")
-    print(f"  Run 'python app.py' to start the web application.")
+    print("\n  Artifacts saved to models/")
+    print("  Run 'python app.py' to start the web application.")
     print("=" * 60)
 
 
