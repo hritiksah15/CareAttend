@@ -1,0 +1,13 @@
+CareAttend
+Copyright (c) 2026 Hritik Kumar Sah
+
+This software is licensed under the MIT License (see LICENSE).
+
+ACADEMIC / NON-CLINICAL USE NOTICE
+----------------------------------
+CareAttend is an academic project produced for the COM668 Computing Project
+module at Ulster University. It is a research and educational demonstrator and
+is NOT certified, validated, or licensed for clinical, diagnostic, or commercial
+use. Its predictions must not be used to make real patient-care decisions. The
+models are trained on synthetic, NHS-style data only — no real patient data is
+used or stored.
