@@ -6,6 +6,7 @@ Maps to: FR-04, NFR-01, NFR-06 in Requirements Traceability Matrix.
 """
 
 import os
+import re
 import time
 import secrets
 import hashlib
@@ -36,6 +37,11 @@ except ImportError:
     USE_PYOTP = False
 
 SESSION_TIMEOUT = 1800  # 30 minutes in seconds (NFR-06)
+REMEMBER_TIMEOUT = 30 * 24 * 3600  # 30 days for "remember me" sessions
+
+# Role hierarchy for RBAC (FR-04). Higher tier inherits lower-tier access.
+ROLES = ("user", "staff", "admin")
+VALID_ROLES = set(ROLES)
 
 
 def _hash_password(password):
@@ -56,11 +62,31 @@ def _verify_password(password, stored_hash):
     return hashlib.sha256((salt + password).encode()).hexdigest() == hashed
 
 
+PASSWORD_RULE = ("at least 8 characters with an uppercase letter, a lowercase "
+                 "letter, a number and a symbol")
+
+
+def validate_password(pw):
+    """Return an error string if the password is too weak, else None."""
+    if len(pw) < 8:
+        return "Password must be " + PASSWORD_RULE
+    if not re.search(r"[A-Z]", pw):
+        return "Password needs an uppercase letter"
+    if not re.search(r"[a-z]", pw):
+        return "Password needs a lowercase letter"
+    if not re.search(r"\d", pw):
+        return "Password needs a number"
+    if not re.search(r"[^A-Za-z0-9]", pw):
+        return "Password needs a symbol"
+    return None
+
+
 def register_user(username, email, password, role="staff"):
     if not username or not email or not password:
         return None, "All fields are required"
-    if len(password) < 8:
-        return None, "Password must be at least 8 characters"
+    pw_error = validate_password(password)
+    if pw_error:
+        return None, pw_error
     if User.query.filter_by(email=email).first():
         return None, "Email already registered"
     if User.query.filter_by(username=username).first():
@@ -77,8 +103,11 @@ def register_user(username, email, password, role="staff"):
     return user.id, None
 
 
-def authenticate(username, password, totp_code=None):
-    user = User.query.filter_by(username=username).first()
+def authenticate(identifier, password, totp_code=None, remember=False):
+    # Accept either a username or an email address as the login identifier.
+    user = User.query.filter(
+        (User.username == identifier) | (User.email == identifier)
+    ).first()
     if not user:
         return None, "Invalid credentials"
     if not _verify_password(password, user.password_hash):
@@ -94,6 +123,7 @@ def authenticate(username, password, totp_code=None):
     session = Session(
         token=token,
         user_id=user.id,
+        remember=remember,
     )
     db.session.add(session)
     db.session.commit()
@@ -104,7 +134,13 @@ def validate_token(token):
     session = db.session.get(Session, token)
     if not session:
         return None
-    if time.time() - session.last_activity > SESSION_TIMEOUT:
+    # "Remember me" sessions live for an absolute 30-day window; normal sessions
+    # expire after SESSION_TIMEOUT of inactivity (sliding window).
+    if session.remember:
+        expired = time.time() - session.created_at > REMEMBER_TIMEOUT
+    else:
+        expired = time.time() - session.last_activity > SESSION_TIMEOUT
+    if expired:
         db.session.delete(session)
         db.session.commit()
         return None
@@ -141,6 +177,22 @@ def token_required(f):
         request.current_user = session
         return f(*args, **kwargs)
     return decorated
+
+
+def role_required(*allowed_roles):
+    """Restrict a route to the given roles. Apply *after* token_required so
+    request.current_user is set. Returns 403 when the role is not permitted."""
+    def decorator(f):
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            user = getattr(request, "current_user", None)
+            if not user:
+                return jsonify({"error": "Authentication required"}), 401
+            if user.get("role") not in allowed_roles:
+                return jsonify({"error": "Insufficient permissions for this action"}), 403
+            return f(*args, **kwargs)
+        return decorated
+    return decorator
 
 
 def get_role(token):
@@ -210,8 +262,9 @@ def reset_password(email, code, new_password):
     if code != entry["code"]:
         entry["tries"] += 1
         return "Invalid code."
-    if len(new_password) < 8:
-        return "Password must be at least 8 characters"
+    pw_error = validate_password(new_password)
+    if pw_error:
+        return pw_error
     user = User.query.filter_by(email=email).first()
     if not user:
         return "User not found"

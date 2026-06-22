@@ -23,7 +23,7 @@ pytestmark = pytest.mark.skipif(
 
 import app as app_module  # noqa: E402
 from app import app as flask_app, load_models  # noqa: E402
-from models import db  # noqa: E402
+from models import db, User  # noqa: E402
 
 
 @pytest.fixture(scope="module")
@@ -58,10 +58,17 @@ def clean_state(app):
 def login(client, username="test", role="staff"):
     client.post("/auth/register", json={
         "username": username, "email": f"{username}@nhs.uk",
-        "password": "password123", "role": role,
+        "password": "Password123!",
     })
+    # Public register forces role 'user'; promote in the DB for role-gated tests.
+    if role != "user":
+        with flask_app.app_context():
+            u = User.query.filter_by(username=username).first()
+            if u:
+                u.role = role
+                db.session.commit()
     res = client.post("/auth/login", json={
-        "username": username, "password": "password123",
+        "username": username, "password": "Password123!",
     })
     return json.loads(res.data)["token"]
 
@@ -207,7 +214,7 @@ class TestEthicsFramework:
         assert client.get("/api/ethics-framework").status_code == 401
 
     def test_six_principles(self, client):
-        token = login(client)
+        token = login(client, role="admin")
         res = client.get("/api/ethics-framework", headers=auth(token))
         data = json.loads(res.data)
         assert len(data["principles"]) == 6
@@ -218,18 +225,18 @@ class TestEthicsFramework:
 
 class TestModelInfo:
     def test_model_info(self, client):
-        token = login(client)
+        token = login(client, role="admin")
         res = client.get("/api/model-info", headers=auth(token))
         assert res.status_code in (200, 404)
 
     def test_model_comparison(self, client):
-        token = login(client)
+        token = login(client, role="admin")
         res = client.get("/api/model-comparison", headers=auth(token))
         if res.status_code == 200:
             assert "selected_model" in json.loads(res.data)
 
     def test_export_model(self, client):
-        token = login(client)
+        token = login(client, role="admin")
         res = client.get("/api/export-model", headers=auth(token))
         assert res.status_code == 200
         assert "features" in json.loads(res.data)
@@ -244,8 +251,99 @@ class TestCrossValidation:
         reason="Evaluation datasets not present",
     )
     def test_cv_runs(self, client):
-        token = login(client)
+        token = login(client, role="admin")
         res = client.post("/api/evaluation/cross-validation", headers=auth(token))
         assert res.status_code == 200
         data = json.loads(res.data)
         assert isinstance(data, (dict, list))
+
+
+# ── Role-Based Access Control (FR-04) ──
+
+class TestRBAC:
+    def test_user_can_predict(self, client):
+        token = login(client, username="u1", role="user")
+        res = client.post("/api/predict", headers=auth(token), json=HIGH_RISK_PATIENT)
+        assert res.status_code == 200
+
+    def test_user_denied_dashboard(self, client):
+        token = login(client, username="u2", role="user")
+        assert client.get("/api/dashboard", headers=auth(token)).status_code == 403
+
+    def test_user_denied_batch(self, client):
+        token = login(client, username="u3", role="user")
+        assert client.post("/api/batch", headers=auth(token)).status_code == 403
+
+    def test_staff_denied_bias(self, client):
+        token = login(client, username="s1", role="staff")
+        assert client.get("/api/bias-audit", headers=auth(token)).status_code == 403
+
+    def test_staff_denied_audit_log(self, client):
+        token = login(client, username="s2", role="staff")
+        assert client.get("/api/audit-log", headers=auth(token)).status_code == 403
+
+    def test_staff_allowed_dashboard(self, client):
+        token = login(client, username="s3", role="staff")
+        assert client.get("/api/dashboard", headers=auth(token)).status_code == 200
+
+    def test_admin_allowed_bias(self, client):
+        token = login(client, username="a1", role="admin")
+        assert client.get("/api/bias-audit", headers=auth(token)).status_code == 200
+
+
+# ── Admin User Management ──
+
+class TestAdminUserManagement:
+    def test_list_requires_admin(self, client):
+        token = login(client, username="staff_x", role="staff")
+        assert client.get("/api/admin/users", headers=auth(token)).status_code == 403
+
+    def test_admin_lists_users(self, client):
+        login(client, username="someone", role="user")
+        token = login(client, username="boss", role="admin")
+        res = client.get("/api/admin/users", headers=auth(token))
+        assert res.status_code == 200
+        data = json.loads(res.data)
+        assert data["total"] >= 2
+        assert any(u["username"] == "someone" for u in data["users"])
+
+    def test_admin_changes_role(self, client):
+        login(client, username="target", role="user")
+        token = login(client, username="boss", role="admin")
+        users = json.loads(client.get("/api/admin/users", headers=auth(token)).data)["users"]
+        target_id = next(u["userId"] for u in users if u["username"] == "target")
+        res = client.put(f"/api/admin/users/{target_id}/role",
+                         headers=auth(token), json={"role": "staff"})
+        assert res.status_code == 200
+        assert json.loads(res.data)["user"]["role"] == "staff"
+
+    def test_invalid_role_rejected(self, client):
+        login(client, username="target", role="user")
+        token = login(client, username="boss", role="admin")
+        users = json.loads(client.get("/api/admin/users", headers=auth(token)).data)["users"]
+        target_id = next(u["userId"] for u in users if u["username"] == "target")
+        res = client.put(f"/api/admin/users/{target_id}/role",
+                         headers=auth(token), json={"role": "superuser"})
+        assert res.status_code == 400
+
+    def test_admin_cannot_self_demote(self, client):
+        token = login(client, username="boss", role="admin")
+        users = json.loads(client.get("/api/admin/users", headers=auth(token)).data)["users"]
+        own_id = next(u["userId"] for u in users if u["username"] == "boss")
+        res = client.put(f"/api/admin/users/{own_id}/role",
+                         headers=auth(token), json={"role": "staff"})
+        assert res.status_code == 400
+
+    def test_admin_deletes_user(self, client):
+        login(client, username="doomed", role="user")
+        token = login(client, username="boss", role="admin")
+        users = json.loads(client.get("/api/admin/users", headers=auth(token)).data)["users"]
+        target_id = next(u["userId"] for u in users if u["username"] == "doomed")
+        res = client.delete(f"/api/admin/users/{target_id}", headers=auth(token))
+        assert res.status_code == 200
+
+    def test_admin_cannot_self_delete(self, client):
+        token = login(client, username="boss", role="admin")
+        users = json.loads(client.get("/api/admin/users", headers=auth(token)).data)["users"]
+        own_id = next(u["userId"] for u in users if u["username"] == "boss")
+        assert client.delete(f"/api/admin/users/{own_id}", headers=auth(token)).status_code == 400

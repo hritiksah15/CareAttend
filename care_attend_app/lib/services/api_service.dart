@@ -13,6 +13,8 @@ class ApiService {
       ? _envBase
       : (kIsWeb ? 'http://127.0.0.1:5000' : 'http://10.0.2.2:5000');
   static String? _token;
+  static String role = 'user';
+  static String? avatar; // base64 data-URL of the logged-in user's photo
 
   static Map<String, String> get _headers => {
         'Content-Type': 'application/json',
@@ -21,17 +23,29 @@ class ApiService {
 
   static bool get isAuthenticated => _token != null;
 
+  // Frontend RBAC mirror of the backend role_required gating.
+  static bool _has(List<String> roles) => roles.contains(role);
+  static bool get canDashboard => _has(['staff', 'admin']);
+  static bool get canSlots => _has(['staff', 'admin']);
+  static bool get canNudge => _has(['staff', 'admin']);
+  static bool get canBias => _has(['admin']);
+  static bool get canEthics => _has(['admin']);
+  static bool get canAdmin => _has(['admin']);
+
   static void clearSession() {
     _token = null;
+    role = 'user';
+    avatar = null;
   }
 
   // ── Auth ──
 
+  // Public self-registration always creates a 'user'; the backend ignores any
+  // role in the body. Admins elevate accounts via /api/admin/users/<id>/role.
   static Future<Map<String, dynamic>> register({
     required String username,
     required String email,
     required String password,
-    String role = 'staff',
   }) async {
     final res = await http.post(
       Uri.parse('$baseUrl/auth/register'),
@@ -40,7 +54,6 @@ class ApiService {
         'username': username,
         'email': email,
         'password': password,
-        'role': role,
       }),
     );
     return _handleResponse(res);
@@ -49,15 +62,28 @@ class ApiService {
   static Future<Map<String, dynamic>> login({
     required String username,
     required String password,
+    bool remember = false,
   }) async {
     final res = await http.post(
       Uri.parse('$baseUrl/auth/login'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'username': username, 'password': password}),
+      body: jsonEncode({
+        'username': username,
+        'password': password,
+        'remember': remember,
+      }),
     );
     final data = _handleResponse(res);
     if (data.containsKey('token')) {
       _token = data['token'];
+      // Pull the real role so the UI can gate features to match the backend.
+      try {
+        final profile = await getProfile();
+        role = (profile['role'] ?? 'user').toString();
+        avatar = profile['avatar'] as String?;
+      } catch (_) {
+        role = 'user';
+      }
     }
     return data;
   }
@@ -88,6 +114,44 @@ class ApiService {
     final res = await http.get(
       Uri.parse('$baseUrl/api/profile'),
       headers: _headers,
+    );
+    return _handleResponse(res);
+  }
+
+  static Future<Map<String, dynamic>> updateProfile(
+      Map<String, dynamic> fields) async {
+    final res = await http.put(
+      Uri.parse('$baseUrl/api/profile'),
+      headers: _headers,
+      body: jsonEncode(fields),
+    );
+    return _handleResponse(res);
+  }
+
+  // ── Two-factor authentication (TOTP) ──
+
+  static Future<Map<String, dynamic>> setup2FA() async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/api/profile/2fa/setup'),
+      headers: _headers,
+    );
+    return _handleResponse(res); // {secret, uri}
+  }
+
+  static Future<Map<String, dynamic>> enable2FA(String code) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/api/profile/2fa/enable'),
+      headers: _headers,
+      body: jsonEncode({'code': code}),
+    );
+    return _handleResponse(res);
+  }
+
+  static Future<Map<String, dynamic>> disable2FA(String password) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/api/profile/2fa/disable'),
+      headers: _headers,
+      body: jsonEncode({'password': password}),
     );
     return _handleResponse(res);
   }
@@ -226,6 +290,34 @@ class ApiService {
   static Future<Map<String, dynamic>> ehrLookup(String nhsNumber) async {
     final res = await http.get(
       Uri.parse('$baseUrl/api/ehr/lookup/$nhsNumber'),
+      headers: _headers,
+    );
+    return _handleResponse(res);
+  }
+
+  // ── Admin: User Management (admin-only) ──
+
+  static Future<Map<String, dynamic>> adminListUsers() async {
+    final res = await http.get(
+      Uri.parse('$baseUrl/api/admin/users'),
+      headers: _headers,
+    );
+    return _handleResponse(res);
+  }
+
+  static Future<Map<String, dynamic>> adminSetRole(
+      String userId, String newRole) async {
+    final res = await http.put(
+      Uri.parse('$baseUrl/api/admin/users/$userId/role'),
+      headers: _headers,
+      body: jsonEncode({'role': newRole}),
+    );
+    return _handleResponse(res);
+  }
+
+  static Future<Map<String, dynamic>> adminDeleteUser(String userId) async {
+    final res = await http.delete(
+      Uri.parse('$baseUrl/api/admin/users/$userId'),
       headers: _headers,
     );
     return _handleResponse(res);

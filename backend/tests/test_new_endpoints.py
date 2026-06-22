@@ -68,15 +68,22 @@ def clean_state(app):
 def _register(client, username="test", role="staff"):
     client.post("/auth/register", json={
         "username": username, "email": f"{username}@nhs.uk",
-        "password": "password123", "role": role,
+        "password": "Password123!",
     })
+    # Public register forces role 'user'; promote in the DB for role-gated tests.
+    if role != "user":
+        with flask_app.app_context():
+            u = User.query.filter_by(username=username).first()
+            if u:
+                u.role = role
+                db.session.commit()
 
 
 def login(client, username="test", role="staff"):
     """Register (if needed) and return a Bearer token for the user."""
     _register(client, username, role)
     res = client.post("/auth/login", json={
-        "username": username, "password": "password123",
+        "username": username, "password": "Password123!",
     })
     return json.loads(res.data)["token"]
 
@@ -285,19 +292,19 @@ class TestTwoFactor:
 
         # Login now demands the second factor.
         step1 = client.post("/auth/login", json={
-            "username": "test", "password": "password123",
+            "username": "test", "password": "Password123!",
         })
         assert json.loads(step1.data).get("requires_2fa") is True
 
         step2 = client.post("/auth/login", json={
-            "username": "test", "password": "password123",
+            "username": "test", "password": "Password123!",
             "totp_code": pyotp.TOTP(secret_info["secret"]).now(),
         })
         assert "token" in json.loads(step2.data)
 
         # Disabling needs the password, not the code.
         disable = client.post("/api/profile/2fa/disable", headers=auth(token),
-                              json={"password": "password123"})
+                              json={"password": "Password123!"})
         assert disable.status_code == 200
 
     def test_disable_requires_password(self, client):
@@ -355,22 +362,22 @@ class TestPasswordReset:
                              json={"email": "resetme@nhs.uk"})
         code = json.loads(forgot.data)["dev_code"]  # SMTP unset in tests
         reset = client.post("/auth/reset-password", json={
-            "email": "resetme@nhs.uk", "code": code, "newPassword": "brandnew123",
+            "email": "resetme@nhs.uk", "code": code, "newPassword": "Brandnew123!",
         })
         assert reset.status_code == 200
         # Old password rejected, new password works.
         old = client.post("/auth/login",
-                          json={"username": "resetme", "password": "password123"})
+                          json={"username": "resetme", "password": "Password123!"})
         assert old.status_code == 401
         new = client.post("/auth/login",
-                          json={"username": "resetme", "password": "brandnew123"})
+                          json={"username": "resetme", "password": "Brandnew123!"})
         assert "token" in json.loads(new.data)
 
     def test_reset_wrong_code(self, client):
         login(client, username="resetme2")
         client.post("/auth/forgot-password", json={"email": "resetme2@nhs.uk"})
         res = client.post("/auth/reset-password", json={
-            "email": "resetme2@nhs.uk", "code": "000000", "newPassword": "brandnew123",
+            "email": "resetme2@nhs.uk", "code": "000000", "newPassword": "Brandnew123!",
         })
         assert res.status_code == 400
 
@@ -439,20 +446,20 @@ class TestProfile:
     def test_change_password_wrong_current(self, client):
         token = login(client)
         res = client.post("/api/profile/change-password", headers=auth(token), json={
-            "currentPassword": "wrong", "newPassword": "newpassword123",
+            "currentPassword": "wrong", "newPassword": "newPassword123!",
         })
         assert res.status_code == 400
 
     def test_change_password_too_short(self, client):
         token = login(client)
         res = client.post("/api/profile/change-password", headers=auth(token), json={
-            "currentPassword": "password123", "newPassword": "short",
+            "currentPassword": "Password123!", "newPassword": "short",
         })
         assert res.status_code == 400
 
     def test_change_password_success(self, client):
         token = login(client)
         res = client.post("/api/profile/change-password", headers=auth(token), json={
-            "currentPassword": "password123", "newPassword": "brandnewpass123",
+            "currentPassword": "Password123!", "newPassword": "Brandnewpass123!",
         })
         assert res.status_code == 200
