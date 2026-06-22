@@ -28,7 +28,7 @@ jobs:
     steps:
       # ── 1. Checkout ───────────────────────────────────────────────────
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # ── 2. Python 3.12 (pinned to match the Docker image / pickles) ───
       - name: Set up Python 3.12
@@ -128,7 +128,7 @@ jobs:
         working-directory: backend
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
@@ -155,7 +155,7 @@ jobs:
         working-directory: frontend
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node 20
         uses: actions/setup-node@v4
@@ -181,7 +181,7 @@ jobs:
         working-directory: care_attend_app
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -208,7 +208,7 @@ jobs:
     needs: backend
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Build image
         run: docker build -t careattend-backend:ci ./backend
