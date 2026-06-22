@@ -216,6 +216,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _snack(pwErr);
       return;
     }
+    if (_newPw.text == _current.text) {
+      _snack('New password must be different from the current password');
+      return;
+    }
     if (_newPw.text != _confirm.text) {
       _snack('Passwords do not match');
       return;

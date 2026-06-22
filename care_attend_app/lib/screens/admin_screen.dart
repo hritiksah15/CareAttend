@@ -117,9 +117,12 @@ class _AdminScreenState extends State<AdminScreen> {
 
   // Role-permission reference (parity with the website Admin tab).
   Widget _permissionMatrix() {
-    Widget cell(String t, {bool head = false}) => Expanded(
+    // flex applied here once — the cell itself must NOT be an Expanded, or two
+    // Expanded compete for the same child's parent data and the tree throws.
+    Widget cell(String t, int flex, {bool head = false}) => Expanded(
+          flex: flex,
           child: Text(t,
-              textAlign: t == 'Feature' ? TextAlign.left : TextAlign.center,
+              textAlign: flex == 2 ? TextAlign.left : TextAlign.center,
               style: TextStyle(
                   fontSize: 12,
                   fontWeight: head ? FontWeight.w700 : FontWeight.w400,
@@ -128,10 +131,10 @@ class _AdminScreenState extends State<AdminScreen> {
     Widget rowFor(String feature, bool u, bool s, bool a) => Padding(
           padding: const EdgeInsets.symmetric(vertical: 6),
           child: Row(children: [
-            Expanded(flex: 2, child: cell(feature)),
-            cell(u ? '✓' : '—'),
-            cell(s ? '✓' : '—'),
-            cell(a ? '✓' : '—'),
+            cell(feature, 2),
+            cell(u ? '✓' : '—', 1),
+            cell(s ? '✓' : '—', 1),
+            cell(a ? '✓' : '—', 1),
           ]),
         );
     return Card(
@@ -142,10 +145,10 @@ class _AdminScreenState extends State<AdminScreen> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
           Row(children: [
-            Expanded(flex: 2, child: cell('Feature', head: true)),
-            cell('User', head: true),
-            cell('Staff', head: true),
-            cell('Admin', head: true),
+            cell('Feature', 2, head: true),
+            cell('User', 1, head: true),
+            cell('Staff', 1, head: true),
+            cell('Admin', 1, head: true),
           ]),
           const Divider(),
           rowFor('Assessment + Results', true, true, true),

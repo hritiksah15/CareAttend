@@ -15,6 +15,9 @@ import 'nudge_screen.dart';
 import 'ethics_screen.dart';
 import 'profile_screen.dart';
 import 'admin_screen.dart';
+import 'batch_screen.dart';
+import '../widgets/chatbot.dart';
+import '../widgets/guided_tour.dart';
 
 class HomeScreen extends StatefulWidget {
   final String username;
@@ -41,12 +44,21 @@ class _HomeScreenState extends State<HomeScreen> {
   Map<String, dynamic>? _lastResult;
   Timer? _sessionTimer;
 
+  // Visit counter per tab — bumping it rebuilds the screen (via its key) so
+  // data screens (dashboard, bias, ethics) refresh live instead of showing stale state.
+  final Map<int, int> _visit = {};
+  void _go(int i) => setState(() {
+        _currentIndex = i;
+        _visit[i] = (_visit[i] ?? 0) + 1;
+      });
+
   // Stack order — index used by IndexedStack and every nav target.
   // roles gate visibility to mirror the backend role_required rules.
   static const _all = [
     _NavItem('Assessment', Icons.edit_note, 0),
     _NavItem('Results', Icons.insights, 1),
     _NavItem('Dashboard', Icons.dashboard, 2, ['staff', 'admin']),
+    _NavItem('Batch Upload', Icons.upload_file, 9, ['staff', 'admin']),
     _NavItem('Slot Optimisation', Icons.event_available, 4, ['staff', 'admin']),
     _NavItem('Patient Nudge', Icons.message, 5, ['staff', 'admin']),
     _NavItem('Bias Monitor', Icons.balance, 3, ['admin']),
@@ -97,6 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _lastResult = result;
       _currentIndex = 1;
+      _visit[1] = (_visit[1] ?? 0) + 1;
     });
   }
 
@@ -179,23 +192,25 @@ class _HomeScreenState extends State<HomeScreen> {
       case 1:
         return ResultScreen(
           result: _lastResult,
-          onNewAssessment: () => setState(() => _currentIndex = 0),
-          onBiasDashboard: () => setState(() => _currentIndex = 3),
+          onNewAssessment: () => _go(0),
+          onBiasDashboard: () => _go(3),
         );
       case 2:
-        return const DashboardScreen();
+        return DashboardScreen(key: ValueKey('dash-${_visit[2] ?? 0}'));
       case 3:
-        return const BiasScreen();
+        return BiasScreen(key: ValueKey('bias-${_visit[3] ?? 0}'));
       case 4:
         return const SlotsScreen();
       case 5:
         return const NudgeScreen();
       case 6:
-        return const EthicsScreen();
+        return EthicsScreen(key: ValueKey('ethics-${_visit[6] ?? 0}'));
       case 7:
-        return const ProfileScreen();
+        return ProfileScreen(key: ValueKey('profile-${_visit[7] ?? 0}'));
       case 8:
         return const AdminScreen();
+      case 9:
+        return const BatchScreen();
       default:
         return const SizedBox.shrink();
     }
@@ -213,6 +228,12 @@ class _HomeScreenState extends State<HomeScreen> {
           title: const Text('Care Attend'),
           actions: [
             IconButton(
+              icon: const Icon(Icons.help_outline, size: 20),
+              tooltip: 'Guided tour',
+              onPressed: () => GuidedTour.start(
+                  context, (i) => _go(i)),
+            ),
+            IconButton(
               icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode, size: 20),
               tooltip: 'Toggle dark mode',
               onPressed: _toggleDarkMode,
@@ -227,7 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Center(
                 child: InkWell(
                   borderRadius: BorderRadius.circular(12),
-                  onTap: () => setState(() => _currentIndex = 7), // open Personal Account
+                  onTap: () => _go(7), // open Personal Account
                   child: Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -260,9 +281,15 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         drawer: _buildDrawer(),
-        body: IndexedStack(
-          index: _currentIndex,
-          children: [for (var i = 0; i < _all.length; i++) _screenFor(i)],
+        body: Stack(
+          children: [
+            IndexedStack(
+              index: _currentIndex,
+              children: [for (var i = 0; i < _all.length; i++) _screenFor(i)],
+            ),
+            const Align(
+                alignment: Alignment.bottomRight, child: ChatbotOverlay()),
+          ],
         ),
         bottomNavigationBar: _buildBottomBar(),
       ),
@@ -281,7 +308,7 @@ class _HomeScreenState extends State<HomeScreen> {
       selectedIndex: selected,
       onDestinationSelected: (i) {
         if (i < core.length) {
-          setState(() => _currentIndex = core[i].index);
+          _go(core[i].index);
         } else {
           _scaffoldKey.currentState?.openDrawer();
         }
@@ -328,7 +355,7 @@ class _HomeScreenState extends State<HomeScreen> {
               title: Text(item.label),
               selected: _currentIndex == item.index,
               onTap: () {
-                setState(() => _currentIndex = item.index);
+                _go(item.index);
                 Navigator.pop(context);
               },
             ),

@@ -111,9 +111,33 @@ class _SlotsScreenState extends State<SlotsScreen> {
     );
   }
 
+  Widget _metric(String value, String label) => Expanded(
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: NHSTheme.paleGrey,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(children: [
+            Text(value,
+                style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: NHSTheme.blue)),
+            const SizedBox(height: 2),
+            Text(label,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontSize: 11, color: NHSTheme.darkGrey)),
+          ]),
+        ),
+      );
+
   List<Widget> _buildResult() {
     final slots = (_result!['slots'] as List?) ?? [];
     if (slots.isEmpty) return [];
+    final summary = _result!['summary'] as Map<String, dynamic>?;
     final s = slots.first as Map<String, dynamic>;
     if (s.containsKey('error')) {
       return [Card(child: Padding(
@@ -122,6 +146,17 @@ class _SlotsScreenState extends State<SlotsScreen> {
     final prob = (((s['dna_probability'] ?? 0) as num) * 100).toStringAsFixed(0);
     final tier = '${s['risk_tier']}';
     return [
+      if (summary != null)
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(children: [
+            _metric('${summary['overbookable']}', 'Overbookable'),
+            _metric('${summary['total_expected_waste_minutes']} min',
+                'Expected waste'),
+            _metric('${summary['potential_recovery_percent']}%',
+                'Recovery potential'),
+          ]),
+        ),
       Card(
         color: NHSTheme.riskBgColor(tier),
         child: Padding(

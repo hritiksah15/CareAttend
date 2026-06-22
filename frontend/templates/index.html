@@ -142,12 +142,6 @@
                     <h1>Care Attend</h1>
                 </div>
                 <div class="header-right">
-                    <select class="lang-selector" onchange="setLanguage(this.value)" aria-label="Language">
-                        <option value="en">EN</option>
-                        <option value="cy">CY</option>
-                        <option value="ur">UR</option>
-                        <option value="pl">PL</option>
-                    </select>
                     <button class="header-icon-btn" onclick="toggleDarkMode()" title="Toggle dark mode" aria-label="Toggle dark mode">
                         <i data-lucide="moon" id="dark-mode-icon" style="width:18px;height:18px;"></i>
                     </button>
@@ -780,6 +774,21 @@
                             <textarea id="ac-edit-bio" class="ac-input" rows="3" maxlength="300" placeholder="A short description about you (max 300 chars)"></textarea>
                         </div>
                         <button class="ac-action-btn" onclick="saveProfile()">&#128190; Save Profile</button>
+                    </div>
+                </div>
+
+                <div class="ac-section">
+                    <h3 class="ac-section-title">&#127760; Language</h3>
+                    <div class="ac-field-group">
+                        <div class="ac-field">
+                            <label for="ac-lang">Interface language</label>
+                            <select id="ac-lang" class="ac-input" onchange="setLanguage(this.value)">
+                                <option value="en">English</option>
+                                <option value="cy">Cymraeg (Welsh)</option>
+                                <option value="ur">اردو (Urdu)</option>
+                                <option value="pl">Polski (Polish)</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 

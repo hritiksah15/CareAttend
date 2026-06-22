@@ -36,6 +36,7 @@ class ApiService {
     _token = null;
     role = 'user';
     avatar = null;
+    riskHistory.clear();
   }
 
   // ── Auth ──
@@ -210,6 +211,72 @@ class ApiService {
         'Disability': disability,
         'IMDDecile': imdDecile,
       }),
+    );
+    return _handleResponse(res);
+  }
+
+  // Session risk-trajectory (client-side, mirrors the website).
+  static final List<Map<String, dynamic>> riskHistory = [];
+
+  // ── Batch CSV scoring ──
+
+  static Future<String> batchPredict(
+      List<int> bytes, String filename) async {
+    final req = http.MultipartRequest(
+        'POST', Uri.parse('$baseUrl/api/batch'));
+    if (_token != null) req.headers['Authorization'] = 'Bearer $_token';
+    req.files.add(http.MultipartFile.fromBytes('file', bytes,
+        filename: filename.endsWith('.csv') ? filename : '$filename.csv'));
+    final streamed = await req.send();
+    final res = await http.Response.fromStream(streamed);
+    if (res.statusCode >= 400) {
+      String msg = 'Batch failed';
+      try {
+        msg = (jsonDecode(res.body) as Map)['error']?.toString() ?? msg;
+      } catch (_) {}
+      throw ApiException(msg);
+    }
+    return res.body; // CSV text
+  }
+
+  // ── Prediction feedback ──
+
+  static Future<Map<String, dynamic>> submitFeedback(
+      String predictionId, String outcome) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/api/feedback'),
+      headers: _headers,
+      body: jsonEncode({'prediction_id': predictionId, 'outcome': outcome}),
+    );
+    return _handleResponse(res);
+  }
+
+  static Future<Map<String, dynamic>> feedbackSummary() async {
+    final res = await http.get(
+      Uri.parse('$baseUrl/api/feedback/summary'),
+      headers: _headers,
+    );
+    return _handleResponse(res);
+  }
+
+  // ── Carer / family proxy ──
+
+  static Future<Map<String, dynamic>> createCarerProxy(
+      Map<String, dynamic> fields) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/api/carer-proxy'),
+      headers: _headers,
+      body: jsonEncode(fields),
+    );
+    return _handleResponse(res);
+  }
+
+  // ── Rigorous evaluation (5-fold cross-validation + McNemar) ──
+
+  static Future<Map<String, dynamic>> crossValidation() async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/api/evaluation/cross-validation'),
+      headers: _headers,
     );
     return _handleResponse(res);
   }
