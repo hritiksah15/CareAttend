@@ -19,7 +19,6 @@ import json
 import os
 
 import joblib
-import numpy as np
 import pandas as pd
 from sklearn.base import clone
 from sklearn.calibration import CalibratedClassifierCV, calibration_curve

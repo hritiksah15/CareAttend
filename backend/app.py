@@ -41,7 +41,15 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
     "DATABASE_URL", "postgresql+psycopg://localhost:5432/careattend"
 )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-CORS(app)
+
+# CORS: restrict to an explicit allowlist in production via CORS_ORIGINS
+# (comma-separated). Defaults to "*" for local/dev convenience only.
+_cors_origins = os.environ.get("CORS_ORIGINS", "*").strip()
+if _cors_origins and _cors_origins != "*":
+    CORS(app, origins=[o.strip() for o in _cors_origins.split(",") if o.strip()],
+         supports_credentials=True)
+else:
+    CORS(app)
 
 db.init_app(app)
 migrate.init_app(app, db)
@@ -52,6 +60,11 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(name)s %(message)s",
 )
 logger = logging.getLogger("careattend")
+
+# Warn if running without a stable SECRET_KEY — sessions/signing break across
+# multiple workers and restarts when a per-process random key is used.
+if not os.environ.get("SECRET_KEY"):
+    logger.warning("SECRET_KEY not set — using an ephemeral key. Set SECRET_KEY in production.")
 
 _START_TIME = time.time()
 
@@ -1005,12 +1018,18 @@ def generate_patient_nudge():
         message = f"Dear {patient_name}, {message[0].lower()}{message[1:]}"
 
     factors = []
-    if age >= 65: factors.append("elderly_patient")
-    if imd <= 3: factors.append("high_deprivation")
-    if prior_dna >= 2: factors.append("repeat_dna")
-    if patient.get("Disability", 0) == 1: factors.append("disability")
-    if patient.get("SMSReceived", 0) == 0: factors.append("no_sms_reminder")
-    if prob >= 0.5: factors.append("high_risk")
+    if age >= 65:
+        factors.append("elderly_patient")
+    if imd <= 3:
+        factors.append("high_deprivation")
+    if prior_dna >= 2:
+        factors.append("repeat_dna")
+    if patient.get("Disability", 0) == 1:
+        factors.append("disability")
+    if patient.get("SMSReceived", 0) == 0:
+        factors.append("no_sms_reminder")
+    if prob >= 0.5:
+        factors.append("high_risk")
 
     return jsonify({
         "nudge_type": nudge_type, "language": language, "message": message,
@@ -1180,6 +1199,8 @@ if __name__ == "__main__":
     ensure_database()
     print("Models loaded. Starting server...")
     port = int(os.environ.get("PORT", 5000))
-    debug = os.environ.get("FLASK_DEBUG", "1") == "1"
+    # Secure by default: debug off unless explicitly opted in (Werkzeug's
+    # interactive debugger is an RCE vector if exposed).
+    debug = os.environ.get("FLASK_DEBUG", "0") == "1"
     print(f"Open http://127.0.0.1:{port} in your browser")
     app.run(debug=debug, host="127.0.0.1", port=port)
