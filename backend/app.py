@@ -9,16 +9,21 @@ Routes: /predict, /bias-audit, /auth/login, /auth/register, /batch
 import csv
 import io
 import json
+import logging
 import os
+import time
 import uuid
 
 from flask import Flask, render_template, request, jsonify, make_response
 from flask_cors import CORS
+from sqlalchemy import text as _sql_text
 
-from models import db, migrate, User
+from models import db, migrate, User, AuditLog, CarerProxy, PersistentFeedback
 from auth import (register_user, authenticate, logout, token_required,
-                  _hash_password, _verify_password,
-                  setup_totp, enable_totp, disable_totp)
+                  role_required, VALID_ROLES, REMEMBER_TIMEOUT,
+                  _hash_password, _verify_password, validate_password,
+                  setup_totp, enable_totp, disable_totp,
+                  request_password_reset, reset_password)
 from ml.predictor import CareAttendPredictor
 from ml.bias_monitor import BiasMonitor
 from ml.interventions import generate_interventions
@@ -36,17 +41,74 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
     "DATABASE_URL", "postgresql+psycopg://localhost:5432/careattend"
 )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-CORS(app)
+
+# CORS: restrict to an explicit allowlist in production via CORS_ORIGINS
+# (comma-separated). Defaults to "*" for local/dev convenience only.
+_cors_origins = os.environ.get("CORS_ORIGINS", "*").strip()
+if _cors_origins and _cors_origins != "*":
+    CORS(app, origins=[o.strip() for o in _cors_origins.split(",") if o.strip()],
+         supports_credentials=True)
+else:
+    CORS(app)
 
 db.init_app(app)
 migrate.init_app(app, db)
 
+# ── Structured request logging + uniform JSON errors (NFR robustness) ──
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s %(message)s",
+)
+logger = logging.getLogger("careattend")
+
+# Warn if running without a stable SECRET_KEY — sessions/signing break across
+# multiple workers and restarts when a per-process random key is used.
+if not os.environ.get("SECRET_KEY"):
+    logger.warning("SECRET_KEY not set — using an ephemeral key. Set SECRET_KEY in production.")
+
+_START_TIME = time.time()
+
+
+@app.after_request
+def _log_request(response):
+    logger.info("%s %s -> %s", request.method, request.path, response.status_code)
+    return response
+
+
+@app.errorhandler(400)
+def _err_400(e):
+    return jsonify({"error": "Bad request", "detail": str(getattr(e, "description", e))}), 400
+
+
+@app.errorhandler(404)
+def _err_404(e):
+    return jsonify({"error": "Not found", "path": request.path}), 404
+
+
+@app.errorhandler(405)
+def _err_405(e):
+    return jsonify({"error": "Method not allowed", "method": request.method}), 405
+
+
+@app.errorhandler(500)
+def _err_500(e):
+    logger.exception("Unhandled server error")
+    return jsonify({"error": "Internal server error"}), 500
+
+
+@app.errorhandler(Exception)
+def _err_unhandled(e):
+    # Let Flask's own HTTP exceptions (404/405/etc.) pass through to their handlers.
+    from werkzeug.exceptions import HTTPException
+    if isinstance(e, HTTPException):
+        return e
+    logger.exception("Unhandled exception")
+    return jsonify({"error": "Internal server error"}), 500
+
 predictor = None
 bias_monitor = None
 training_results = None
-_prediction_log = []  # session-scoped assessment history for dashboard
-_carer_proxies = []
-_audit_log = []
+_prediction_log = []  # session-scoped assessment history for dashboard (NFR-01: not persisted)
 
 
 def load_models():
@@ -66,6 +128,24 @@ def index():
     return render_template("index.html")
 
 
+# ── Health / readiness probe (no auth — for load balancers & Docker) ──
+
+@app.route("/health", methods=["GET"])
+def health():
+    db_ok = True
+    try:
+        db.session.execute(_sql_text("SELECT 1"))
+    except Exception:
+        db_ok = False
+    healthy = predictor is not None and db_ok
+    return jsonify({
+        "status": "ok" if healthy else "degraded",
+        "model_loaded": predictor is not None,
+        "database": "ok" if db_ok else "unavailable",
+        "uptime_seconds": round(time.time() - _START_TIME, 1),
+    }), (200 if healthy else 503)
+
+
 # ── Auth Endpoints (FR-04, NFR-06) ──
 
 @app.route("/auth/register", methods=["POST"])
@@ -77,12 +157,11 @@ def auth_register():
     username = data.get("username", "").strip()
     email = data.get("email", "").strip()
     password = data.get("password", "")
-    role = data.get("role", "staff")
 
-    if role not in ("staff", "admin"):
-        return jsonify({"error": "Invalid role"}), 400
-
-    user_id, error = register_user(username, email, password, role)
+    # Public self-registration always creates the lowest-privilege role. Any
+    # `role` in the request body is ignored to prevent privilege escalation —
+    # admins elevate accounts via /api/admin/users/<id>/role.
+    user_id, error = register_user(username, email, password, "user")
     if error:
         return jsonify({"error": error}), 400
 
@@ -98,8 +177,9 @@ def auth_login():
     username = data.get("username", "").strip()
     password = data.get("password", "")
     totp_code = data.get("totp_code")
+    remember = bool(data.get("remember"))
 
-    result, error = authenticate(username, password, totp_code)
+    result, error = authenticate(username, password, totp_code, remember)
     if error:
         return jsonify({"error": error}), 401
 
@@ -110,9 +190,43 @@ def auth_login():
     response = jsonify({"token": token, "message": "Login successful"})
     response.set_cookie(
         "session_token", token,
-        httponly=True, samesite="Strict", max_age=1800
+        httponly=True, samesite="Strict",
+        max_age=(REMEMBER_TIMEOUT if remember else 1800)
     )
     return response
+
+
+@app.route("/auth/forgot-password", methods=["POST"])
+def auth_forgot_password():
+    data = request.get_json() or {}
+    email = data.get("email", "").strip()
+    if not email:
+        return jsonify({"error": "Email is required"}), 400
+
+    code, emailed = request_password_reset(email)
+    # Never reveal whether the account exists.
+    resp = {"message": "If that email is registered, a reset code has been sent."}
+    # Dev convenience: when SMTP is not configured, return the code so the
+    # reset flow is testable without an email server.
+    if code and not emailed:
+        resp["dev_code"] = code
+        resp["note"] = "Email is not configured (SMTP_HOST unset); code returned for testing only."
+    return jsonify(resp)
+
+
+@app.route("/auth/reset-password", methods=["POST"])
+def auth_reset_password():
+    data = request.get_json() or {}
+    email = data.get("email", "").strip()
+    code = data.get("code", "").strip()
+    new_password = data.get("newPassword", "")
+    if not email or not code or not new_password:
+        return jsonify({"error": "email, code and newPassword are required"}), 400
+
+    error = reset_password(email, code, new_password)
+    if error:
+        return jsonify({"error": error}), 400
+    return jsonify({"message": "Password reset successful. You can now log in."})
 
 
 @app.route("/auth/logout", methods=["POST"])
@@ -187,6 +301,7 @@ def predict():
 
 @app.route("/api/batch", methods=["POST"])
 @token_required
+@role_required("staff", "admin")
 def batch_predict():
     if "file" not in request.files:
         return jsonify({"error": "No CSV file uploaded"}), 400
@@ -245,6 +360,7 @@ def batch_predict():
 
 @app.route("/api/bias-audit", methods=["GET"])
 @token_required
+@role_required("admin")
 def bias_audit():
     results = bias_monitor.run_audit()
     return jsonify(results)
@@ -254,6 +370,7 @@ def bias_audit():
 
 @app.route("/api/model-info", methods=["GET"])
 @token_required
+@role_required("admin")
 def model_info():
     if training_results:
         return jsonify(training_results)
@@ -262,6 +379,7 @@ def model_info():
 
 @app.route("/api/model-comparison", methods=["GET"])
 @token_required
+@role_required("admin")
 def model_comparison():
     if not training_results:
         return jsonify({"error": "No training results available"}), 404
@@ -283,6 +401,7 @@ def model_comparison():
 
 @app.route("/api/dashboard", methods=["GET"])
 @token_required
+@role_required("staff", "admin")
 def practice_dashboard():
     if not _prediction_log:
         return jsonify({"message": "No assessments yet", "total": 0})
@@ -326,6 +445,7 @@ def practice_dashboard():
 
 @app.route("/api/feedback", methods=["POST"])
 @token_required
+@role_required("staff", "admin")
 def submit_feedback():
     data = request.get_json()
     if not data:
@@ -340,6 +460,17 @@ def submit_feedback():
     for p in _prediction_log:
         if p["id"] == prediction_id:
             p["feedback"] = outcome
+            # Persist an anonymised feedback record (tier/prob/outcome only — no
+            # patient data) for cross-session accuracy tracking & audit.
+            db.session.add(PersistentFeedback(
+                user_id=request.current_user["userId"],
+                prediction_risk_tier=p["risk_tier"],
+                prediction_probability=p["probability"],
+                outcome=outcome,
+            ))
+            db.session.add(_audit(request.current_user["userId"], "feedback_recorded",
+                                  f"{outcome} for {p['risk_tier']} risk prediction"))
+            db.session.commit()
             return jsonify({"message": "Feedback recorded", "prediction_id": prediction_id})
 
     return jsonify({"error": "Prediction not found"}), 404
@@ -347,6 +478,7 @@ def submit_feedback():
 
 @app.route("/api/feedback/summary", methods=["GET"])
 @token_required
+@role_required("staff", "admin")
 def feedback_summary():
     total = len(_prediction_log)
     with_feedback = [p for p in _prediction_log if p["feedback"] is not None]
@@ -381,6 +513,7 @@ EHR_MOCK_PATIENTS = {
 
 @app.route("/api/ehr/lookup/<nhs_number>", methods=["GET"])
 @token_required
+@role_required("staff", "admin")
 def ehr_lookup(nhs_number):
     patient = EHR_MOCK_PATIENTS.get(nhs_number)
     if not patient:
@@ -396,6 +529,7 @@ def ehr_lookup(nhs_number):
 
 @app.route("/api/ehr/patients", methods=["GET"])
 @token_required
+@role_required("staff", "admin")
 def ehr_list():
     return jsonify({
         "source": "Mock EMIS/SystmOne",
@@ -416,12 +550,14 @@ TRUST_CONFIGS = {
 
 @app.route("/api/trusts", methods=["GET"])
 @token_required
+@role_required("staff", "admin")
 def list_trusts():
     return jsonify({"trusts": TRUST_CONFIGS})
 
 
 @app.route("/api/trusts/<trust_id>", methods=["GET"])
 @token_required
+@role_required("staff", "admin")
 def get_trust(trust_id):
     config = TRUST_CONFIGS.get(trust_id)
     if not config:
@@ -433,6 +569,7 @@ def get_trust(trust_id):
 
 @app.route("/api/evaluation/cross-validation", methods=["POST"])
 @token_required
+@role_required("admin")
 def run_cv_evaluation():
     from ml.evaluation import run_cross_validation
     from sklearn.preprocessing import StandardScaler
@@ -537,6 +674,7 @@ NHSX_ETHICS_MAPPING = {
 
 @app.route("/api/ethics-framework", methods=["GET"])
 @token_required
+@role_required("admin")
 def ethics_framework():
     return jsonify(NHSX_ETHICS_MAPPING)
 
@@ -545,6 +683,7 @@ def ethics_framework():
 
 @app.route("/api/export-model", methods=["GET"])
 @token_required
+@role_required("admin")
 def export_model():
     model_path = os.path.join("models", "model.joblib")
     if not os.path.exists(model_path):
@@ -569,6 +708,7 @@ _notification_queue = []
 
 @app.route("/api/notifications/schedule", methods=["POST"])
 @token_required
+@role_required("staff", "admin")
 def schedule_notification():
     data = request.get_json()
     if not data:
@@ -600,6 +740,7 @@ def schedule_notification():
 
 @app.route("/api/notifications", methods=["GET"])
 @token_required
+@role_required("staff", "admin")
 def list_notifications():
     return jsonify({"notifications": _notification_queue, "total": len(_notification_queue)})
 
@@ -624,9 +765,32 @@ def update_profile():
     user = db.session.get(User, request.current_user["userId"])
     if not user:
         return jsonify({"error": "User not found"}), 404
-    display_name = data.get("displayName")
-    if display_name is not None:
-        user.display_name = display_name.strip()[:100]
+
+    # Simple text fields: trim + length-cap.
+    _text_fields = {
+        "displayName": ("display_name", 100),
+        "jobTitle": ("job_title", 100),
+        "department": ("department", 100),
+        "bio": ("bio", 300),
+        "phone": ("phone", 30),
+        "pronouns": ("pronouns", 30),
+    }
+    for key, (attr, limit) in _text_fields.items():
+        if key in data and data[key] is not None:
+            setattr(user, attr, str(data[key]).strip()[:limit] or None)
+
+    # Avatar: empty string clears it; otherwise must be a small image data-URL.
+    if "avatar" in data:
+        avatar = data["avatar"]
+        if not avatar:
+            user.avatar = None
+        elif not (isinstance(avatar, str) and avatar.startswith("data:image/")):
+            return jsonify({"error": "Avatar must be an image"}), 400
+        elif len(avatar) > 2_000_000:
+            return jsonify({"error": "Image too large — please choose a smaller photo"}), 400
+        else:
+            user.avatar = avatar
+
     db.session.commit()
     return jsonify(user.to_dict())
 
@@ -642,9 +806,13 @@ def change_password():
         return jsonify({"error": "User not found"}), 404
     if not _verify_password(data.get("currentPassword", ""), user.password_hash):
         return jsonify({"error": "Current password is incorrect"}), 400
+    current_pw = data.get("currentPassword", "")
     new_pw = data.get("newPassword", "")
-    if len(new_pw) < 8:
-        return jsonify({"error": "New password must be at least 8 characters"}), 400
+    pw_error = validate_password(new_pw)
+    if pw_error:
+        return jsonify({"error": pw_error}), 400
+    if new_pw == current_pw:
+        return jsonify({"error": "New password must be different from the current password"}), 400
     user.password_hash = _hash_password(new_pw)
     user.last_password_change = __import__("time").time()
     db.session.commit()
@@ -690,6 +858,7 @@ def disable_2fa():
 
 @app.route("/api/carer-proxy", methods=["POST"])
 @token_required
+@role_required("staff", "admin")
 def create_carer_proxy():
     data = request.get_json()
     if not data:
@@ -701,39 +870,38 @@ def create_carer_proxy():
         return jsonify({"error": "carerName, relationship, and patientIdentifier required"}), 400
     if relationship not in ("family", "carer", "social_worker", "neighbour", "volunteer"):
         return jsonify({"error": "Invalid relationship type"}), 400
-    proxy = {
-        "id": str(uuid.uuid4()),
-        "staffUser": request.current_user.get("username", ""),
-        "carerName": carer_name,
-        "carerRelationship": relationship,
-        "carerContact": data.get("carerContact", "").strip(),
-        "patientIdentifier": patient_id,
-        "reason": data.get("reason", "").strip(),
-        "createdAt": __import__("time").time(),
-    }
-    _carer_proxies.append(proxy)
-    _audit_log.append({
-        "id": str(uuid.uuid4()),
-        "user": request.current_user.get("username", ""),
-        "action": "carer_proxy_created",
-        "detail": f"Proxy for {patient_id} by {carer_name} ({relationship})",
-        "timestamp": __import__("time").time(),
-    })
-    return jsonify({"message": "Carer proxy registered", "proxy": proxy}), 201
+
+    user_id = request.current_user["userId"]
+    proxy = CarerProxy(
+        staff_user_id=user_id,
+        carer_name=carer_name,
+        carer_relationship=relationship,
+        carer_contact=data.get("carerContact", "").strip() or None,
+        patient_identifier=patient_id,
+        reason=data.get("reason", "").strip() or None,
+    )
+    db.session.add(proxy)
+    db.session.add(_audit(user_id, "carer_proxy_created",
+                          f"Proxy for {patient_id} by {carer_name} ({relationship})"))
+    db.session.commit()
+    return jsonify({"message": "Carer proxy registered", "proxy": proxy.to_dict()}), 201
 
 
 @app.route("/api/carer-proxy/list", methods=["GET"])
 @token_required
+@role_required("staff", "admin")
 def list_carer_proxies():
-    user = request.current_user.get("username", "")
-    proxies = [p for p in _carer_proxies if p["staffUser"] == user]
-    return jsonify({"proxies": proxies})
+    proxies = (CarerProxy.query
+               .filter_by(staff_user_id=request.current_user["userId"])
+               .order_by(CarerProxy.created_at.desc()).all())
+    return jsonify({"proxies": [p.to_dict() for p in proxies]})
 
 
 # ── Appointment Slot Optimisation ──
 
 @app.route("/api/slot-optimisation", methods=["POST"])
 @token_required
+@role_required("staff", "admin")
 def slot_optimisation():
     data = request.get_json()
     if not data:
@@ -812,6 +980,7 @@ NUDGE_TEMPLATES = {
 
 @app.route("/api/patient-nudge", methods=["POST"])
 @token_required
+@role_required("staff", "admin")
 def generate_patient_nudge():
     data = request.get_json()
     if not data:
@@ -849,12 +1018,18 @@ def generate_patient_nudge():
         message = f"Dear {patient_name}, {message[0].lower()}{message[1:]}"
 
     factors = []
-    if age >= 65: factors.append("elderly_patient")
-    if imd <= 3: factors.append("high_deprivation")
-    if prior_dna >= 2: factors.append("repeat_dna")
-    if patient.get("Disability", 0) == 1: factors.append("disability")
-    if patient.get("SMSReceived", 0) == 0: factors.append("no_sms_reminder")
-    if prob >= 0.5: factors.append("high_risk")
+    if age >= 65:
+        factors.append("elderly_patient")
+    if imd <= 3:
+        factors.append("high_deprivation")
+    if prior_dna >= 2:
+        factors.append("repeat_dna")
+    if patient.get("Disability", 0) == 1:
+        factors.append("disability")
+    if patient.get("SMSReceived", 0) == 0:
+        factors.append("no_sms_reminder")
+    if prob >= 0.5:
+        factors.append("high_risk")
 
     return jsonify({
         "nudge_type": nudge_type, "language": language, "message": message,
@@ -867,10 +1042,69 @@ def generate_patient_nudge():
 
 @app.route("/api/audit-log", methods=["GET"])
 @token_required
+@role_required("admin")
 def get_audit_log():
-    if request.current_user.get("role") != "admin":
-        return jsonify({"error": "Admin access required"}), 403
-    return jsonify({"logs": _audit_log[-100:]})
+    logs = (AuditLog.query.order_by(AuditLog.created_at.desc()).limit(100).all())
+    return jsonify({"logs": [log.to_dict() for log in logs]})
+
+
+# ── Admin User Management (admin-only RBAC, FR-04) ──
+
+@app.route("/api/admin/users", methods=["GET"])
+@token_required
+@role_required("admin")
+def admin_list_users():
+    users = User.query.order_by(User.created_at.desc()).all()
+    return jsonify({"users": [u.to_dict() for u in users], "total": len(users)})
+
+
+@app.route("/api/admin/users/<user_id>/role", methods=["PUT"])
+@token_required
+@role_required("admin")
+def admin_set_role(user_id):
+    data = request.get_json() or {}
+    new_role = data.get("role", "")
+    if new_role not in VALID_ROLES:
+        return jsonify({"error": f"role must be one of: {', '.join(sorted(VALID_ROLES))}"}), 400
+
+    target = db.session.get(User, user_id)
+    if not target:
+        return jsonify({"error": "User not found"}), 404
+
+    # Guard: do not let an admin demote themselves (avoids self-lockout).
+    if target.id == request.current_user["userId"] and new_role != "admin":
+        return jsonify({"error": "You cannot change your own admin role"}), 400
+
+    old_role = target.role
+    target.role = new_role
+    db.session.add(_audit(request.current_user["userId"], "role_changed",
+                          f"{target.username}: {old_role} -> {new_role}"))
+    db.session.commit()
+    return jsonify({"message": "Role updated", "user": target.to_dict()})
+
+
+@app.route("/api/admin/users/<user_id>", methods=["DELETE"])
+@token_required
+@role_required("admin")
+def admin_delete_user(user_id):
+    if user_id == request.current_user["userId"]:
+        return jsonify({"error": "You cannot delete your own account"}), 400
+    target = db.session.get(User, user_id)
+    if not target:
+        return jsonify({"error": "User not found"}), 404
+    username = target.username
+    db.session.delete(target)
+    db.session.add(_audit(request.current_user["userId"], "user_deleted", username))
+    db.session.commit()
+    return jsonify({"message": f"User {username} deleted"})
+
+
+def _audit(user_id, action, detail=None):
+    """Build an AuditLog row (caller commits)."""
+    return AuditLog(
+        user_id=user_id, action=action, detail=detail,
+        ip_address=request.remote_addr,
+    )
 
 
 # ── Helpers ──
@@ -948,9 +1182,25 @@ def _generate_nl_summary(patient, result, age_group):
             f"The main contributing factors are that the patient {factors_text}.")
 
 
+def ensure_database():
+    """Guarantee the schema exists so the DB 'just works' when the backend
+    starts — create_all is idempotent and complements Alembic migrations."""
+    with app.app_context():
+        try:
+            db.create_all()
+            print("Database ready (schema ensured).")
+        except Exception as exc:  # pragma: no cover
+            print(f"WARNING: could not initialise database: {exc}")
+
+
 if __name__ == "__main__":
     print("Loading Care Attend models...")
     load_models()
+    ensure_database()
     print("Models loaded. Starting server...")
-    print("Open http://127.0.0.1:5000 in your browser")
-    app.run(debug=True, host="127.0.0.1", port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    # Secure by default: debug off unless explicitly opted in (Werkzeug's
+    # interactive debugger is an RCE vector if exposed).
+    debug = os.environ.get("FLASK_DEBUG", "0") == "1"
+    print(f"Open http://127.0.0.1:{port} in your browser")
+    app.run(debug=debug, host="127.0.0.1", port=port)

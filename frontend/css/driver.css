@@ -19,6 +19,13 @@
     50% { box-shadow: 0 0 0 8px rgba(65,182,230,0.3), 0 0 0 9999px rgba(0,0,0,0.55); }
 }
 
+/* Anchored mode: the spotlighted element's box-shadow provides the dark
+   backdrop, so the overlay itself becomes a transparent click-blocker. */
+.tour-overlay.anchored {
+    background: transparent;
+    display: block;
+}
+
 /* Tour tooltip positioning */
 .tour-card {
     z-index: 10002;

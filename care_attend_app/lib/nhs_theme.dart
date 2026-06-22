@@ -18,6 +18,7 @@ class NHSTheme {
   static const Color riskHighBg = Color(0xFFFFEBEE);
 
   static ThemeData get theme => ThemeData(
+        useMaterial3: true,
         primaryColor: blue,
         scaffoldBackgroundColor: paleGrey,
         fontFamily: 'Arial',
@@ -25,6 +26,40 @@ class NHSTheme {
           primary: blue,
           secondary: lightBlue,
           error: riskHigh,
+          surface: white,
+        ),
+        // Material 3 bottom navigation — the app's signature chrome,
+        // visually distinct from the website's top tab bar.
+        navigationBarTheme: NavigationBarThemeData(
+          backgroundColor: white,
+          indicatorColor: lightBlue.withValues(alpha: 0.22),
+          elevation: 3,
+          height: 68,
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+          iconTheme: WidgetStateProperty.resolveWith((states) {
+            final selected = states.contains(WidgetState.selected);
+            return IconThemeData(
+              size: 26,
+              color: selected ? blue : darkGrey,
+            );
+          }),
+          labelTextStyle: WidgetStateProperty.resolveWith((states) {
+            final selected = states.contains(WidgetState.selected);
+            return TextStyle(
+              fontFamily: 'Arial',
+              fontSize: 12,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              color: selected ? blue : darkGrey,
+            );
+          }),
+        ),
+        cardTheme: CardThemeData(
+          color: white,
+          elevation: 1.5,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         ),
         appBarTheme: const AppBarTheme(
           backgroundColor: blue,
@@ -66,6 +101,66 @@ class NHSTheme {
           ),
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        ),
+      );
+
+  // Dark mode — mirrors the website's high-contrast slate palette.
+  static const Color darkBg = Color(0xFF1A1A2E);
+  static const Color darkSurface = Color(0xFF16213E);
+
+  static ThemeData get darkTheme => ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.dark,
+        primaryColor: lightBlue,
+        scaffoldBackgroundColor: darkBg,
+        fontFamily: 'Arial',
+        colorScheme: const ColorScheme.dark(
+          primary: lightBlue,
+          secondary: lightBlue,
+          surface: darkSurface,
+          error: riskHigh,
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: darkSurface,
+          foregroundColor: white,
+          elevation: 2,
+          centerTitle: true,
+          titleTextStyle: TextStyle(
+            fontFamily: 'Arial',
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: white,
+          ),
+        ),
+        navigationBarTheme: NavigationBarThemeData(
+          backgroundColor: darkSurface,
+          indicatorColor: lightBlue.withValues(alpha: 0.30),
+          elevation: 3,
+          height: 68,
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        ),
+        cardTheme: CardThemeData(
+          color: darkSurface,
+          elevation: 1.5,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: lightBlue,
+            foregroundColor: black,
+            minimumSize: const Size(double.infinity, 48),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(6),
+            ),
+            textStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
+            ),
+          ),
         ),
       );
 

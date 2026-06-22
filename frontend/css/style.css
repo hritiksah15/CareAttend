@@ -370,6 +370,11 @@ body > * {
 .tab-btn.active { color: var(--nhs-blue); border-bottom-color: var(--nhs-blue); background: var(--nhs-pale-grey); }
 .tab-icon { font-size: 16px; }
 
+/* Password strength checklist */
+.pw-meter { display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 6px 2px 0; }
+.pw-req { font-size: 11px; color: var(--nhs-grey); }
+.pw-req.ok { color: var(--risk-low); }
+
 /* ── CONTAINER ── */
 .container {
     max-width: 960px;
@@ -1052,13 +1057,48 @@ body.dark-mode .risk-tier-badge.tier-low { background: #1e4a2e; color: #6fcf6f; 
 body.dark-mode .risk-tier-badge.tier-medium { background: #4a3a1e; color: #ffc857; }
 body.dark-mode .risk-tier-badge.tier-high { background: #4a1e1e; color: #ff7777; }
 
+/* Data tables (bias, cross-validation, McNemar, slots, admin, etc.) */
+.audit-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    font-size: 14px;
+    background: var(--nhs-white);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.audit-table thead th {
+    background: var(--nhs-pale-grey);
+    color: var(--nhs-blue);
+    font-weight: 700;
+    text-align: left;
+    padding: 12px 16px;
+    border-bottom: 2px solid var(--nhs-blue);
+    white-space: nowrap;
+}
+.audit-table td {
+    padding: 10px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--nhs-pale-grey);
+    color: var(--nhs-black);
+    vertical-align: top;
+}
+.audit-table tbody tr:last-child td { border-bottom: none; }
+.audit-table tbody tr:nth-child(even) td { background: rgba(0,48,135,0.025); }
+.audit-table tbody tr:hover td { background: var(--nhs-pale-grey); }
+/* Horizontal scroll on narrow screens instead of column mashing */
+.audit-table-wrap { width: 100%; overflow-x: auto; }
+
 /* Dark mode - Metrics & tables */
 body.dark-mode .metric-box { background: rgba(58,58,78,0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-color: rgba(255,255,255,0.06); }
 body.dark-mode .metric-value { color: #7eb8f7; }
 body.dark-mode .metric-label { color: #aaa; }
-body.dark-mode .audit-table th { background: #2a2a3e; color: #c0c0c0; }
-body.dark-mode .audit-table td { border-color: #3a3a4e; color: #d0d0d0; }
-body.dark-mode .audit-table tr:hover td { background: #353548; }
+body.dark-mode .audit-table { background: #25253a; box-shadow: none; }
+body.dark-mode .audit-table thead th { background: #2a2a3e; color: #7eb8f7; border-bottom-color: #5a8fd4; }
+body.dark-mode .audit-table td { border-bottom-color: #3a3a4e; color: #d0d0d0; }
+body.dark-mode .audit-table tbody tr:nth-child(even) td { background: rgba(255,255,255,0.03); }
+body.dark-mode .audit-table tbody tr:hover td { background: #353548; }
 
 /* Dark mode - Bias */
 body.dark-mode .bias-tab { background: #3a3a4e; color: #7eb8f7; border-color: #5a8fd4; }
@@ -1090,18 +1130,7 @@ body.dark-mode .user-badge { background: rgba(255,255,255,0.1); color: #ccc; }
 body.dark-mode .auth-error { background: #3a1e1e; color: #ff7777; }
 body.dark-mode .auth-success { background: #1e3a1e; color: #6fcf6f; }
 
-/* ── RESPONSIVE ── */
-@media (max-width: 640px) {
-    .header-content { flex-direction: column; align-items: flex-start; gap: 4px; }
-    .header-right { margin-top: 8px; }
-    .risk-header { flex-direction: column; align-items: center; text-align: center; }
-    .form-grid { grid-template-columns: 1fr; }
-    .checkbox-grid { grid-template-columns: 1fr; }
-    .tab-btn { font-size: 11px; padding: 10px 6px; }
-    .tab-icon { display: none; }
-    .result-actions { flex-direction: column; }
-    .bias-bar-label { width: 60px; font-size: 12px; }
-}
+/* Responsive rules moved to mobile-responsive.css */
 
 /* ── Account Centre ── */
 
@@ -1139,7 +1168,71 @@ body.dark-mode .auth-success { background: #1e3a1e; color: #6fcf6f; }
     justify-content: center;
     font-size: 20px;
     font-weight: 700;
+    overflow: hidden;
 }
+.ac-avatar.has-img { background: transparent; }
+.ac-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Clickable avatar with camera overlay */
+.ac-avatar-wrap { position: relative; cursor: pointer; width: 56px; height: 56px; flex: 0 0 auto; }
+.ac-avatar-cam {
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+    background: #003087;
+    color: #fff;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.ac-avatar-wrap:hover .ac-avatar-cam { background: #002060; }
+.ac-header-sub { font-size: 12px; color: var(--nhs-dark-grey); margin: 4px 0 0; }
+
+/* Avatar options menu (View / Change / Remove) */
+.avatar-menu {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    z-index: 60;
+    background: var(--nhs-white);
+    border: 1px solid #d0d5dd;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-hover);
+    overflow: hidden;
+    min-width: 160px;
+}
+.avatar-menu button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 10px 14px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--nhs-black);
+}
+.avatar-menu button:hover { background: var(--nhs-pale-grey); color: var(--nhs-blue); }
+body.dark-mode .avatar-menu { background: #25253a; border-color: #3a3a4e; }
+body.dark-mode .avatar-menu button { color: #d0d0d0; }
+body.dark-mode .avatar-menu button:hover { background: #353548; color: #7eb8f7; }
+
+/* Full-image lightbox */
+.avatar-lightbox {
+    position: fixed; inset: 0; z-index: 4000;
+    background: rgba(0,0,0,0.85);
+    display: flex; align-items: center; justify-content: center;
+    cursor: zoom-out;
+}
+.avatar-lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 8px; }
+
+/* Small avatar inside the header user badge */
+.badge-avatar { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; vertical-align: middle; margin-right: 4px; }
 
 .ac-header-info h2 { font-size: 18px; color: #231F20; margin: 0; }
 
@@ -1199,6 +1292,52 @@ body.dark-mode .auth-success { background: #1e3a1e; color: #6fcf6f; }
 }
 
 .ac-input:focus { border-color: #003087; outline: none; box-shadow: 0 0 0 3px rgba(0,48,135,0.1); }
+
+/* Password show/hide eye toggle (injected by enhancePasswordFields) */
+.pw-eye-host { position: relative; display: block; width: 100%; }
+.pw-eye-host > input { width: 100%; padding-right: 42px; }
+.pw-eye-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--nhs-dark-grey);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    line-height: 0;
+}
+.pw-eye-btn:hover { color: var(--nhs-blue); }
+.pw-eye-btn i, .pw-eye-btn svg { width: 18px; height: 18px; }
+body.dark-mode .pw-eye-btn { color: #aaa; }
+body.dark-mode .pw-eye-btn:hover { color: #7eb8f7; }
+
+/* Export format buttons (Risk Results) — always visible, no dropdown */
+.export-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+.export-label {
+    display: inline-flex;
+    align-items: center;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--nhs-dark-grey);
+    margin-right: 4px;
+}
+.export-fmt {
+    flex: 0 0 auto;
+    padding: 8px 16px;
+    font-size: 13px;
+}
+body.dark-mode .export-label { color: #aaa; }
 
 .ac-save-btn {
     padding: 8px 14px;

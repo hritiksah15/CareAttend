@@ -11,6 +11,9 @@ flask-sqlalchemy==3.1.1
 flask-migrate==4.0.7
 psycopg[binary]>=3.1.0
 pyotp==2.9.0
-pytest==8.3.4
+gunicorn==23.0.0
 xgboost>=2.0.0
 lightgbm>=4.0.0
+
+# ── Dev / CI only ──
+pytest==8.3.4
