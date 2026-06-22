@@ -23,6 +23,12 @@ class User(db.Model):
     password_hash = db.Column(db.String(256), nullable=False)
     role = db.Column(db.String(20), nullable=False, default="staff")
     display_name = db.Column(db.String(100), nullable=True)
+    avatar = db.Column(db.Text, nullable=True)  # base64 data-URL (resized client-side)
+    job_title = db.Column(db.String(100), nullable=True)
+    department = db.Column(db.String(100), nullable=True)
+    bio = db.Column(db.String(300), nullable=True)
+    phone = db.Column(db.String(30), nullable=True)
+    pronouns = db.Column(db.String(30), nullable=True)
     totp_secret = db.Column(db.String(32), nullable=True)
     totp_enabled = db.Column(db.Boolean, nullable=False, default=False)
     created_at = db.Column(db.Float, nullable=False, default=time.time)
@@ -37,6 +43,12 @@ class User(db.Model):
             "email": self.email,
             "role": self.role,
             "displayName": self.display_name,
+            "avatar": self.avatar,
+            "jobTitle": self.job_title,
+            "department": self.department,
+            "bio": self.bio,
+            "phone": self.phone,
+            "pronouns": self.pronouns,
             "totpEnabled": self.totp_enabled,
             "createdAt": self.created_at,
             "lastPasswordChange": self.last_password_change,
@@ -50,6 +62,7 @@ class Session(db.Model):
     user_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False)
     created_at = db.Column(db.Float, nullable=False, default=time.time)
     last_activity = db.Column(db.Float, nullable=False, default=time.time)
+    remember = db.Column(db.Boolean, nullable=False, default=False)
 
 
 class AuditLog(db.Model):

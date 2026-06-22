@@ -5,10 +5,10 @@ Supports AT4 Quality Assurance section with evidence of methodological rigour.
 """
 
 import numpy as np
-from sklearn.model_selection import StratifiedKFold, cross_val_predict
+from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import (
     f1_score, recall_score, precision_score, roc_auc_score,
-    accuracy_score, confusion_matrix
+    accuracy_score
 )
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier

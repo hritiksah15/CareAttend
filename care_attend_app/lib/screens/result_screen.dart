@@ -1,6 +1,9 @@
 import 'dart:math';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../nhs_theme.dart';
+import '../services/api_service.dart';
+import '../utils/export.dart';
 
 class ResultScreen extends StatelessWidget {
   final Map<String, dynamic>? result;
@@ -49,8 +52,11 @@ class ResultScreen extends StatelessWidget {
     final shapValues = result!['shap_values'] as List;
     final interventions = result!['interventions'] as List;
     final ageGroup = result!['age_group'] as String;
-    final sessionId = (result!['sessionId'] as String?)?.substring(0, 6).toUpperCase() ?? '---';
+    final fullSessionId = result!['sessionId'] as String?;
+    final sessionId = fullSessionId?.substring(0, 6).toUpperCase() ?? '---';
     final patient = result!['patient_summary'] as Map<String, dynamic>;
+    final modelUsed = '${result!['model_used'] ?? 'Logistic Regression'}';
+    final nlSummary = result!['nl_summary'] as String?;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -139,6 +145,7 @@ class ResultScreen extends StatelessWidget {
                           _chip('IMD: ${patient['IMDDecile']}'),
                           _chip('Lead: ${patient['AppointmentLeadTimeDays']}d'),
                           _chip('DNAs: ${patient['PriorDNACount']}'),
+                          _chip('Model: $modelUsed'),
                         ],
                       ),
                     ],
@@ -315,6 +322,97 @@ class ResultScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
+          // Plain-English summary
+          if (nlSummary != null && nlSummary.isNotEmpty) ...[
+            _card(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Plain-English Summary',
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: NHSTheme.blue)),
+                  const SizedBox(height: 8),
+                  Text(nlSummary,
+                      style: const TextStyle(fontSize: 15, height: 1.5)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          // Export
+          _card(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Export report',
+                    style: TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 8),
+                Wrap(spacing: 8, runSpacing: 8, children: [
+                  OutlinedButton.icon(
+                    onPressed: () => Exporter.patientPdf(result!),
+                    icon: const Icon(Icons.picture_as_pdf, size: 18),
+                    label: const Text('PDF'),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () => Exporter.patientCsv(result!),
+                    icon: const Icon(Icons.table_chart, size: 18),
+                    label: const Text('CSV'),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () => Exporter.json(
+                        result!, 'CareAttend_Patient_Report.json'),
+                    icon: const Icon(Icons.data_object, size: 18),
+                    label: const Text('JSON'),
+                  ),
+                ]),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Prediction feedback
+          _card(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Was this prediction accurate?',
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: NHSTheme.blue)),
+                const SizedBox(height: 4),
+                const Text('Your feedback improves accuracy tracking.',
+                    style: TextStyle(color: NHSTheme.darkGrey, fontSize: 13)),
+                const SizedBox(height: 12),
+                _FeedbackButtons(predictionId: fullSessionId),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Session risk history
+          if (ApiService.riskHistory.length >= 2) ...[
+            _card(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Risk History (Session)',
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: NHSTheme.blue)),
+                  const SizedBox(height: 16),
+                  SizedBox(height: 180, child: _RiskHistoryChart()),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+
           // Action buttons (Fig 3.6b)
           Row(
             children: [
@@ -411,4 +509,82 @@ class _GaugePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+class _FeedbackButtons extends StatefulWidget {
+  final String? predictionId;
+  const _FeedbackButtons({required this.predictionId});
+
+  @override
+  State<_FeedbackButtons> createState() => _FeedbackButtonsState();
+}
+
+class _FeedbackButtonsState extends State<_FeedbackButtons> {
+  String? _done;
+  bool _busy = false;
+
+  Future<void> _send(String outcome) async {
+    if (widget.predictionId == null) return;
+    setState(() => _busy = true);
+    try {
+      await ApiService.submitFeedback(widget.predictionId!, outcome);
+      setState(() => _done = outcome);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_done != null) {
+      return Text('Feedback recorded: $_done',
+          style: const TextStyle(
+              color: NHSTheme.riskLow, fontWeight: FontWeight.w600));
+    }
+    Widget btn(String label, String outcome, Color c) => OutlinedButton(
+          onPressed: _busy ? null : () => _send(outcome),
+          style: OutlinedButton.styleFrom(
+              foregroundColor: c, side: BorderSide(color: c)),
+          child: Text(label),
+        );
+    return Wrap(spacing: 8, runSpacing: 8, children: [
+      btn('Attended', 'attended', NHSTheme.riskLow),
+      btn('DNA', 'dna', NHSTheme.riskHigh),
+      btn('Correct', 'correct', NHSTheme.blue),
+      btn('Incorrect', 'incorrect', NHSTheme.darkGrey),
+    ]);
+  }
+}
+
+class _RiskHistoryChart extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final hist = ApiService.riskHistory;
+    final spots = <FlSpot>[
+      for (var i = 0; i < hist.length; i++)
+        FlSpot(i.toDouble(), (hist[i]['percentage'] as num).toDouble()),
+    ];
+    return LineChart(LineChartData(
+      minY: 0,
+      maxY: 100,
+      titlesData: const FlTitlesData(
+        topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+      ),
+      lineBarsData: [
+        LineChartBarData(
+          spots: spots,
+          isCurved: true,
+          color: NHSTheme.blue,
+          barWidth: 3,
+          dotData: const FlDotData(show: true),
+        ),
+      ],
+    ));
+  }
 }

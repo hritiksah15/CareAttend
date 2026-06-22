@@ -3,23 +3,96 @@ let shapChart = null;
 let riskHistoryChart = null;
 let lastResult = null;
 let authToken = null;
+let currentRole = 'user';
+
+// RBAC (frontend): which roles may *operate* each tab. Mirrors backend
+// role_required gating, which stays the real enforcement (403 = "handover"
+// belongs to that role). Every role can still SEE and OPEN all 8 feature tabs;
+// unauthorized roles get a read-only lock notice instead of the tab being hidden.
+const TAB_ROLES = {
+    assessment: ['user', 'staff', 'admin'],
+    results: ['user', 'staff', 'admin'],
+    dashboard: ['staff', 'admin'],
+    batch: ['staff', 'admin'],
+    bias: ['admin'],
+    ethics: ['admin'],
+    slots: ['staff', 'admin'],
+    nudge: ['staff', 'admin'],
+    admin: ['admin'],
+};
+
+// A tab is shown only if the current role can operate it — non-permitted tabs
+// are hidden entirely (no view-only mode).
+function isTabVisible(tabName) {
+    return canOperateTab(tabName);
+}
+
+// Whether the current role may actually run the tab's gated action.
+function canOperateTab(tabName) {
+    const allowed = TAB_ROLES[tabName];
+    return !allowed || allowed.includes(currentRole);
+}
+
+// Tabs the current role can actually USE, in nav order. Drives number-key
+// shortcuts and the guided tour so both match what the role can do.
+const TAB_ORDER = ['assessment', 'results', 'dashboard', 'batch', 'bias', 'ethics', 'slots', 'nudge', 'admin'];
+function operableTabs() {
+    return TAB_ORDER.filter(t => isTabVisible(t) && canOperateTab(t));
+}
+
+// Show only the tabs the current role can operate; hide the rest entirely.
+// Export is a privileged action — staff/admin only, never the read-only 'user'.
+function canExport() {
+    return currentRole === 'staff' || currentRole === 'admin';
+}
+
+function applyRoleAccess(role) {
+    currentRole = role || 'user';
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.style.display = isTabVisible(btn.dataset.tab) ? '' : 'none';
+    });
+    // Hide the Risk Results export row from read-only users.
+    document.querySelectorAll('.export-row').forEach(el => {
+        el.style.display = canExport() ? '' : 'none';
+    });
+    const active = document.querySelector('.tab-content.active');
+    if (active) {
+        const activeTab = active.id.replace('tab-', '');
+        if (!isTabVisible(activeTab)) switchTab('assessment');
+    }
+}
 let sessionTimer = null;
 let biasAuditData = null;
 let riskHistory = []; // session-scoped risk trajectory (FR-09)
-const SESSION_TIMEOUT_MS = 24 * 60 * 60 * 1000; // 24 hours
+const IDLE_TIMEOUT_MS = 30 * 60 * 1000;            // 30 min — matches backend SESSION_TIMEOUT
+const REMEMBER_TIMEOUT_MS = 30 * 24 * 60 * 60 * 1000; // 30 days — matches backend REMEMBER_TIMEOUT
+
+// Client auto-logout window. Long when "Remember me" was chosen, else short idle.
+function sessionTimeoutMs() {
+    return localStorage.getItem('careattend_remember') === '1' ? REMEMBER_TIMEOUT_MS : IDLE_TIMEOUT_MS;
+}
 
 // ── Auth Functions ──
 
-function showLogin() {
-    document.getElementById('login-form-wrapper').style.display = 'block';
-    document.getElementById('register-form-wrapper').style.display = 'none';
+function _authWrapper(show) {
+    ['login-form-wrapper', 'register-form-wrapper', 'reset-form-wrapper'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = (id === show) ? 'block' : 'none';
+    });
     clearAuthErrors();
 }
 
-function showRegister() {
-    document.getElementById('login-form-wrapper').style.display = 'none';
-    document.getElementById('register-form-wrapper').style.display = 'block';
-    clearAuthErrors();
+function showLogin() { _authWrapper('login-form-wrapper'); }
+
+function showRegister() { _authWrapper('register-form-wrapper'); }
+
+function showReset() {
+    _authWrapper('reset-form-wrapper');
+    const cs = document.getElementById('reset-code-section');
+    if (cs) cs.style.display = 'none';
+    ['reset-error', 'reset-success'].forEach(id => {
+        const e = document.getElementById(id); if (e) e.style.display = 'none';
+    });
 }
 
 function clearAuthErrors() {
@@ -39,13 +112,143 @@ function togglePassword(inputId, btn) {
     }
 }
 
+// ── Forgot / Reset Password ──
+
+async function requestReset() {
+    const email = (document.getElementById('reset-email').value || '').trim();
+    const err = document.getElementById('reset-error');
+    const ok = document.getElementById('reset-success');
+    err.style.display = ok.style.display = 'none';
+    if (!email) { err.textContent = 'Enter your email address.'; err.style.display = 'block'; return; }
+    try {
+        const res = await fetch('/auth/forgot-password', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+        });
+        const data = await res.json();
+        document.getElementById('reset-code-section').style.display = 'block';
+        ok.textContent = data.dev_code
+            ? `Email not configured — your test code is ${data.dev_code}`
+            : 'If that email is registered, a 6-digit code has been sent.';
+        ok.style.display = 'block';
+        if (data.dev_code) document.getElementById('reset-code').value = data.dev_code;
+    } catch (e) {
+        err.textContent = 'Could not reach the server.'; err.style.display = 'block';
+    }
+}
+
+async function submitReset() {
+    const email = (document.getElementById('reset-email').value || '').trim();
+    const code = (document.getElementById('reset-code').value || '').trim();
+    const newPassword = document.getElementById('reset-newpw').value || '';
+    const err = document.getElementById('reset-error');
+    const ok = document.getElementById('reset-success');
+    err.style.display = ok.style.display = 'none';
+    if (!code) {
+        err.textContent = 'Enter the reset code.';
+        err.style.display = 'block'; return;
+    }
+    const pwErr = passwordError(newPassword);
+    if (pwErr) { err.textContent = pwErr; err.style.display = 'block'; return; }
+    try {
+        const res = await fetch('/auth/reset-password', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, code, newPassword }),
+        });
+        const data = await res.json();
+        if (!res.ok) { err.textContent = data.error || 'Reset failed.'; err.style.display = 'block'; return; }
+        ok.textContent = 'Password reset! You can now log in.'; ok.style.display = 'block';
+        setTimeout(showLogin, 1800);
+    } catch (e) {
+        err.textContent = 'Could not reach the server.'; err.style.display = 'block';
+    }
+}
+
+// ── Auto show/hide eye on every password field ──
+
+// Inline SVGs so the eye renders regardless of whether lucide has loaded yet.
+const _EYE_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>';
+const _EYE_OFF_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c6.5 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.5 13.5 0 0 0 2 12s3.5 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="2" y1="2" x2="22" y2="22"/></svg>';
+
+function enhancePasswordFields() {
+    document.querySelectorAll('input[type="password"]').forEach(function (inp) {
+        if (inp.dataset.eye) return;
+        inp.dataset.eye = '1';
+        const host = document.createElement('span');
+        host.className = 'pw-eye-host';
+        inp.parentNode.insertBefore(host, inp);
+        host.appendChild(inp);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'pw-eye-btn';
+        btn.setAttribute('aria-label', 'Show password');
+        btn.innerHTML = _EYE_SVG;
+        btn.addEventListener('click', function () {
+            const showing = inp.type === 'password';
+            inp.type = showing ? 'text' : 'password';
+            btn.innerHTML = showing ? _EYE_OFF_SVG : _EYE_SVG;
+            btn.setAttribute('aria-label', showing ? 'Hide password' : 'Show password');
+        });
+        host.appendChild(btn);
+    });
+}
+
+// Persist interface-language preference (full i18n is applied where data-i18n exists).
+function setLanguage(lang) {
+    localStorage.setItem('careattend_lang', lang);
+    document.documentElement.lang = lang;
+    const names = { en: 'English', cy: 'Cymraeg', ur: 'اردو', pl: 'Polski' };
+    if (typeof showToast === 'function') showToast('Language: ' + (names[lang] || lang), 'success');
+}
+
+function initLanguage() {
+    const lang = localStorage.getItem('careattend_lang') || 'en';
+    document.documentElement.lang = lang;
+    const sel = document.getElementById('ac-lang');
+    if (sel) sel.value = lang;
+}
+
+// ── Password strength (mirrors backend validate_password) ──
+
+const PW_RULES = [
+    { key: 'len', label: 'At least 8 characters', test: pw => pw.length >= 8 },
+    { key: 'upper', label: 'An uppercase letter', test: pw => /[A-Z]/.test(pw) },
+    { key: 'lower', label: 'A lowercase letter', test: pw => /[a-z]/.test(pw) },
+    { key: 'digit', label: 'A number', test: pw => /\d/.test(pw) },
+    { key: 'symbol', label: 'A symbol', test: pw => /[^A-Za-z0-9]/.test(pw) },
+];
+
+// Returns the first failing requirement message, or null if the password is strong.
+function passwordError(pw) {
+    const fail = PW_RULES.find(r => !r.test(pw));
+    return fail ? 'Password needs: ' + fail.label.toLowerCase() : null;
+}
+
+// Render a live ✓/✗ checklist into a meter element for the given password input.
+function attachPwMeter(inputId, meterId) {
+    const inp = document.getElementById(inputId);
+    const meter = document.getElementById(meterId);
+    if (!inp || !meter) return;
+    const render = () => {
+        const pw = inp.value;
+        meter.innerHTML = PW_RULES.map(r => {
+            const ok = r.test(pw);
+            return '<span class="pw-req ' + (ok ? 'ok' : '') + '">'
+                + (ok ? '✓' : '○') + ' ' + r.label + '</span>';
+        }).join('');
+    };
+    inp.addEventListener('input', render);
+    render();
+}
+
 document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const username = document.getElementById('login-username').value.trim();
     const password = document.getElementById('login-password').value;
     const totpCode = document.getElementById('login-2fa-code') ? document.getElementById('login-2fa-code').value.trim() : null;
+    const remember = !!(document.getElementById('remember-me') && document.getElementById('remember-me').checked);
 
-    const body = { username, password };
+    const body = { username, password, remember };
     if (totpCode) body.totp_code = totpCode;
 
     try {
@@ -68,10 +271,18 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
             authToken = data.token;
             localStorage.setItem('careattend_token', data.token);
             localStorage.setItem('careattend_user', username);
+            localStorage.setItem('careattend_remember', remember ? '1' : '0');
             document.getElementById('login-2fa-group').style.display = 'none';
             if (document.getElementById('login-2fa-code')) document.getElementById('login-2fa-code').value = '';
             document.getElementById('login-submit-btn').textContent = 'LOG IN';
-            showMainApp(username);
+            let role = 'user';
+            let profile = null;
+            try {
+                const pres = await fetch('/api/profile', { headers: authHeaders() });
+                if (pres.ok) { profile = await pres.json(); role = profile.role || 'user'; }
+            } catch { /* default role */ }
+            showMainApp(username, role);
+            if (profile) updateHeaderBadge(profile);
         } else {
             showAuthError('login-error', data.error || 'Login failed');
         }
@@ -85,13 +296,15 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     const username = document.getElementById('reg-username').value.trim();
     const email = document.getElementById('reg-email').value.trim();
     const password = document.getElementById('reg-password').value;
-    const role = document.getElementById('reg-role').value;
+
+    const pwErr = passwordError(password);
+    if (pwErr) { showAuthError('register-error', pwErr); return; }
 
     try {
         const res = await fetch('/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, email, password, role }),
+            body: JSON.stringify({ username, email, password }),
         });
         const data = await res.json();
 
@@ -116,8 +329,9 @@ function showAuthError(elementId, message) {
 
 let currentUsername = '';
 
-function showMainApp(username) {
+function showMainApp(username, role) {
     currentUsername = username;
+    applyRoleAccess(role || 'user');
     const loginScreen = document.getElementById('login-screen');
     loginScreen.classList.add('fade-out');
     setTimeout(() => {
@@ -132,6 +346,7 @@ function showMainApp(username) {
 
 async function openProfile() {
     document.getElementById('profile-overlay').style.display = 'flex';
+    enhancePasswordFields();  // ensure change-password fields get the eye toggle
     const initials = currentUsername.substring(0, 2).toUpperCase();
     document.getElementById('ac-avatar').textContent = initials;
 
@@ -144,13 +359,36 @@ async function openProfile() {
     } catch { /* use defaults */ }
 }
 
+let _currentProfile = null;
+
 function renderAccountCentre(profile) {
+    _currentProfile = profile;
     document.getElementById('ac-display-name').textContent = profile.displayName || profile.username;
     document.getElementById('ac-role').textContent = profile.role;
     document.getElementById('ac-username').textContent = profile.username;
     document.getElementById('ac-email').textContent = profile.email;
     document.getElementById('ac-role-text').textContent = profile.role.charAt(0).toUpperCase() + profile.role.slice(1);
     document.getElementById('ac-edit-name').value = profile.displayName || '';
+
+    // Avatar — show uploaded photo, else initials.
+    renderAvatar(profile);
+
+    // Header subtitle: job title · department · pronouns.
+    const parts = [profile.jobTitle, profile.department].filter(Boolean);
+    let sub = parts.join(' · ');
+    if (profile.pronouns) sub += (sub ? '  ·  ' : '') + profile.pronouns;
+    const subEl = document.getElementById('ac-header-sub');
+    if (subEl) subEl.textContent = sub;
+
+    // Editable Work & Contact fields.
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+    set('ac-edit-jobtitle', profile.jobTitle);
+    set('ac-edit-department', profile.department);
+    set('ac-edit-pronouns', profile.pronouns);
+    set('ac-edit-phone', profile.phone);
+    set('ac-edit-bio', profile.bio);
+
+    updateHeaderBadge(profile);
 
     if (profile.createdAt) {
         const d = new Date(profile.createdAt * 1000);
@@ -198,12 +436,154 @@ async function saveDisplayName() {
         });
         if (res.ok) {
             const profile = await res.json();
-            document.getElementById('ac-display-name').textContent = profile.displayName || profile.username;
+            renderAccountCentre(profile);
+            updateHeaderBadge(profile);
             alert('Display name updated.');
         }
     } catch {
         alert('Failed to update name.');
     }
+}
+
+// Save the Work & Contact fields in one PUT.
+async function saveProfile() {
+    const val = id => (document.getElementById(id)?.value || '').trim();
+    const body = {
+        jobTitle: val('ac-edit-jobtitle'),
+        department: val('ac-edit-department'),
+        pronouns: val('ac-edit-pronouns'),
+        phone: val('ac-edit-phone'),
+        bio: val('ac-edit-bio'),
+    };
+    try {
+        const res = await fetch('/api/profile', {
+            method: 'PUT', headers: authHeaders(), body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (res.ok) { renderAccountCentre(data); alert('Profile saved.'); }
+        else alert(data.error || 'Save failed.');
+    } catch {
+        alert('Could not reach the server.');
+    }
+}
+
+// Render the avatar image (data-URL) or fall back to initials.
+function renderAvatar(profile) {
+    const el = document.getElementById('ac-avatar');
+    if (!el) return;
+    if (profile.avatar) {
+        el.innerHTML = '<img src="' + profile.avatar + '" alt="avatar">';
+        el.classList.add('has-img');
+    } else {
+        el.textContent = (profile.displayName || profile.username || '?').substring(0, 2).toUpperCase();
+        el.classList.remove('has-img');
+    }
+}
+
+function updateHeaderBadge(profile) {
+    const badge = document.getElementById('user-badge');
+    if (!badge) return;
+    const name = profile.displayName || profile.username || currentUsername;
+    // Role is shown inside the Account Centre, not in the header badge.
+    if (profile.avatar) {
+        badge.innerHTML = '<img class="badge-avatar" src="' + profile.avatar + '" alt=""> ' + name;
+    } else {
+        const initials = (name || '?').substring(0, 2).toUpperCase();
+        badge.textContent = initials + ' ' + name;
+    }
+}
+
+// Avatar click in Account Centre -> View / Change / Remove menu.
+function avatarMenu() {
+    const has = _currentProfile && _currentProfile.avatar;
+    const opts = [];
+    if (has) opts.push('view');
+    opts.push('change');
+    if (has) opts.push('remove');
+    // Lightweight prompt-style menu via a custom overlay.
+    const labels = { view: '👁 View photo', change: '📷 Change photo', remove: '🗑 Remove photo' };
+    let menu = document.getElementById('avatar-menu');
+    if (menu) menu.remove();
+    menu = document.createElement('div');
+    menu.id = 'avatar-menu';
+    menu.className = 'avatar-menu';
+    menu.innerHTML = opts.map(o => '<button onclick="avatarAction(\'' + o + '\')">' + labels[o] + '</button>').join('');
+    document.querySelector('.ac-avatar-wrap').appendChild(menu);
+    setTimeout(() => document.addEventListener('click', _closeAvatarMenu, { once: true }), 0);
+}
+
+function _closeAvatarMenu() {
+    const m = document.getElementById('avatar-menu');
+    if (m) m.remove();
+}
+
+function avatarAction(action) {
+    _closeAvatarMenu();
+    if (action === 'change') { document.getElementById('ac-avatar-input').click(); return; }
+    if (action === 'view') { viewAvatar(); return; }
+    if (action === 'remove') { removeAvatar(); return; }
+}
+
+function viewAvatar() {
+    if (!_currentProfile || !_currentProfile.avatar) return;
+    const ov = document.createElement('div');
+    ov.className = 'avatar-lightbox';
+    ov.onclick = () => ov.remove();
+    ov.innerHTML = '<img src="' + _currentProfile.avatar + '" alt="profile photo">';
+    document.body.appendChild(ov);
+}
+
+async function removeAvatar() {
+    try {
+        const res = await fetch('/api/profile', {
+            method: 'PUT', headers: authHeaders(), body: JSON.stringify({ avatar: '' }),
+        });
+        const data = await res.json();
+        if (res.ok) { _currentProfile = data; renderAvatar(data); updateHeaderBadge(data); }
+        else alert(data.error || 'Remove failed.');
+    } catch {
+        alert('Could not reach the server.');
+    }
+}
+
+// Resize an uploaded image to a 128px square data-URL and save it.
+async function uploadAvatar(file) {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { alert('Please choose an image file.'); return; }
+    try {
+        const dataUrl = await _resizeImage(file, 256);
+        const res = await fetch('/api/profile', {
+            method: 'PUT', headers: authHeaders(), body: JSON.stringify({ avatar: dataUrl }),
+        });
+        const data = await res.json();
+        if (res.ok) { _currentProfile = data; renderAvatar(data); updateHeaderBadge(data); }
+        else alert(data.error || 'Upload failed.');
+    } catch {
+        alert('Could not process that image.');
+    }
+}
+
+function _resizeImage(file, size) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = size; canvas.height = size;
+                const ctx = canvas.getContext('2d');
+                // Cover-crop to a square.
+                const m = Math.min(img.width, img.height);
+                const sx = (img.width - m) / 2, sy = (img.height - m) / 2;
+                ctx.drawImage(img, sx, sy, m, m, 0, 0, size, size);
+                resolve(canvas.toDataURL('image/jpeg', 0.9));
+            };
+            img.onerror = reject;
+            img.src = reader.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
 }
 
 async function handleChangePassword(e) {
@@ -216,6 +596,9 @@ async function handleChangePassword(e) {
         alert('New passwords do not match.');
         return;
     }
+    const pwErr = passwordError(newPw);
+    if (pwErr) { alert(pwErr); return; }
+    if (newPw === currentPw) { alert('New password must be different from the current password.'); return; }
 
     try {
         const res = await fetch('/api/profile/change-password', {
@@ -250,6 +633,7 @@ async function handleLogout() {
     authToken = null;
     localStorage.removeItem('careattend_token');
     localStorage.removeItem('careattend_user');
+    localStorage.removeItem('careattend_remember');
     clearSessionTimer();
     closeProfile();
     document.getElementById('main-app').style.display = 'none';
@@ -270,9 +654,9 @@ function authHeaders() {
 function resetSessionTimer() {
     clearSessionTimer();
     sessionTimer = setTimeout(() => {
-        alert('Session expired due to 30 minutes of inactivity.');
+        alert('Session expired due to inactivity.');
         handleLogout();
-    }, SESSION_TIMEOUT_MS);
+    }, sessionTimeoutMs());
 }
 
 function clearSessionTimer() {
@@ -295,15 +679,19 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 });
 
 function switchTab(tabName) {
+    if (!isTabVisible(tabName)) return;  // only the Admin tab is hidden (non-admins)
     document.querySelectorAll('.tab-btn').forEach(b => {
         b.classList.remove('active');
         b.setAttribute('aria-selected', 'false');
     });
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    const tabBtn = document.querySelector(`[data-tab="${tabName}"]`);
-    tabBtn.classList.add('active');
-    tabBtn.setAttribute('aria-selected', 'true');
+    const tabBtn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+    if (tabBtn) {
+        tabBtn.classList.add('active');
+        tabBtn.setAttribute('aria-selected', 'true');
+    }
     document.getElementById(`tab-${tabName}`).classList.add('active');
+    if (tabName === 'admin') loadAdminUsers();
 }
 
 // ── Bias Tab Navigation ──
@@ -842,13 +1230,27 @@ function renderBatchResults(csvText) {
 
 // ── PDF Export (US-011) ──
 
+// Return the jsPDF constructor, or null + toast if the library failed to load.
+function _getJsPDF() {
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+        showToast('PDF engine not loaded — try again, or use CSV/Print.', 'error');
+        return null;
+    }
+    return window.jspdf.jsPDF;
+}
+
 function exportBiasPDF() {
     if (!biasAuditData) {
         alert('Run bias audit first before exporting.');
         return;
     }
-    const { jsPDF } = window.jspdf;
+    const jsPDF = _getJsPDF();
+    if (!jsPDF) return;
     const doc = new jsPDF();
+    if (typeof doc.autoTable !== 'function') {
+        showToast('PDF table plugin not loaded — try again, or use Print.', 'error');
+        return;
+    }
     const data = biasAuditData;
     let y = 20;
 
@@ -1101,7 +1503,7 @@ async function runCrossValidation() {
 }
 
 function renderCVResults(data) {
-    let html = '<table class="audit-table"><thead><tr>';
+    let html = '<div class="audit-table-wrap"><table class="audit-table"><thead><tr>';
     html += '<th>Model</th><th>Mean F1</th><th>95% CI</th><th>Mean Recall</th><th>95% CI</th><th>Mean ROC-AUC</th></tr></thead><tbody>';
 
     for (const [name, m] of Object.entries(data.models)) {
@@ -1114,18 +1516,18 @@ function renderCVResults(data) {
             <td>${m.mean_roc_auc.toFixed(4)}</td>
         </tr>`;
     }
-    html += '</tbody></table>';
+    html += '</tbody></table></div>';
     document.getElementById('cv-table-container').innerHTML = html;
 
     // Significance tests
     if (data.significance_tests && data.significance_tests.length > 0) {
-        let sigHtml = '<table class="audit-table"><thead><tr><th>Model A</th><th>Model B</th><th>p-value</th><th>Significant (p<0.05)</th></tr></thead><tbody>';
+        let sigHtml = '<div class="audit-table-wrap"><table class="audit-table"><thead><tr><th>Model A</th><th>Model B</th><th>p-value</th><th>Significant (p<0.05)</th></tr></thead><tbody>';
         data.significance_tests.forEach(t => {
             const sigClass = t.significant_at_005 ? 'color:#DA291C;font-weight:700' : 'color:#007F3B';
             sigHtml += `<tr><td>${t.model_a}</td><td>${t.model_b}</td><td>${t.mcnemar_p_value.toFixed(6)}</td>
                 <td style="${sigClass}">${t.significant_at_005 ? 'Yes' : 'No'}</td></tr>`;
         });
-        sigHtml += '</tbody></table>';
+        sigHtml += '</tbody></table></div>';
         document.getElementById('cv-sig-content').innerHTML = sigHtml;
         document.getElementById('cv-significance').style.display = 'block';
     }
@@ -1331,12 +1733,12 @@ document.addEventListener('keydown', function(e) {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
     if (!authToken) return;
 
-    const tabs = ['assessment', 'results', 'dashboard', 'batch', 'bias', 'ethics', 'slots', 'nudge'];
+    const tabs = operableTabs();  // role-aware: only tabs this role can use
     const key = e.key;
 
-    if (key >= '1' && key <= '8') {
-        e.preventDefault();
-        switchTab(tabs[parseInt(key) - 1]);
+    if (key >= '1' && key <= '9') {
+        const idx = parseInt(key) - 1;
+        if (idx < tabs.length) { e.preventDefault(); switchTab(tabs[idx]); }
     } else if (key.toLowerCase() === 'n') {
         e.preventDefault();
         switchTab('assessment');
@@ -1426,23 +1828,56 @@ async function disable2FA() {
 
 // ── Guided Tour ──
 
-const TOUR_STEPS = [
-    { title: 'Welcome to Care Attend', description: 'This NHS tool uses AI to predict which patients are at risk of missing their appointments (DNAs). It explains predictions using SHAP and monitors for demographic bias.', tab: null },
-    { title: '1. Patient Assessment', description: 'Enter patient details here — age, gender, appointment lead time, prior DNA count, clinical flags, and IMD deprivation decile. You can also use the EHR auto-fill or Carer Proxy mode for digitally excluded patients.', tab: 'assessment' },
-    { title: '2. Risk Results', description: 'After assessment, view the DNA risk gauge, SHAP explainability chart showing WHY the score was given, and recommended interventions tailored to the patient\'s profile.', tab: 'results' },
-    { title: '3. Practice Dashboard', description: 'See practice-wide DNA risk overview — total assessments, risk breakdown by age group, recent assessments, and feedback accuracy. All session-scoped.', tab: 'dashboard' },
-    { title: '4. Batch Upload', description: 'Upload a CSV of up to 100 patients for bulk risk assessment. Download results as CSV with risk scores, tiers, and top risk factors.', tab: 'batch' },
-    { title: '5. Bias Monitor', description: 'Run fairness audits across age, gender, and IMD groups. Checks demographic parity and equalised odds with 0.10 threshold per NHS AI ethics guidance. Export PDF reports.', tab: 'bias' },
-    { title: '6. Slot Optimisation', description: 'Analyse appointment slots to find overbooking opportunities. Slots with 40%+ DNA risk can be double-booked to recover wasted clinical time.', tab: 'slots' },
-    { title: '7. Patient Nudge', description: 'Generate personalised, non-stigmatising messages for at-risk patients in English, Welsh, Urdu, or Polish. Messages are tailored to patient circumstances.', tab: 'nudge' },
-];
+const TOUR_INTRO = { title: 'Welcome to Care Attend', description: 'This NHS tool uses AI to predict which patients are at risk of missing their appointments (DNAs). It explains predictions with SHAP and monitors for demographic bias. This tour walks through the features available to your role and tells you what to do in each. Press Next to begin, or Skip Tour to explore on your own.', tab: null, selector: null };
 
+// Per-tab tour copy. The tour is built from the tabs the current role can use,
+// so users only see steps for features they can actually operate.
+const TAB_TOUR = {
+    assessment: { title: 'Patient Assessment', description: 'Where every assessment starts. What to do: fill in age, gender, appointment lead time, prior DNA count, clinical flags, and IMD deprivation decile, then click Predict Risk. Tip: use EHR auto-fill to pull details automatically, or Carer Proxy mode for digitally excluded patients.' },
+    results: { title: 'Risk Results', description: 'Opens automatically after you predict. What to do: read the DNA risk gauge, scroll the SHAP chart to see WHY the score was given, and review the recommended interventions. Use the feedback buttons to log whether the patient attended — this trains the accuracy stats.' },
+    dashboard: { title: 'Practice Dashboard', description: 'Your practice-wide overview. What to do: come here after running several assessments to see total volume, risk breakdown by age group, recent assessments, and feedback accuracy. All figures are session-scoped — no patient data is stored.' },
+    batch: { title: 'Batch Upload', description: 'For scoring many patients at once. What to do: download the CSV template, fill in up to 100 patients, upload it, then download the results CSV with risk scores, tiers, and top risk factors for each row.' },
+    bias: { title: 'Bias Monitor', description: 'Checks the model is fair. What to do: click Run Audit to test demographic parity and equalised odds across age, gender, and IMD groups against the 0.10 NHS threshold. Export a PDF report for your governance records.' },
+    ethics: { title: 'Ethics', description: 'Evidence the tool meets NHS standards. What to do: click Load Ethics Mapping to see compliance against the NHS England (2024) Good Practice guide, and Run Cross-Validation for 5-fold accuracy with 95% confidence intervals and McNemar significance tests.' },
+    slots: { title: 'Slot Optimisation', description: 'Recover wasted clinic time. What to do: run the slot analysis to find appointments with 40%+ DNA risk that can be safely double-booked, so a no-show does not leave an empty slot.' },
+    nudge: { title: 'Patient Nudge', description: 'Act on the risk. What to do: generate a personalised, non-stigmatising reminder for an at-risk patient in English, Welsh, Urdu, or Polish, then copy it into your messaging system.' },
+    admin: { title: 'User Management', description: 'Admin only. What to do: view all accounts, change a user\'s role (user / staff / admin), or remove an account. New sign-ups always start as read-only users — promote trusted colleagues here.' },
+};
+
+// Build the tour for the current role: intro + a step per operable tab,
+// renumbered, with the closing note appended to the last step.
+function buildTourSteps() {
+    const steps = [TOUR_INTRO];
+    operableTabs().forEach((t, i) => {
+        const base = TAB_TOUR[t];
+        if (!base) return;
+        steps.push({
+            title: (i + 1) + '. ' + base.title,
+            description: base.description,
+            tab: t,
+            selector: '[data-tab="' + t + '"]',
+        });
+    });
+    if (steps.length > 1) {
+        steps[steps.length - 1].description +=
+            ' That completes the tour — you can restart it any time with the ? button or the G key.';
+    }
+    return steps;
+}
+
+let TOUR_STEPS = buildTourSteps();
 let currentTourStep = 0;
 
 function startGuidedTour() {
+    TOUR_STEPS = buildTourSteps();  // rebuild in case the role changed since login
     currentTourStep = 0;
     document.getElementById('tour-overlay').style.display = 'flex';
     renderTourStep();
+}
+
+function clearTourHighlight() {
+    document.querySelectorAll('.tour-highlight').forEach(el =>
+        el.classList.remove('tour-highlight', 'tour-highlight-pulse'));
 }
 
 function renderTourStep() {
@@ -1455,6 +1890,52 @@ function renderTourStep() {
     document.getElementById('tour-next-btn').textContent = currentTourStep === TOUR_STEPS.length - 1 ? 'Finish' : 'Next →';
 
     if (step.tab) switchTab(step.tab);
+
+    // Reset previous spotlight + card positioning.
+    clearTourHighlight();
+    const overlay = document.getElementById('tour-overlay');
+    const card = document.getElementById('tour-card');
+    card.classList.remove('positioned', 'pos-bottom', 'pos-top');
+    card.style.left = '';
+    card.style.top = '';
+
+    const target = step.selector ? document.querySelector(step.selector) : null;
+    if (target) {
+        // Anchored mode: spotlight the element, position the card beside it.
+        overlay.classList.add('anchored');
+        target.classList.add('tour-highlight', 'tour-highlight-pulse');
+        target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+        positionTourCard(card, target);
+    } else {
+        // Centred modal for intro/finish steps.
+        overlay.classList.remove('anchored');
+    }
+}
+
+function positionTourCard(card, target) {
+    // Position after layout settles so offsetWidth/Height are correct.
+    requestAnimationFrame(() => {
+        const r = target.getBoundingClientRect();
+        card.classList.add('positioned');
+        const cw = card.offsetWidth;
+        const ch = card.offsetHeight;
+        const margin = 12;
+
+        let left = r.left + r.width / 2 - cw / 2;
+        left = Math.max(margin, Math.min(left, window.innerWidth - cw - margin));
+
+        let top = r.bottom + margin;
+        let pos = 'pos-bottom';
+        if (top + ch > window.innerHeight - margin) {
+            top = r.top - ch - margin;
+            pos = 'pos-top';
+        }
+        top = Math.max(margin, top);
+
+        card.classList.add(pos);
+        card.style.left = left + 'px';
+        card.style.top = top + 'px';
+    });
 }
 
 function tourNext() {
@@ -1474,7 +1955,14 @@ function tourPrev() {
 }
 
 function endTour() {
-    document.getElementById('tour-overlay').style.display = 'none';
+    clearTourHighlight();
+    const overlay = document.getElementById('tour-overlay');
+    const card = document.getElementById('tour-card');
+    overlay.classList.remove('anchored');
+    overlay.style.display = 'none';
+    card.classList.remove('positioned', 'pos-bottom', 'pos-top');
+    card.style.left = '';
+    card.style.top = '';
     switchTab('assessment');
 }
 
@@ -1484,26 +1972,26 @@ function endTour() {
 let countdownInterval = null;
 
 function startSessionCountdown() {
-    let remaining = 1800;
+    let elapsed = 0;
     const el = document.getElementById('session-countdown');
     if (!el) return;
     clearInterval(countdownInterval);
     countdownInterval = setInterval(function() {
-        remaining--;
-        if (remaining <= 0) {
-            clearInterval(countdownInterval);
-            handleLogout();
-            return;
+        elapsed++;
+        const h = Math.floor(elapsed / 3600);
+        const m = Math.floor((elapsed % 3600) / 60);
+        const s = elapsed % 60;
+        if (h > 0) {
+            el.textContent = h + ':' + (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+        } else {
+            el.textContent = m + ':' + (s < 10 ? '0' : '') + s;
         }
-        const m = Math.floor(remaining / 60);
-        const s = remaining % 60;
-        el.textContent = m + ':' + (s < 10 ? '0' : '') + s;
     }, 1000);
 }
 
 const _origShowMainApp = showMainApp;
-showMainApp = function(username) {
-    _origShowMainApp(username);
+showMainApp = function(...args) {
+    _origShowMainApp(...args);  // forward username AND role (role was dropped before -> badge/tabs defaulted to 'user')
     startSessionCountdown();
     if (typeof lucide !== 'undefined') lucide.createIcons();
 };
@@ -1641,9 +2129,9 @@ function getChatbotResponse(query) {
     } else if (q.includes('proxy') || q.includes('carer') || q.includes('digital exclusion')) {
         return 'The <strong>Carer Proxy</strong> mode (Assessment tab) lets a family member or carer enter patient data on behalf of digitally excluded patients — bridging the gap for 3.8M UK adults who\'ve never used the internet.';
     } else if (q.includes('shortcut') || q.includes('keyboard')) {
-        return 'Press <strong>?</strong> to see keyboard shortcuts. Keys 1-8 switch tabs. N = new assessment, D = dark mode, G = guided tour, Esc = close panels.';
+        return 'Press <strong>?</strong> to see keyboard shortcuts. Number keys switch between the tabs available to your role. N = new assessment, D = dark mode, G = guided tour, Esc = close panels.';
     } else if (q.includes('tour') || q.includes('guide') || q.includes('help')) {
-        return 'Press the <strong>?</strong> button in the header or press G to start the guided tour. It walks through all 8 features step by step.';
+        return 'Press the <strong>?</strong> button in the header or press G to start the guided tour. It walks through the features available to your role, step by step.';
     } else {
         return 'I can help with: patient assessment, SHAP explanations, bias monitoring, batch upload, slot optimisation, patient nudge, 2FA security, carer proxy mode, and more. What would you like to know?';
     }
@@ -1673,6 +2161,19 @@ function showToast(message, type, duration) {
 // ── Keyboard Shortcuts (enhanced) ──
 
 function openShortcuts() {
+    // Reflect the number-key range + tab names available to the current role.
+    const ops = operableTabs();
+    const keysEl = document.getElementById('sc-tab-keys');
+    const labelEl = document.getElementById('sc-tab-label');
+    if (keysEl) {
+        keysEl.innerHTML = ops.length > 1
+            ? '<kbd>1</kbd>-<kbd>' + ops.length + '</kbd>'
+            : '<kbd>1</kbd>';
+    }
+    if (labelEl) {
+        const names = ops.map(t => (TAB_TOUR[t] && TAB_TOUR[t].title) || t);
+        labelEl.textContent = 'Switch tabs (' + names.join(', ') + ')';
+    }
     document.getElementById('shortcuts-overlay').style.display = 'flex';
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
@@ -1687,12 +2188,12 @@ document.addEventListener('keydown', function(e) {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
     if (!authToken) return;
 
-    var tabs = ['assessment', 'results', 'dashboard', 'batch', 'bias', 'ethics', 'slots', 'nudge'];
+    var tabs = operableTabs();  // role-aware: only tabs this role can use
     var key = e.key;
 
-    if (key >= '1' && key <= '8') {
-        e.preventDefault();
-        switchTab(tabs[parseInt(key) - 1]);
+    if (key >= '1' && key <= '9') {
+        var idx = parseInt(key) - 1;
+        if (idx < tabs.length) { e.preventDefault(); switchTab(tabs[idx]); }
     } else if (key === '?') {
         e.preventDefault();
         openShortcuts();
@@ -1717,10 +2218,63 @@ document.addEventListener('keydown', function(e) {
 
 // ── Patient PDF Export ──
 
+// ── Export (Risk Results) ──
+
+function exportPatient(format) {
+    if (!canExport()) { showToast('Your role does not have export access.', 'warning'); return; }
+    if (format === 'print') { printResults(); return; }
+    if (!lastResult) { showToast('No assessment to export.', 'warning'); return; }
+    if (format === 'csv') return exportPatientCSV();
+    if (format === 'json') return exportPatientJSON();
+    return exportPatientPDF();
+}
+
+function _downloadBlob(filename, text, mime) {
+    var blob = new Blob([text], { type: mime });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function exportPatientCSV() {
+    var r = lastResult;
+    var rows = [
+        ['Field', 'Value'],
+        ['Risk Score', r.percentage],
+        ['Risk Tier', r.risk_tier],
+        ['Age Group', r.age_group],
+        ['Model', r.model_used || 'Logistic Regression'],
+    ];
+    if (r.shap_values) {
+        r.shap_values.forEach(function (s) {
+            rows.push(['Factor: ' + s.label, s.value.toFixed(4) + ' (' + s.direction + ')']);
+        });
+    }
+    if (r.nl_summary) rows.push(['Summary', r.nl_summary]);
+    var csv = rows.map(function (row) {
+        return row.map(function (c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(',');
+    }).join('\n');
+    _downloadBlob('CareAttend_Patient_Report.csv', csv, 'text/csv');
+    showToast('CSV exported.', 'success');
+}
+
+function exportPatientJSON() {
+    _downloadBlob('CareAttend_Patient_Report.json',
+        JSON.stringify(lastResult, null, 2), 'application/json');
+    showToast('JSON exported.', 'success');
+}
+
 function exportPatientPDF() {
     if (!lastResult) { showToast('No assessment to export.', 'warning'); return; }
-    var jsPDF = window.jspdf.jsPDF;
+    var jsPDF = _getJsPDF();
+    if (!jsPDF) return;
     var doc = new jsPDF();
+    var hasAutoTable = typeof doc.autoTable === 'function';
     var y = 20;
 
     doc.setFontSize(18);
@@ -1736,33 +2290,37 @@ function exportPatientPDF() {
     doc.text('Risk Assessment', 14, y); y += 8;
 
     var r = lastResult;
-    doc.autoTable({
-        startY: y,
-        head: [['Metric', 'Value']],
-        body: [
-            ['Risk Score', r.percentage],
-            ['Risk Tier', r.risk_tier],
-            ['Age Group', r.age_group],
-            ['Model', r.model_used || 'Logistic Regression'],
-        ],
-        theme: 'grid',
-        headStyles: { fillColor: [0, 48, 135] },
-    });
-    y = doc.lastAutoTable.finalY + 10;
+
+    // Render a table via autoTable, or fall back to plain text lines if the
+    // autotable plugin failed to load. Returns the next y position.
+    function pdfTable(head, body, startY) {
+        if (hasAutoTable) {
+            doc.autoTable({ startY: startY, head: [head], body: body,
+                theme: 'grid', headStyles: { fillColor: [0, 48, 135] } });
+            return doc.lastAutoTable.finalY + 10;
+        }
+        doc.setFontSize(10);
+        doc.setTextColor(66, 85, 99);
+        var yy = startY;
+        body.forEach(function (row) {
+            doc.text(row.join(':  '), 14, yy); yy += 7;
+        });
+        return yy + 4;
+    }
+
+    y = pdfTable(['Metric', 'Value'], [
+        ['Risk Score', String(r.percentage)],
+        ['Risk Tier', r.risk_tier],
+        ['Age Group', r.age_group],
+        ['Model', r.model_used || 'Logistic Regression'],
+    ], y);
 
     if (r.shap_values && r.shap_values.length > 0) {
         doc.setFontSize(14);
         doc.setTextColor(0, 48, 135);
         doc.text('SHAP Risk Factors', 14, y); y += 8;
-
-        doc.autoTable({
-            startY: y,
-            head: [['Factor', 'Impact', 'Direction']],
-            body: r.shap_values.map(function(s) { return [s.label, s.value.toFixed(4), s.direction]; }),
-            theme: 'grid',
-            headStyles: { fillColor: [0, 48, 135] },
-        });
-        y = doc.lastAutoTable.finalY + 10;
+        y = pdfTable(['Factor', 'Impact', 'Direction'],
+            r.shap_values.map(function(s) { return [s.label, s.value.toFixed(4), s.direction]; }), y);
     }
 
     if (r.nl_summary) {
@@ -1807,8 +2365,73 @@ toggleDarkMode = function() {
 
 // ── DOMContentLoaded Init ──
 
+// ── Admin: User Management ──
+
+async function loadAdminUsers() {
+    const status = document.getElementById('admin-users-status');
+    const tableEl = document.getElementById('admin-users-table');
+    status.textContent = 'Loading…';
+    try {
+        const res = await fetch('/api/admin/users', { headers: authHeaders() });
+        const data = await res.json();
+        if (!res.ok) { status.textContent = data.error || 'Failed to load users.'; return; }
+        status.textContent = data.total + ' user(s).';
+        const roles = ['user', 'staff', 'admin'];
+        let html = '<table class="audit-table"><thead><tr><th>Username</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead><tbody>';
+        data.users.forEach(u => {
+            const opts = roles.map(r => `<option value="${r}"${r === u.role ? ' selected' : ''}>${r}</option>`).join('');
+            html += `<tr>
+                <td>${escapeHtml(u.username)}</td>
+                <td>${escapeHtml(u.email)}</td>
+                <td><select id="role-${u.userId}">${opts}</select></td>
+                <td>
+                    <button class="btn-secondary" onclick="changeUserRole('${u.userId}')">Save Role</button>
+                    <button class="btn-secondary" onclick="deleteUser('${u.userId}', '${escapeHtml(u.username)}')">Delete</button>
+                </td>
+            </tr>`;
+        });
+        html += '</tbody></table>';
+        tableEl.innerHTML = html;
+    } catch {
+        status.textContent = 'Could not reach the server.';
+    }
+}
+
+async function changeUserRole(userId) {
+    const role = document.getElementById('role-' + userId).value;
+    try {
+        const res = await fetch('/api/admin/users/' + userId + '/role', {
+            method: 'PUT', headers: authHeaders(), body: JSON.stringify({ role }),
+        });
+        const data = await res.json();
+        alert(res.ok ? 'Role updated.' : (data.error || 'Failed.'));
+        if (res.ok) loadAdminUsers();
+    } catch { alert('Could not reach the server.'); }
+}
+
+async function deleteUser(userId, username) {
+    if (!confirm('Delete user "' + username + '"? This cannot be undone.')) return;
+    try {
+        const res = await fetch('/api/admin/users/' + userId, {
+            method: 'DELETE', headers: authHeaders(),
+        });
+        const data = await res.json();
+        alert(res.ok ? data.message : (data.error || 'Failed.'));
+        if (res.ok) loadAdminUsers();
+    } catch { alert('Could not reach the server.'); }
+}
+
+function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
 document.addEventListener('DOMContentLoaded', async function() {
     if (typeof lucide !== 'undefined') lucide.createIcons();
+    enhancePasswordFields();
+    attachPwMeter('reg-password', 'reg-pw-meter');
+    attachPwMeter('reset-newpw', 'reset-pw-meter');
+    attachPwMeter('ac-new-pw', 'ac-pw-meter');
+    initLanguage();
     updateDarkModeIcon();
 
     var savedToken = localStorage.getItem('careattend_token');
@@ -1820,16 +2443,31 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
             if (res.ok) {
                 authToken = savedToken;
-                showMainApp(savedUser);
+                let role = 'user';
+                let profile = null;
+                try { profile = await res.json(); role = profile.role || 'user'; } catch { /* default */ }
+                showMainApp(savedUser, role);
+                if (profile) updateHeaderBadge(profile);
                 addNotification('Session Restored', 'Welcome back, ' + savedUser + '.', 'success');
                 return;
             }
-            console.warn('Session restore failed:', res.status);
+            // Only discard the token when the server says it is genuinely
+            // invalid/expired (401/403). A 5xx or network blip (e.g. the dev
+            // server restarting after a code change) must NOT log the user out
+            // — keep the token so the next refresh restores the session.
+            if (res.status === 401 || res.status === 403) {
+                localStorage.removeItem('careattend_token');
+                localStorage.removeItem('careattend_user');
+                console.warn('Session expired or invalid; please log in again.');
+            } else {
+                console.warn('Server unavailable (' + res.status + '); token kept for retry.');
+                addNotification('Server Unavailable', 'Could not reach the server. Your session is kept — refresh once it is back.', 'warning');
+            }
         } catch (err) {
-            console.warn('Session restore error:', err.message);
+            // Network error — keep the token, do not force logout.
+            console.warn('Session restore network error; token kept:', err.message);
+            addNotification('Connection Issue', 'Could not reach the server. Your session is preserved.', 'warning');
         }
-        localStorage.removeItem('careattend_token');
-        localStorage.removeItem('careattend_user');
     }
 
     addNotification('Welcome to Care Attend', 'NHS Predictive Risk Assessment system ready. All data is session-scoped.', 'info');

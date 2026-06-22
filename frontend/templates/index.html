@@ -5,9 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Care Attend - NHS Predictive Risk Assessment</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/custom.css">
+    <link rel="stylesheet" href="/static/css/skeleton.css">
+    <link rel="stylesheet" href="/static/css/driver.css">
+    <link rel="stylesheet" href="/static/css/plotly-dark-theme.css">
+    <link rel="stylesheet" href="/static/css/mobile-responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
+    <script src="/static/vendor/jspdf.umd.min.js"></script>
+    <script src="/static/vendor/jspdf.plugin.autotable.min.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 </head>
@@ -28,21 +34,19 @@
 
                 <form id="login-form" class="auth-form">
                     <div class="form-group">
-                        <label for="login-username">Email Address</label>
-                        <input type="text" id="login-username" placeholder="staff@nhspractice.nhs.uk" required>
+                        <label for="login-username">Email or Username</label>
+                        <input type="text" id="login-username" placeholder="staff@nhspractice.nhs.uk or asha.patel" required>
                     </div>
                     <div class="form-group">
                         <label for="login-password">Password</label>
-                        <div class="password-wrapper">
-                            <input type="password" id="login-password" placeholder="••••••••" required>
-                            <button type="button" class="password-toggle" onclick="togglePassword('login-password', this)">Show</button>
-                        </div>
+                        <input type="password" id="login-password" placeholder="••••••••" required>
                     </div>
-                    <div class="form-row-inline">
+                    <div class="form-row-inline" style="justify-content:space-between;">
                         <label class="checkbox-label compact">
                             <input type="checkbox" id="remember-me">
                             <span>Remember me</span>
                         </label>
+                        <a href="#" class="forgot-link" onclick="showReset();return false;">Forgot password?</a>
                     </div>
                     <!-- 2FA Code Field (shown when needed) -->
                     <div class="form-group" id="login-2fa-group" style="display:none;">
@@ -73,18 +77,45 @@
                     </div>
                     <div class="form-group">
                         <label for="reg-password">Password</label>
-                        <input type="password" id="reg-password" placeholder="Minimum 8 characters" required minlength="8">
-                    </div>
-                    <div class="form-group">
-                        <label for="reg-role">Role</label>
-                        <select id="reg-role">
-                            <option value="staff">Staff</option>
-                            <option value="admin">Admin</option>
-                        </select>
+                        <input type="password" id="reg-password" placeholder="8+ chars, mixed case, number, symbol" required minlength="8">
+                        <div class="pw-meter" id="reg-pw-meter"></div>
                     </div>
                     <div id="register-error" class="auth-error" style="display:none;"></div>
                     <div id="register-success" class="auth-success" style="display:none;"></div>
                     <button type="submit" class="btn-primary btn-login">CREATE ACCOUNT</button>
+                </form>
+
+                <div class="auth-divider"><span>OR</span></div>
+                <button class="btn-outline" onclick="showLogin()">BACK TO LOGIN</button>
+            </div>
+
+            <!-- Reset Password Form -->
+            <div id="reset-form-wrapper" style="display:none;">
+                <h2 class="login-heading">Reset Password</h2>
+                <p class="login-desc">We'll email you a 6-digit code to reset your password.</p>
+
+                <form id="reset-form" class="auth-form" onsubmit="return false;">
+                    <div class="form-group">
+                        <label for="reset-email">Email Address</label>
+                        <input type="email" id="reset-email" placeholder="you@nhspractice.nhs.uk" required>
+                    </div>
+                    <button type="button" class="btn-outline" onclick="requestReset()">SEND RESET CODE</button>
+
+                    <div id="reset-code-section" style="display:none; margin-top:16px;">
+                        <div class="form-group">
+                            <label for="reset-code">6-digit Code</label>
+                            <input type="text" id="reset-code" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" placeholder="123456">
+                        </div>
+                        <div class="form-group">
+                            <label for="reset-newpw">New Password</label>
+                            <input type="password" id="reset-newpw" minlength="8" placeholder="8+ chars, mixed case, number, symbol">
+                            <div class="pw-meter" id="reset-pw-meter"></div>
+                        </div>
+                        <button type="button" class="btn-primary btn-login" onclick="submitReset()">RESET PASSWORD</button>
+                    </div>
+
+                    <div id="reset-error" class="auth-error" style="display:none;"></div>
+                    <div id="reset-success" class="auth-success" style="display:none;"></div>
                 </form>
 
                 <div class="auth-divider"><span>OR</span></div>
@@ -111,12 +142,6 @@
                     <h1>Care Attend</h1>
                 </div>
                 <div class="header-right">
-                    <select class="lang-selector" onchange="setLanguage(this.value)" aria-label="Language">
-                        <option value="en">EN</option>
-                        <option value="cy">CY</option>
-                        <option value="ur">UR</option>
-                        <option value="pl">PL</option>
-                    </select>
                     <button class="header-icon-btn" onclick="toggleDarkMode()" title="Toggle dark mode" aria-label="Toggle dark mode">
                         <i data-lucide="moon" id="dark-mode-icon" style="width:18px;height:18px;"></i>
                     </button>
@@ -138,7 +163,6 @@
                     </div>
                     <span class="session-timer" id="session-timer" title="Session time remaining"><i data-lucide="clock" style="width:12px;height:12px;"></i> <span id="session-countdown">30:00</span></span>
                     <button class="user-badge-btn" id="user-badge" onclick="openProfile()" title="Account"></button>
-                    <button class="btn-logout" onclick="handleLogout()"><i data-lucide="log-out" style="width:14px;height:14px;margin-right:4px;"></i> Log Out</button>
                 </div>
             </div>
         </header>
@@ -167,6 +191,9 @@
             </button>
             <button class="tab-btn" data-tab="nudge" role="tab" aria-selected="false" aria-controls="tab-nudge">
                 <span class="tab-icon">&#128172;</span> Nudge
+            </button>
+            <button class="tab-btn" data-tab="admin" role="tab" aria-selected="false" aria-controls="tab-admin">
+                <span class="tab-icon">&#128081;</span> Admin
             </button>
         </nav>
 
@@ -403,11 +430,14 @@
                     <!-- Action buttons matching Fig 3.6b -->
                     <div class="result-actions">
                         <button class="btn-primary btn-half" onclick="switchTab('assessment')"><i data-lucide="plus" style="width:14px;height:14px;margin-right:4px;"></i> New Assessment</button>
-                        <button class="btn-primary btn-half btn-dark" onclick="exportPatientPDF()"><i data-lucide="file-down" style="width:14px;height:14px;margin-right:4px;"></i> Export PDF</button>
-                    </div>
-                    <div class="result-actions">
-                        <button class="btn-secondary btn-half" onclick="printResults()"><i data-lucide="printer" style="width:14px;height:14px;margin-right:4px;"></i> Print</button>
                         <button class="btn-secondary btn-half" onclick="switchTab('bias')"><i data-lucide="scale" style="width:14px;height:14px;margin-right:4px;"></i> Bias Dashboard</button>
+                    </div>
+                    <div class="export-row">
+                        <span class="export-label"><i data-lucide="file-down" style="width:14px;height:14px;margin-right:4px;"></i> Export:</span>
+                        <button class="btn-secondary export-fmt" onclick="exportPatient('pdf')">PDF</button>
+                        <button class="btn-secondary export-fmt" onclick="exportPatient('csv')">CSV</button>
+                        <button class="btn-secondary export-fmt" onclick="exportPatient('json')">JSON</button>
+                        <button class="btn-secondary export-fmt" onclick="exportPatient('print')">Print</button>
                     </div>
                 </div>
             </section>
@@ -631,6 +661,31 @@
                     </div>
                 </div>
             </section>
+
+            <section id="tab-admin" class="tab-content" role="tabpanel">
+                <div class="card">
+                    <h2>&#128081; User Management</h2>
+                    <p class="muted">Admin only. Manage user roles and accounts (FR-04, RBAC).</p>
+                    <div style="margin:12px 0;">
+                        <button class="btn-primary" onclick="loadAdminUsers()">Refresh Users</button>
+                    </div>
+                    <div id="admin-users-status" class="muted"></div>
+                    <div id="admin-users-table"></div>
+                </div>
+                <div class="card">
+                    <h3>Role Permissions</h3>
+                    <table class="audit-table">
+                        <thead><tr><th>Feature</th><th>User</th><th>Staff</th><th>Admin</th></tr></thead>
+                        <tbody>
+                            <tr><td>Single assessment + results</td><td>&#10004;</td><td>&#10004;</td><td>&#10004;</td></tr>
+                            <tr><td>Dashboard, Batch, Slots, Nudge</td><td>&mdash;</td><td>&#10004;</td><td>&#10004;</td></tr>
+                            <tr><td>EHR, Carer proxy, Feedback</td><td>&mdash;</td><td>&#10004;</td><td>&#10004;</td></tr>
+                            <tr><td>Bias, Ethics, Model info</td><td>&mdash;</td><td>&mdash;</td><td>&#10004;</td></tr>
+                            <tr><td>Audit log, User management</td><td>&mdash;</td><td>&mdash;</td><td>&#10004;</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </main>
 
         <footer class="nhs-footer">
@@ -645,10 +700,15 @@
 
             <!-- Account Header -->
             <div class="ac-header">
-                <div class="ac-avatar" id="ac-avatar">?</div>
+                <div class="ac-avatar-wrap" onclick="event.stopPropagation(); avatarMenu()" title="Profile photo options">
+                    <div class="ac-avatar" id="ac-avatar">?</div>
+                    <span class="ac-avatar-cam">&#128247;</span>
+                </div>
+                <input type="file" id="ac-avatar-input" accept="image/*" style="display:none" onchange="uploadAvatar(this.files[0])">
                 <div class="ac-header-info">
                     <h2 id="ac-display-name">--</h2>
                     <p class="ac-role-badge" id="ac-role">Staff</p>
+                    <p class="ac-header-sub" id="ac-header-sub"></p>
                 </div>
             </div>
 
@@ -691,6 +751,48 @@
                 </div>
 
                 <div class="ac-section">
+                    <h3 class="ac-section-title">&#128188; Work &amp; Contact</h3>
+                    <div class="ac-field-group">
+                        <div class="ac-field">
+                            <label for="ac-edit-jobtitle">Job Title</label>
+                            <input type="text" id="ac-edit-jobtitle" class="ac-input" placeholder="e.g. Practice Nurse" maxlength="100">
+                        </div>
+                        <div class="ac-field">
+                            <label for="ac-edit-department">Department</label>
+                            <input type="text" id="ac-edit-department" class="ac-input" placeholder="e.g. Cardiology" maxlength="100">
+                        </div>
+                        <div class="ac-field">
+                            <label for="ac-edit-pronouns">Pronouns</label>
+                            <input type="text" id="ac-edit-pronouns" class="ac-input" placeholder="e.g. she/her" maxlength="30">
+                        </div>
+                        <div class="ac-field">
+                            <label for="ac-edit-phone">Phone</label>
+                            <input type="tel" id="ac-edit-phone" class="ac-input" placeholder="e.g. +44 7700 900123" maxlength="30">
+                        </div>
+                        <div class="ac-field">
+                            <label for="ac-edit-bio">Bio</label>
+                            <textarea id="ac-edit-bio" class="ac-input" rows="3" maxlength="300" placeholder="A short description about you (max 300 chars)"></textarea>
+                        </div>
+                        <button class="ac-action-btn" onclick="saveProfile()">&#128190; Save Profile</button>
+                    </div>
+                </div>
+
+                <div class="ac-section">
+                    <h3 class="ac-section-title">&#127760; Language</h3>
+                    <div class="ac-field-group">
+                        <div class="ac-field">
+                            <label for="ac-lang">Interface language</label>
+                            <select id="ac-lang" class="ac-input" onchange="setLanguage(this.value)">
+                                <option value="en">English</option>
+                                <option value="cy">Cymraeg (Welsh)</option>
+                                <option value="ur">اردو (Urdu)</option>
+                                <option value="pl">Polski (Polish)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ac-section">
                     <h3 class="ac-section-title">&#128200; Current Session</h3>
                     <div class="ac-field-group">
                         <div class="ac-field">
@@ -716,7 +818,8 @@
                         </div>
                         <div class="ac-field">
                             <label for="ac-new-pw">New Password</label>
-                            <input type="password" id="ac-new-pw" class="ac-input" required minlength="8" placeholder="Minimum 8 characters">
+                            <input type="password" id="ac-new-pw" class="ac-input" required minlength="8" placeholder="8+ chars, mixed case, number, symbol">
+                            <div class="pw-meter" id="ac-pw-meter"></div>
                         </div>
                         <div class="ac-field">
                             <label for="ac-confirm-pw">Confirm New Password</label>
@@ -828,7 +931,7 @@
             <h2 style="color:var(--nhs-blue);margin-bottom:16px;">&#9000; Keyboard Shortcuts</h2>
             <div class="shortcut-grid">
                 <div class="shortcut-row"><kbd>?</kbd><span>Show shortcuts</span></div>
-                <div class="shortcut-row"><kbd>1</kbd>-<kbd>8</kbd><span>Switch tabs</span></div>
+                <div class="shortcut-row"><span id="sc-tab-keys"><kbd>1</kbd>-<kbd>8</kbd></span><span id="sc-tab-label">Switch tabs</span></div>
                 <div class="shortcut-row"><kbd>N</kbd><span>New assessment</span></div>
                 <div class="shortcut-row"><kbd>D</kbd><span>Toggle dark mode</span></div>
                 <div class="shortcut-row"><kbd>G</kbd><span>Guided tour</span></div>
@@ -874,8 +977,8 @@
     <div id="tour-overlay" class="tour-overlay" style="display:none;">
         <div class="tour-card" id="tour-card">
             <div class="tour-progress">
-                <span id="tour-step-label">Step 1 of 8</span>
-                <div class="tour-progress-bar"><div class="tour-progress-fill" id="tour-progress-fill" style="width:12.5%"></div></div>
+                <span id="tour-step-label">Step 1 of 9</span>
+                <div class="tour-progress-bar"><div class="tour-progress-fill" id="tour-progress-fill" style="width:11.1%"></div></div>
             </div>
             <h3 id="tour-title">Welcome to Care Attend</h3>
             <p id="tour-description">Description</p>

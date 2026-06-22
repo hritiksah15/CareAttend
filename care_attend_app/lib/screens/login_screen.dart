@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import '../nhs_theme.dart';
 import '../services/api_service.dart';
+import '../utils/validators.dart';
+import '../widgets/password_field.dart';
 import 'home_screen.dart';
+import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,7 +16,6 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   bool _showRegister = false;
   bool _loading = false;
-  bool _obscurePassword = true;
   String? _error;
   String? _success;
 
@@ -21,11 +23,12 @@ class _LoginScreenState extends State<LoginScreen> {
   final _loginUsername = TextEditingController();
   final _loginPassword = TextEditingController();
 
+  bool _remember = false;
+
   // Register controllers
   final _regUsername = TextEditingController();
   final _regEmail = TextEditingController();
   final _regPassword = TextEditingController();
-  String _regRole = 'staff';
 
   Future<void> _handleLogin() async {
     if (_loginUsername.text.trim().isEmpty || _loginPassword.text.isEmpty) {
@@ -40,12 +43,16 @@ class _LoginScreenState extends State<LoginScreen> {
       await ApiService.login(
         username: _loginUsername.text.trim(),
         password: _loginPassword.text,
+        remember: _remember,
       );
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => HomeScreen(username: _loginUsername.text.trim()),
+          builder: (_) => HomeScreen(
+            username: _loginUsername.text.trim(),
+            remember: _remember,
+          ),
         ),
       );
     } on ApiException catch (e) {
@@ -64,8 +71,9 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => _error = 'All fields are required');
       return;
     }
-    if (_regPassword.text.length < 8) {
-      setState(() => _error = 'Password must be at least 8 characters');
+    final pwErr = passwordError(_regPassword.text);
+    if (pwErr != null) {
+      setState(() => _error = pwErr);
       return;
     }
     setState(() {
@@ -78,7 +86,6 @@ class _LoginScreenState extends State<LoginScreen> {
         username: _regUsername.text.trim(),
         email: _regEmail.text.trim(),
         password: _regPassword.text,
-        role: _regRole,
       );
       setState(() {
         _success = 'Account created. You can now log in.';
@@ -204,27 +211,42 @@ class _LoginScreenState extends State<LoginScreen> {
         TextField(
           controller: _loginUsername,
           decoration: const InputDecoration(
-            labelText: 'Email Address',
-            hintText: 'staff@nhspractice.nhs.uk',
+            labelText: 'Email or Username',
+            hintText: 'staff@nhspractice.nhs.uk or asha.patel',
           ),
         ),
         const SizedBox(height: 16),
-        TextField(
-          controller: _loginPassword,
-          obscureText: _obscurePassword,
-          decoration: InputDecoration(
-            labelText: 'Password',
-            hintText: '••••••••',
-            suffixIcon: TextButton(
-              onPressed: () =>
-                  setState(() => _obscurePassword = !_obscurePassword),
-              child: Text(_obscurePassword ? 'Show' : 'Hide',
-                  style: const TextStyle(
-                      color: NHSTheme.blue, fontWeight: FontWeight.w600)),
+        PasswordField(controller: _loginPassword, label: 'Password'),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: InkWell(
+                onTap: () => setState(() => _remember = !_remember),
+                child: Row(
+                  children: [
+                    Checkbox(
+                      value: _remember,
+                      onChanged: (v) => setState(() => _remember = v ?? false),
+                    ),
+                    const Flexible(
+                      child: Text('Remember me',
+                          style: TextStyle(fontSize: 13)),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
+            TextButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+              ),
+              child: const Text('Forgot password?'),
+            ),
+          ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 8),
         if (_error != null) _buildError(_error!),
         const SizedBox(height: 8),
         ElevatedButton(
@@ -285,23 +307,14 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        TextField(
-          controller: _regPassword,
-          obscureText: true,
-          decoration: const InputDecoration(
-            labelText: 'Password',
-            hintText: 'Minimum 8 characters',
+        PasswordField(controller: _regPassword, label: 'Password'),
+        const Padding(
+          padding: EdgeInsets.only(top: 4),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(passwordHint,
+                style: TextStyle(fontSize: 11, color: NHSTheme.darkGrey)),
           ),
-        ),
-        const SizedBox(height: 16),
-        DropdownButtonFormField<String>(
-          value: _regRole,
-          decoration: const InputDecoration(labelText: 'Role'),
-          items: const [
-            DropdownMenuItem(value: 'staff', child: Text('Staff')),
-            DropdownMenuItem(value: 'admin', child: Text('Admin')),
-          ],
-          onChanged: (v) => setState(() => _regRole = v ?? 'staff'),
         ),
         const SizedBox(height: 16),
         if (_error != null) _buildError(_error!),

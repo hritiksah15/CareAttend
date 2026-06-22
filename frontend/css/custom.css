@@ -198,3 +198,19 @@ body.dark-mode ::selection {
     background: rgba(65,182,230,0.3);
     color: #f0f0f0;
 }
+
+/* ── Password show/hide eye + forgot link ── */
+.pw-eye-host { position: relative; display: block; }
+.pw-eye-host > input { width: 100%; padding-right: 40px !important; box-sizing: border-box; }
+.pw-eye-btn {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer; color: #64748b;
+    padding: 4px; display: flex; align-items: center;
+}
+.pw-eye-btn i, .pw-eye-btn svg { width: 18px; height: 18px; }
+.pw-eye-btn:hover { color: #005EB8; }
+body.dark-mode .pw-eye-btn { color: #94a3b8; }
+body.dark-mode .pw-eye-btn:hover { color: #41B6E6; }
+.forgot-link { font-size: 13px; color: #005EB8; text-decoration: none; }
+.forgot-link:hover { text-decoration: underline; }
+body.dark-mode .forgot-link { color: #41B6E6; }

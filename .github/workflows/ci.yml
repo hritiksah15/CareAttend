@@ -1,0 +1,278 @@
+name: CareAttend CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [master]
+
+# Least-privilege token; only read repo contents.
+permissions:
+  contents: read
+
+# Cancel superseded runs on the same ref to save CI minutes.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ════════════════════════════════════════════════════════════════════
+  #  Backend — lint, tests, prod-entrypoint smoke, credential scan
+  # ════════════════════════════════════════════════════════════════════
+  backend:
+    name: Backend — lint & tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      # ── 1. Checkout ───────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Python 3.12 (pinned to match the Docker image / pickles) ───
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      # ── 3. Dependencies ───────────────────────────────────────────────
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff
+
+      # ── CHECK 1: Lint (ruff) ──────────────────────────────────────────
+      - name: Lint (ruff)
+        id: lint
+        run: ruff check .
+
+      # ── CHECK 2: Test suite (forced onto throwaway SQLite) ────────────
+      - name: Run tests (pytest)
+        id: tests
+        env:
+          DATABASE_URL: "sqlite:////tmp/careattend_ci.sqlite"
+          FLASK_DEBUG: "0"
+        run: pytest -q
+
+      # ── CHECK 3: WSGI smoke — models must load under the prod entry ───
+      - name: WSGI entrypoint smoke test
+        id: wsgi_smoke
+        env:
+          DATABASE_URL: "sqlite:////tmp/careattend_ci.sqlite"
+          FLASK_DEBUG: "0"
+        run: |
+          echo "=== Importing wsgi:app (loads ML models + ensures schema) ==="
+          python -c "import wsgi; assert wsgi.app is not None; from app import predictor; assert predictor is not None; print('wsgi ok — predictor loaded')"
+
+      # ── CHECK 4: Hardcoded credential scan ────────────────────────────
+      - name: Hardcoded credential scan
+        id: cred_scan
+        working-directory: .
+        run: |
+          echo "=== Scanning for hardcoded credentials ==="
+          PATTERNS=(
+            "password\s*=\s*['\"][^'\"]+"
+            "secret\s*=\s*['\"][^'\"]+"
+            "api_key\s*=\s*['\"][^'\"]+"
+            "client_secret\s*=\s*['\"][^'\"]+"
+            "-----BEGIN.*PRIVATE KEY-----"
+            "AccountKey="
+          )
+
+          FAIL=0
+          for pattern in "${PATTERNS[@]}"; do
+            matches=$(grep -rniE "$pattern" \
+              --include="*.py" --include="*.sh" --include="*.json" \
+              --include="*.yml" --include="*.js" --include="*.dart" \
+              --exclude-dir=".git" \
+              --exclude-dir=".venv" \
+              --exclude-dir="node_modules" \
+              --exclude-dir="build" \
+              --exclude-dir=".dart_tool" \
+              --exclude-dir="migrations" \
+              --exclude-dir=".github" \
+              . 2>/dev/null | \
+              grep -v "\.env" | \
+              grep -v "os\.environ" | \
+              grep -v "os\.getenv" | \
+              grep -vE '^\s*[^:]+:[0-9]+:\s*#' | \
+              grep -v "example" | \
+              grep -v "placeholder" | \
+              grep -v "change-me" || true)
+
+            if [ -n "$matches" ]; then
+              echo "POTENTIAL CREDENTIAL LEAK — pattern '$pattern':"
+              echo "$matches"
+              FAIL=1
+            fi
+          done
+
+          if [ "$FAIL" -eq 1 ]; then
+            echo "Hardcoded credentials detected. Use environment variables instead."
+            exit 1
+          fi
+          echo "No hardcoded credentials found."
+
+  # ════════════════════════════════════════════════════════════════════
+  #  Backend — dependency vulnerability audit (report-only)
+  # ════════════════════════════════════════════════════════════════════
+  security:
+    name: Backend — dependency audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # ── Audit dependencies (pip-audit) ────────────────────────────────
+      # Report-only: deps are pinned for model reproducibility, so transitive
+      # CVEs are surfaced for review rather than hard-failing the build.
+      - name: Audit dependencies (pip-audit)
+        continue-on-error: true
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt
+
+  # ════════════════════════════════════════════════════════════════════
+  #  Frontend — JavaScript syntax check
+  # ════════════════════════════════════════════════════════════════════
+  frontend:
+    name: Frontend — syntax check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # ── Syntax-check every JS module ──────────────────────────────────
+      - name: Syntax-check JS
+        run: |
+          echo "=== node --check on frontend/js/*.js ==="
+          for f in js/*.js; do
+            node --check "$f" && echo "OK: $f"
+          done
+
+  # ════════════════════════════════════════════════════════════════════
+  #  Flutter app — static analysis + widget tests
+  # ════════════════════════════════════════════════════════════════════
+  app:
+    name: Flutter app — analyze & test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: care_attend_app
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install packages
+        run: flutter pub get
+
+      - name: Analyze
+        # Gate on warnings/errors; cosmetic info-level lints don't fail the build.
+        run: flutter analyze --no-fatal-infos
+
+      - name: Test
+        run: flutter test
+
+  # ════════════════════════════════════════════════════════════════════
+  #  Backend — Docker image build (validates the production Dockerfile)
+  # ════════════════════════════════════════════════════════════════════
+  docker:
+    name: Backend — Docker build
+    runs-on: ubuntu-latest
+    needs: backend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t careattend-backend:ci ./backend
+
+  # ════════════════════════════════════════════════════════════════════
+  #  CI Summary — aggregate every job result into a markdown table
+  # ════════════════════════════════════════════════════════════════════
+  ci-summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs: [backend, security, frontend, app, docker]
+    if: always()
+    steps:
+      - name: Render summary
+        env:
+          BACKEND:  ${{ needs.backend.result }}
+          SECURITY: ${{ needs.security.result }}
+          FRONTEND: ${{ needs.frontend.result }}
+          APP:      ${{ needs.app.result }}
+          DOCKER:   ${{ needs.docker.result }}
+        run: |
+          python - <<'PYEOF'
+          import os
+
+          checks = [
+              ("Backend — lint & tests",       os.environ["BACKEND"]),
+              ("Backend — dependency audit",   os.environ["SECURITY"]),
+              ("Frontend — syntax check",      os.environ["FRONTEND"]),
+              ("Flutter app — analyze & test", os.environ["APP"]),
+              ("Backend — Docker build",       os.environ["DOCKER"]),
+          ]
+
+          labels = {
+              "success":   "✅ PASS",
+              "failure":   "❌ FAIL",
+              "skipped":   "⏭️ SKIP",
+              "cancelled": "🚫 CANCELLED",
+          }
+
+          lines = [
+              "## CareAttend CI Results",
+              "",
+              "| Check | Result |",
+              "|---|---|",
+          ]
+
+          # The dependency audit is report-only; everything else is a hard gate.
+          gating = {"Backend — dependency audit": False}
+          all_passed = True
+          for name, outcome in checks:
+              lines.append(f"| {name} | {labels.get(outcome, outcome.upper())} |")
+              if outcome not in ("success", "skipped") and gating.get(name, True):
+                  all_passed = False
+
+          lines.append("")
+          lines.append(
+              "**Result: All gating checks passed.**" if all_passed
+              else "**Result: One or more checks failed — see the job logs above.**"
+          )
+
+          summary = "\n".join(lines)
+          print(summary)
+          path = os.environ.get("GITHUB_STEP_SUMMARY")
+          if path:
+              with open(path, "a") as f:
+                  f.write(summary + "\n")
+          PYEOF
