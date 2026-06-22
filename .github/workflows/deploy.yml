@@ -61,6 +61,7 @@ jobs:
           docker run -d --name ca_verify -p 5000:5000 \
             -e SECRET_KEY=ci-verify \
             -e FLASK_DEBUG=0 \
+            -e DATABASE_URL="sqlite:////tmp/verify.sqlite" \
             "${{ steps.tags.outputs.sha_tag }}"
 
           MAX_RETRIES=8
