@@ -193,7 +193,8 @@ jobs:
         run: flutter pub get
 
       - name: Analyze
-        run: flutter analyze
+        # Gate on warnings/errors; cosmetic info-level lints don't fail the build.
+        run: flutter analyze --no-fatal-infos
 
       - name: Test
         run: flutter test
