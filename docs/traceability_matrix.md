@@ -4,7 +4,7 @@
 
 **How it was built:** Requirement IDs harvested directly from `@requirement` tags in the source (`grep -rEn "FR-|NFR-|US-" backend/`). Implementation and test columns are verified file references, not claims. **Action for you:** replace each *Requirement (description)* cell with the exact wording from your AT2 report so the matrix is word-identical to your requirements section.
 
-**Test status:** 137 pytest tests, all passing (June 2026).
+**Test status:** 200 pytest tests, all passing (June 2026).
 
 ---
 
@@ -18,7 +18,7 @@
 | **FR-04** | Authenticate users (register / login / logout, RBAC) | Must | Sequence diagram (auth) | `auth.py`; `models.py` (User/Session) | `test_auth.py::TestAuthEndpoints` | ✅ |
 | **FR-05** | Generate contextual intervention recommendations | Must | Activity diagram | `ml/interventions.py` | `test_interventions.py` | ✅ |
 | **FR-06** | Priority-order & cap interventions (max 5, dedup) | Should | Activity diagram | `ml/interventions.py` | `test_interventions.py` (priority, dedup, max-5) | ✅ |
-| **FR-07** | Bias audit (demographic parity + equalised odds) | Must | Component diagram (fairness) | `ml/bias_monitor.py`; `app.py:246` | `test_bias_monitor.py`; `test_api::TestBiasEndpoint` | ✅ |
+| **FR-07** | Bias audit (demographic parity + equalised odds) | Must | Component diagram (fairness) | `ml/bias_monitor.py` using calibrated model + saved threshold; `app.py:/api/bias-audit` | `test_bias_monitor.py`; `test_api::TestBiasEndpoint` | ✅ |
 | **FR-08** | Batch CSV upload (≤100 records) → results CSV | Should | Sequence diagram (batch) | `app.py:188` `/api/batch` | `test_api.py` (batch path) | ✅ |
 | **FR-09** | *(if defined in report — e.g. PDF/print export)* | Could | — | frontend (jsPDF) | manual / UAT | ⚠️ confirm |
 
@@ -26,7 +26,7 @@
 
 | Req ID | Requirement (sync wording w/ AT2) | MoSCoW | Design / standard | Implementation | Test evidence | Status |
 |--------|-----------------------------------|:------:|-------------------|----------------|---------------|:------:|
-| **NFR-01** | Privacy: session-scoped, zero patient data persisted | Must | GDPR Art 5(1)(c) | `app.py` in-memory `_prediction_log`; no patient table in `models.py` | `test_api.py` (NFR-01 noted) | ✅ |
+| **NFR-01** | Privacy: no raw patient input persisted; only anonymised assessment summaries for operations | Must | GDPR Art 5(1)(c) | `assessment_summaries` stores ID/probability/tier/age-group/feedback only; no patient table in `models.py` | `test_feature_coverage.py::TestDashboard::test_prediction_persists_anonymised_summary` | ✅ |
 | **NFR-04** | Model quality: F1 ≥ 0.72, Recall ≥ 0.70 | Must | Eval methodology | `ml/pipeline.py` (threshold opt); `training_results.json` | `test_predictor.py` (NFR-04) | ✅ |
 | **NFR-06** | Security: bcrypt hashing, 30-min session timeout, 2FA, RBAC | Must | OWASP / NHS DSPT | `auth.py:29` `SESSION_TIMEOUT=1800`; bcrypt; TOTP | `test_auth.py`; `test_new_endpoints::TestTwoFactor` | ✅ |
 | **NFR-02** | *(confirm — e.g. performance/latency)* | — | — | — | benchmark TODO | ⚠️ confirm |
@@ -50,6 +50,7 @@
 | **(new)** | Patient nudge generator (4 langs) | `app.py:813` | `test_new_endpoints::TestPatientNudge` | ✅ |
 | **(new)** | Admin audit log | `app.py:868` | `test_new_endpoints::TestAuditLog` | ✅ |
 | **(new)** | Push-notification scheduling | `app.py:570` | `test_new_endpoints::TestNotifications` | ✅ |
+| **(new)** | Operational outreach action tracking | `/api/actions`; `models.py::OutreachAction` | `test_new_endpoints::TestOutreachActions` | ✅ |
 
 ---
 

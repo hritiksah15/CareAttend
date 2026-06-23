@@ -1,24 +1,47 @@
 import pandas as pd
 import joblib
+import os
 
 from ml.data_generator import FEATURE_NAMES, derive_age_group
 
 
 class BiasMonitor:
     def __init__(self, model_dir="models"):
-        self.model = joblib.load(f"{model_dir}/model.joblib")
+        calibrated_model_path = os.path.join(model_dir, "model_calibrated.joblib")
+        base_model_path = os.path.join(model_dir, "model.joblib")
+        if os.path.exists(calibrated_model_path):
+            self.model = joblib.load(calibrated_model_path)
+            self.model_source = "calibrated"
+        else:
+            self.model = joblib.load(base_model_path)
+            self.model_source = "base"
         self.scaler = joblib.load(f"{model_dir}/scaler.joblib")
+        # Audit at the same operating point the app actually deploys: the
+        # calibrated model uses its own re-derived threshold, not the base
+        # model's threshold (which is tuned on a different probability scale).
+        self.threshold = self._load_threshold(model_dir)
         self.test_data = pd.read_csv(f"{model_dir}/test_data.csv")
 
+    def _load_threshold(self, model_dir):
+        if self.model_source == "calibrated":
+            cal_path = os.path.join(model_dir, "threshold_calibrated.joblib")
+            if os.path.exists(cal_path):
+                return float(joblib.load(cal_path))
+        try:
+            return float(joblib.load(os.path.join(model_dir, "threshold.joblib")))
+        except FileNotFoundError:
+            return 0.66
+
     def run_audit(self):
-        df = self.test_data.copy()
+        df = self.test_data.copy(deep=True).reset_index(drop=True)
         X = df[FEATURE_NAMES].values
         y_true = df["NoShow"].values
         X_scaled = self.scaler.transform(X)
-        y_pred = self.model.predict(X_scaled)
+        y_prob = self.model.predict_proba(X_scaled)[:, 1]
+        y_pred = (y_prob >= self.threshold).astype(int)
 
-        df["y_pred"] = y_pred
-        df["AgeGroup"] = df["Age"].apply(derive_age_group)
+        df.loc[:, "y_pred"] = y_pred
+        df.loc[:, "AgeGroup"] = df["Age"].apply(derive_age_group)
         self.test_data = df
 
         results = {
@@ -26,6 +49,8 @@ class BiasMonitor:
             "gender": self._audit_group("Gender", y_true, y_pred, {0: "Female", 1: "Male"}),
             "imd_band": self._audit_imd(y_true, y_pred),
             "overall_metrics": self._overall_metrics(y_true, y_pred),
+            "model_source": self.model_source,
+            "threshold": round(self.threshold, 4),
         }
         return results
 
@@ -64,10 +89,10 @@ class BiasMonitor:
         }
 
     def _audit_imd(self, y_true, y_pred):
-        self.test_data["IMDBand"] = pd.cut(
+        self.test_data.loc[:, "IMDBand"] = pd.cut(
             self.test_data["IMDDecile"],
             bins=[0, 3, 7, 10],
-            labels=["Most Deprived (1-3)", "Middle (4-7)", "Least Deprived (8-10)"]
+            labels=["Most Deprived (1-3)", "Middle (4-7)", "Least Deprived (8-10)"],
         )
         return self._audit_group("IMDBand", y_true, y_pred)
 

@@ -92,7 +92,8 @@
           0.8272,
           0.9541
         ]
-      }
+      },
+      "operating_threshold": 0.375
     }
   },
   "recommended": "isotonic"

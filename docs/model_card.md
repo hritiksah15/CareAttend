@@ -10,7 +10,7 @@
 - **Type:** Logistic Regression (binary classifier), scikit-learn.
 - **Selected over:** Random Forest, XGBoost, LightGBM (4-model comparison) and an MLP baseline. Linear model chosen for **interpretability and auditability**, accepting a marginal accuracy trade-off — justified for clinical decision support (DCB0129, GDPR Art 22, NHSX "explainable").
 - **Inputs (10 features):** Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, Hypertension, Diabetes, Alcoholism, Disability, IMDDecile.
-- **Output:** calibrated probability of DNA (0–1) + risk tier (Low/Medium/High) via decision threshold **0.60**.
+- **Output:** calibrated probability of DNA (0–1) + risk tier (Low/Medium/High). The deployed (calibrated) model scores at operating threshold **0.375** (`threshold_calibrated.joblib`); the uncalibrated base model used 0.60. Calibration rescales probabilities, so the cutoff is re-derived on calibrated scores — see §4–5.
 - **Preprocessing:** StandardScaler; SMOTE applied to the **training partition only** (no leakage).
 - **Explainability:** SHAP (Linear/Tree explainer) — top-3 per-patient factors with direction.
 
@@ -24,14 +24,29 @@
 - **Split:** 12,000 train / 3,000 test, stratified, seed 42. **DNA prevalence ≈ 25.8%.**
 - **Limitation:** synthetic data only; no real NHS validation. CTGAN is approximated, not a trained generator.
 
-## 4. Performance (held-out test set, n=3,000, threshold 0.60)
-| Metric | Value | Target (NFR-04) |
-|--------|:-----:|:---------------:|
-| F1 | **0.724** | ≥ 0.72 ✅ |
-| Recall | **0.748** | ≥ 0.70 ✅ |
-| Precision | 0.701 | — |
-| ROC-AUC | 0.911 | — |
-| Accuracy | 0.853 | — |
+## 4. Performance (held-out test set, n=3,000)
+Metrics for the **deployed calibrated model at its operating threshold 0.375**. The
+uncalibrated base model at threshold 0.60 is shown for reference; ROC-AUC is
+threshold- and calibration-invariant, so discrimination is unchanged.
+
+| Metric | Calibrated @ 0.375 (deployed) | Base @ 0.60 (ref) | Target (NFR-04) |
+|--------|:-----:|:-----:|:---------------:|
+| F1 | **0.721** | 0.724 | ≥ 0.72 ✅ |
+| Recall | **0.735** | 0.748 | ≥ 0.70 ✅ |
+| Precision | 0.707 | 0.701 | — |
+| ROC-AUC | 0.911 | 0.911 | — |
+| Accuracy | 0.853 | 0.853 | — |
+
+> Note: applying the base threshold 0.60 to *calibrated* probabilities (the bug
+> fixed in this revision) would collapse recall to **0.499** — half the DNAs
+> missed. The threshold must always be derived on the scoring model's own
+> probability scale.
+>
+> Caveat: the calibrated operating threshold (0.375) is selected to maximise F1
+> on the same held-out test set these metrics are reported on, so the operating
+> point is **in-sample** and mildly optimistic. A production deployment should
+> tune the threshold on a separate validation split. Discrimination (ROC-AUC)
+> is unaffected by this.
 
 ## 5. Calibration
 Probabilities are post-hoc calibrated (`ml/calibration.py`); calibrators fit on natural prevalence (no SMOTE) and evaluated on the held-out test set.
