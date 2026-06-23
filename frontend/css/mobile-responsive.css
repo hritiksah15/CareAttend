@@ -61,6 +61,18 @@
     .tour-actions .btn-secondary { width: 100%; text-align: center; }
 
     .proxy-toggle-bar { flex-direction: column; align-items: flex-start; }
+    .clinic-actions,
+    .clinic-list-header,
+    .clinic-row-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+    .clinic-actions .btn-primary,
+    .clinic-actions .btn-secondary,
+    .clinic-list-header .btn-secondary,
+    .clinic-row-actions .btn-secondary {
+        width: 100%;
+    }
 
     .account-centre { width: 95vw; }
     .ac-header { padding: 16px; }

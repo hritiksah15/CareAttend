@@ -61,7 +61,7 @@ already-disadvantaged groups.
 - **Production entrypoint** — [backend/wsgi.py](backend/wsgi.py) loads the models and ensures
   the schema at import, served by **gunicorn**.
 - **Frontend** ([frontend/](frontend/)) — static HTML/JS client.
-- **Flutter app** ([care_attend_app/](care_attend_app/)) — 13 screens at parity with the web client.
+- **Flutter app** ([care_attend_app/](care_attend_app/)) — 14 screens at parity with the web client.
 
 ## Tech stack
 

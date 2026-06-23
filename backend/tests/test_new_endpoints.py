@@ -23,7 +23,7 @@ pytestmark = pytest.mark.skipif(
 
 from app import app as flask_app, load_models  # noqa: E402
 from auth import setup_totp  # noqa: E402
-from models import db, User, ScheduledNotification, OutreachAction, AuditLog  # noqa: E402
+from models import db, User, ScheduledNotification, OutreachAction, AppointmentRecord, AuditLog  # noqa: E402
 
 try:
     import pyotp
@@ -59,6 +59,7 @@ def clean_state(app):
         for table in (
             "assessment_summaries",
             "outreach_actions",
+            "appointments",
             "notifications",
             "carer_proxies",
             "audit_logs",
@@ -582,6 +583,226 @@ class TestNotifications:
         data = json.loads(res.data)
         assert data["total"] == 1
         assert data["notifications"][0]["patient_id"] == "NHS001"
+
+
+# ── Appointment Worklist / Clinic List ──
+
+
+class TestAppointmentWorklist:
+    def test_create_requires_auth(self, client):
+        res = client.post("/api/appointments", json={})
+        assert res.status_code == 401
+
+    def test_create_from_mock_ehr_patient(self, client, app):
+        token = login(client)
+        res = client.post(
+            "/api/appointments",
+            headers=auth(token),
+            json={
+                "patient_id": "NHS001",
+                "appointment_date": "2026-07-01",
+                "appointment_time": "09:00",
+                "clinic": "Diabetes Review",
+            },
+        )
+        assert res.status_code == 201
+        data = json.loads(res.data)
+        assert data["created"] == 1
+        appointment = data["appointments"][0]
+        assert appointment["patient_id"] == "NHS001"
+        assert appointment["risk_tier"] in ("Low", "Medium", "High")
+        with app.app_context():
+            assert AppointmentRecord.query.filter_by(patient_id="NHS001").count() == 1
+            assert AuditLog.query.filter_by(action="appointments_created").count() == 1
+
+    def test_create_unknown_patient_requires_features(self, client):
+        token = login(client)
+        res = client.post(
+            "/api/appointments",
+            headers=auth(token),
+            json={"patient_id": "UNKNOWN", "appointment_date": "2026-07-01"},
+        )
+        assert res.status_code == 400
+        assert json.loads(res.data)["error"] == "No valid appointments"
+
+    def test_create_rejects_malformed_bulk_rows(self, client):
+        token = login(client)
+        res = client.post(
+            "/api/appointments",
+            headers=auth(token),
+            json={"appointments": ["not-an-object"]},
+        )
+        data = json.loads(res.data)
+        assert res.status_code == 400
+        assert data["error"] == "No valid appointments"
+        assert data["errors"][0]["error"] == "appointment row must be an object"
+
+    def test_clinic_list_includes_action_progress(self, client):
+        token = login(client)
+        client.post(
+            "/api/appointments",
+            headers=auth(token),
+            json={"patient_id": "NHS001", "appointment_date": "2026-07-01", "appointment_time": "09:00"},
+        )
+        client.post(
+            "/api/notifications/schedule",
+            headers=auth(token),
+            json={"patient_id": "NHS001", "risk_tier": "High", "appointment_date": "2026-07-01"},
+        )
+        client.post(
+            "/api/actions",
+            headers=auth(token),
+            json={"patient_id": "NHS001", "action_type": "call", "status": "completed", "outcome": "answered"},
+        )
+        res = client.get("/api/clinic-list?date=2026-07-01", headers=auth(token))
+        data = json.loads(res.data)
+        assert data["summary"]["total"] == 1
+        assert data["summary"]["actioned"] == 1
+        assert data["appointments"][0]["notification_count"] == 1
+        assert data["appointments"][0]["latest_action"]["action_type"] == "call"
+
+    def test_clinic_list_scoped_to_user(self, client):
+        token_a = login(client, username="staffa")
+        token_b = login(client, username="staffb")
+        client.post(
+            "/api/appointments",
+            headers=auth(token_a),
+            json={"patient_id": "NHS001", "appointment_date": "2026-07-01"},
+        )
+        res = client.get("/api/clinic-list?date=2026-07-01", headers=auth(token_b))
+        assert json.loads(res.data)["summary"]["total"] == 0
+
+    def test_update_appointment_status(self, client, app):
+        token = login(client)
+        created = client.post(
+            "/api/appointments",
+            headers=auth(token),
+            json={"patient_id": "NHS001", "appointment_date": "2026-07-01"},
+        )
+        appointment_id = json.loads(created.data)["appointments"][0]["id"]
+        res = client.patch(
+            f"/api/appointments/{appointment_id}/status",
+            headers=auth(token),
+            json={"status": "attended"},
+        )
+        assert res.status_code == 200
+        assert json.loads(res.data)["appointment"]["status"] == "attended"
+        with app.app_context():
+            assert AuditLog.query.filter_by(action="appointment_status_updated").count() == 1
+
+    def test_operational_outcomes_aggregates_actioned_vs_unactioned(self, client, app):
+        token = login(client)
+        with app.app_context():
+            user = User.query.filter_by(username="test").first()
+            db.session.add_all(
+                [
+                    AppointmentRecord(
+                        user_id=user.id,
+                        patient_id="PX001",
+                        appointment_date="2026-07-01",
+                        status="attended",
+                        probability=0.82,
+                        risk_tier="High",
+                        age_group="75-84",
+                    ),
+                    AppointmentRecord(
+                        user_id=user.id,
+                        patient_id="PX002",
+                        appointment_date="2026-07-01",
+                        status="dna",
+                        probability=0.78,
+                        risk_tier="High",
+                        age_group="75-84",
+                    ),
+                    AppointmentRecord(
+                        user_id=user.id,
+                        patient_id="PX003",
+                        appointment_date="2026-07-01",
+                        status="dna",
+                        probability=0.54,
+                        risk_tier="Medium",
+                        age_group="65-74",
+                    ),
+                    AppointmentRecord(
+                        user_id=user.id,
+                        patient_id="PX004",
+                        appointment_date="2026-07-01",
+                        status="scheduled",
+                        probability=0.14,
+                        risk_tier="Low",
+                        age_group="18-64",
+                    ),
+                    OutreachAction(
+                        user_id=user.id,
+                        patient_id="PX001",
+                        appointment_date="2026-07-01",
+                        action_type="call",
+                        risk_tier="High",
+                        status="completed",
+                        outcome="answered",
+                        created_by=user.username,
+                    ),
+                ]
+            )
+            db.session.commit()
+
+        res = client.get("/api/operational-outcomes", headers=auth(token))
+        data = json.loads(res.data)
+        assert res.status_code == 200
+        assert data["appointments"]["total"] == 4
+        assert data["appointments"]["completed"] == 3
+        assert data["appointments"]["awaiting_outcome"] == 1
+        assert data["outcomes"]["dna_rate"] == 0.6667
+        assert data["by_risk_tier"]["high"]["dna_rate"] == 0.5
+        assert data["interventions"]["completed_actions"] == 1
+        assert data["interventions"]["actioned_completed_appointments"]["attended_rate"] == 1.0
+        assert data["interventions"]["unactioned_completed_appointments"]["dna_rate"] == 1.0
+        assert data["interventions"]["actioned_vs_unactioned_dna_gap"] == 1.0
+        assert "PX001" not in json.dumps(data)
+
+    def test_operational_outcomes_rejects_bad_period(self, client):
+        token = login(client)
+        res = client.get("/api/operational-outcomes?from=01-07-2026", headers=auth(token))
+        assert res.status_code == 400
+        assert json.loads(res.data)["error"] == "from must be YYYY-MM-DD"
+
+    def test_operational_outcomes_actioned_match_is_practice_wide(self, client, app):
+        # Practice-wide: staff A books the appointment, staff B records the
+        # completed action for the same patient+date. The appointment must count
+        # as ACTIONED even though a different user logged the action.
+        token_a = login(client, username="ops_a")
+        login(client, username="ops_b")
+        with app.app_context():
+            user_a = User.query.filter_by(username="ops_a").first()
+            user_b = User.query.filter_by(username="ops_b").first()
+            db.session.add_all(
+                [
+                    AppointmentRecord(
+                        user_id=user_a.id,
+                        patient_id="PXW01",
+                        appointment_date="2026-07-02",
+                        status="attended",
+                        probability=0.81,
+                        risk_tier="High",
+                        age_group="75-84",
+                    ),
+                    OutreachAction(
+                        user_id=user_b.id,
+                        patient_id="PXW01",
+                        appointment_date="2026-07-02",
+                        action_type="call",
+                        risk_tier="High",
+                        status="completed",
+                        outcome="answered",
+                        created_by=user_b.username,
+                    ),
+                ]
+            )
+            db.session.commit()
+
+        data = json.loads(client.get("/api/operational-outcomes", headers=auth(token_a)).data)
+        assert data["interventions"]["actioned_completed_appointments"]["total"] == 1
+        assert data["interventions"]["unactioned_completed_appointments"]["total"] == 0
 
 
 # ── Operational Action Tracking ──
