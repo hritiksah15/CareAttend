@@ -139,13 +139,15 @@ class TestDashboard:
             assert row.risk_tier == pred["risk_tier"]
             assert row.age_group
 
-    def test_dashboard_scoped_to_user(self, client):
+    def test_dashboard_is_practice_wide(self, client):
+        # US-002: the dashboard aggregates every staff member's assessments,
+        # so each user sees the whole practice, not only their own rows.
         token_a = login(client, username="dash_a")
         token_b = login(client, username="dash_b")
         make_prediction(client, token_a)
         make_prediction(client, token_b)
         res = client.get("/api/dashboard", headers=auth(token_a))
-        assert json.loads(res.data)["total"] == 1
+        assert json.loads(res.data)["total"] == 2
 
 
 # ── NL Summary (Feature 13) ──
@@ -192,12 +194,21 @@ class TestFeedback:
         assert data["correct"] == 1
         assert data["accuracy"] == 1.0
 
-    def test_feedback_scoped_to_prediction_owner(self, client):
+    def test_feedback_practice_wide(self, client):
+        # Practice-wide: any staff member may record the outcome of an
+        # assessment made by a colleague (shared accuracy tracking).
         token_a = login(client, username="owner_a")
         token_b = login(client, username="owner_b")
         pred = make_prediction(client, token_a)
         res = client.post(
             "/api/feedback", headers=auth(token_b), json={"prediction_id": pred["sessionId"], "outcome": "dna"}
+        )
+        assert res.status_code == 200
+
+    def test_feedback_unknown_prediction_404(self, client):
+        token = login(client)
+        res = client.post(
+            "/api/feedback", headers=auth(token), json={"prediction_id": "does-not-exist", "outcome": "dna"}
         )
         assert res.status_code == 404
 

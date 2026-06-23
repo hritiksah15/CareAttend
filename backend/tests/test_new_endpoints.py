@@ -23,7 +23,7 @@ pytestmark = pytest.mark.skipif(
 
 from app import app as flask_app, load_models  # noqa: E402
 from auth import setup_totp  # noqa: E402
-from models import db, User, ScheduledNotification, AuditLog  # noqa: E402
+from models import db, User, ScheduledNotification, OutreachAction, AuditLog  # noqa: E402
 
 try:
     import pyotp
@@ -58,6 +58,7 @@ def clean_state(app):
         yield
         for table in (
             "assessment_summaries",
+            "outreach_actions",
             "notifications",
             "carer_proxies",
             "audit_logs",
@@ -581,6 +582,116 @@ class TestNotifications:
         data = json.loads(res.data)
         assert data["total"] == 1
         assert data["notifications"][0]["patient_id"] == "NHS001"
+
+
+# ── Operational Action Tracking ──
+
+
+class TestOutreachActions:
+    def test_requires_auth(self, client):
+        res = client.post("/api/actions", json={})
+        assert res.status_code == 401
+
+    def test_user_forbidden(self, client):
+        token = login(client, username="patientuser", role="user")
+        res = client.post("/api/actions", headers=auth(token), json={"patient_id": "NHS001", "action_type": "call"})
+        assert res.status_code == 403
+
+    def test_create_standalone_action(self, client, app):
+        token = login(client)
+        res = client.post(
+            "/api/actions",
+            headers=auth(token),
+            json={
+                "patient_id": "NHS001",
+                "action_type": "transport",
+                "risk_tier": "High",
+                "status": "completed",
+                "outcome": "transport_arranged",
+                "notes": "Booked community transport",
+            },
+        )
+        assert res.status_code == 201
+        action = json.loads(res.data)["action"]
+        assert action["status"] == "completed"
+        assert action["completed_at"] is not None
+        with app.app_context():
+            assert OutreachAction.query.filter_by(patient_id="NHS001").count() == 1
+            assert AuditLog.query.filter_by(action="outreach_action_created").count() == 1
+
+    def test_create_action_from_notification(self, client, app):
+        token = login(client)
+        scheduled = client.post(
+            "/api/notifications/schedule",
+            headers=auth(token),
+            json={"patient_id": "NHS001", "risk_tier": "High", "appointment_date": "2026-07-01"},
+        )
+        notification_id = json.loads(scheduled.data)["notification"]["id"]
+        res = client.post(
+            "/api/actions",
+            headers=auth(token),
+            json={"notification_id": notification_id, "action_type": "call", "status": "completed"},
+        )
+        assert res.status_code == 201
+        action = json.loads(res.data)["action"]
+        assert action["patient_id"] == "NHS001"
+        assert action["risk_tier"] == "High"
+        with app.app_context():
+            assert db.session.get(ScheduledNotification, notification_id).status == "actioned"
+
+    def test_notification_scoped_to_owner(self, client):
+        token_a = login(client, username="staffa")
+        token_b = login(client, username="staffb")
+        scheduled = client.post(
+            "/api/notifications/schedule",
+            headers=auth(token_a),
+            json={"patient_id": "NHS001", "risk_tier": "Medium"},
+        )
+        notification_id = json.loads(scheduled.data)["notification"]["id"]
+        res = client.post(
+            "/api/actions",
+            headers=auth(token_b),
+            json={"notification_id": notification_id, "action_type": "sms"},
+        )
+        assert res.status_code == 404
+
+    def test_list_and_filter_actions(self, client):
+        token = login(client)
+        client.post("/api/actions", headers=auth(token), json={"patient_id": "NHS001", "action_type": "sms"})
+        client.post(
+            "/api/actions",
+            headers=auth(token),
+            json={"patient_id": "NHS002", "action_type": "call", "status": "completed", "outcome": "answered"},
+        )
+        res = client.get("/api/actions?status=completed", headers=auth(token))
+        data = json.loads(res.data)
+        assert data["total"] == 1
+        assert data["actions"][0]["patient_id"] == "NHS002"
+
+    def test_update_action(self, client, app):
+        token = login(client)
+        created = client.post("/api/actions", headers=auth(token), json={"patient_id": "NHS001", "action_type": "sms"})
+        action_id = json.loads(created.data)["action"]["id"]
+        res = client.patch(
+            f"/api/actions/{action_id}",
+            headers=auth(token),
+            json={"status": "completed", "outcome": "sms_sent", "notes": "Reminder sent"},
+        )
+        assert res.status_code == 200
+        action = json.loads(res.data)["action"]
+        assert action["outcome"] == "sms_sent"
+        assert action["completed_at"] is not None
+        with app.app_context():
+            assert AuditLog.query.filter_by(action="outreach_action_updated").count() == 1
+
+    def test_invalid_action_type_rejected(self, client):
+        token = login(client)
+        res = client.post(
+            "/api/actions",
+            headers=auth(token),
+            json={"patient_id": "NHS001", "action_type": "fax"},
+        )
+        assert res.status_code == 400
 
 
 # ── Account Centre / Profile ──

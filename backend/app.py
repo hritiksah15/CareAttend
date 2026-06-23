@@ -26,6 +26,7 @@ from models import (
     CarerProxy,
     PersistentFeedback,
     ScheduledNotification,
+    OutreachAction,
     AssessmentSummary,
 )
 from auth import (
@@ -436,11 +437,9 @@ def model_comparison():
 @token_required
 @role_required("staff", "admin")
 def practice_dashboard():
-    assessments = (
-        AssessmentSummary.query.filter_by(user_id=request.current_user["userId"])
-        .order_by(AssessmentSummary.created_at.desc())
-        .all()
-    )
+    # Practice-wide view (US-002): aggregate every staff member's assessments,
+    # not just the caller's. Summaries are anonymised, so there is no PII leak.
+    assessments = AssessmentSummary.query.order_by(AssessmentSummary.created_at.desc()).all()
     if not assessments:
         return jsonify({"message": "No assessments yet", "total": 0})
 
@@ -491,10 +490,8 @@ def submit_feedback():
     if outcome not in ("correct", "incorrect", "attended", "dna"):
         return jsonify({"error": "outcome must be: correct, incorrect, attended, or dna"}), 400
 
-    assessment = AssessmentSummary.query.filter_by(
-        id=prediction_id,
-        user_id=request.current_user["userId"],
-    ).first()
+    # Practice-wide: any staff member may record the outcome of any assessment.
+    assessment = AssessmentSummary.query.filter_by(id=prediction_id).first()
     if not assessment:
         return jsonify({"error": "Prediction not found"}), 404
 
@@ -522,7 +519,7 @@ def submit_feedback():
 @token_required
 @role_required("staff", "admin")
 def feedback_summary():
-    assessments = AssessmentSummary.query.filter_by(user_id=request.current_user["userId"]).all()
+    assessments = AssessmentSummary.query.all()  # practice-wide accuracy
     total = len(assessments)
     with_feedback = [p for p in assessments if p.feedback_outcome is not None]
 
@@ -710,7 +707,7 @@ NHSX_ETHICS_MAPPING = {
             "evidence": [
                 "F1 >= 0.72 and Recall >= 0.70 validated on held-out test set (NFR-04)",
                 "4-model comparison (LR, RF, XGBoost, LightGBM) with threshold optimisation",
-                "79 automated pytest tests covering all modules",
+                "199 automated pytest tests covering all modules",
                 "SMOTE applied to training partition only - no data leakage",
             ],
         },
@@ -817,6 +814,21 @@ def export_model():
 
 # ── Push Notification Scheduling ──
 
+VALID_ACTION_TYPES = {"call", "sms", "letter", "transport", "carer_contact", "reschedule", "other"}
+VALID_ACTION_STATUSES = {"planned", "in_progress", "completed", "cancelled"}
+VALID_ACTION_OUTCOMES = {
+    "answered",
+    "left_message",
+    "sms_sent",
+    "transport_arranged",
+    "carer_contacted",
+    "rescheduled",
+    "attended",
+    "dna",
+    "no_response",
+    "not_needed",
+}
+
 
 @app.route("/api/notifications/schedule", methods=["POST"])
 @token_required
@@ -871,6 +883,130 @@ def list_notifications():
             "total": len(notifications),
         }
     )
+
+
+# ── Operational Action Tracking ──
+
+
+@app.route("/api/actions", methods=["POST"])
+@token_required
+@role_required("staff", "admin")
+def create_outreach_action():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+
+    action_type = data.get("action_type", "")
+    status = data.get("status", "planned")
+    outcome = data.get("outcome") or None
+    notification_id = data.get("notification_id") or None
+    patient_id = data.get("patient_id", "")
+
+    if action_type not in VALID_ACTION_TYPES:
+        return jsonify({"error": f"action_type must be one of: {', '.join(sorted(VALID_ACTION_TYPES))}"}), 400
+    if status not in VALID_ACTION_STATUSES:
+        return jsonify({"error": f"status must be one of: {', '.join(sorted(VALID_ACTION_STATUSES))}"}), 400
+    if outcome and outcome not in VALID_ACTION_OUTCOMES:
+        return jsonify({"error": f"outcome must be one of: {', '.join(sorted(VALID_ACTION_OUTCOMES))}"}), 400
+
+    notification = None
+    if notification_id:
+        notification = ScheduledNotification.query.filter_by(
+            id=notification_id,
+            user_id=request.current_user["userId"],
+        ).first()
+        if not notification:
+            return jsonify({"error": "Notification not found"}), 404
+        patient_id = patient_id or notification.patient_id
+
+    if not patient_id:
+        return jsonify({"error": "patient_id is required"}), 400
+
+    action = OutreachAction(
+        user_id=request.current_user["userId"],
+        notification_id=notification_id,
+        patient_id=patient_id,
+        action_type=action_type,
+        risk_tier=data.get("risk_tier") or (notification.risk_tier if notification else None),
+        appointment_date=data.get("appointment_date") or (notification.appointment_date if notification else None),
+        status=status,
+        outcome=outcome,
+        notes=data.get("notes", ""),
+        created_by=getattr(request, "current_user", {}).get("username", "system"),
+        completed_at=time.time() if status == "completed" else None,
+    )
+    if notification and status == "completed":
+        notification.status = "actioned"
+
+    db.session.add(action)
+    db.session.add(
+        _audit(request.current_user["userId"], "outreach_action_created", f"{action_type} for {patient_id}: {status}")
+    )
+    db.session.commit()
+
+    return jsonify({"message": "Action recorded", "action": action.to_dict()}), 201
+
+
+@app.route("/api/actions", methods=["GET"])
+@token_required
+@role_required("staff", "admin")
+def list_outreach_actions():
+    query = OutreachAction.query.filter_by(user_id=request.current_user["userId"])
+    status = request.args.get("status")
+    patient_id = request.args.get("patient_id")
+    if status:
+        if status not in VALID_ACTION_STATUSES:
+            return jsonify({"error": f"status must be one of: {', '.join(sorted(VALID_ACTION_STATUSES))}"}), 400
+        query = query.filter_by(status=status)
+    if patient_id:
+        query = query.filter_by(patient_id=patient_id)
+
+    actions = query.order_by(OutreachAction.created_at.desc()).limit(100).all()
+    return jsonify({"actions": [a.to_dict() for a in actions], "total": len(actions)})
+
+
+@app.route("/api/actions/<action_id>", methods=["PATCH"])
+@token_required
+@role_required("staff", "admin")
+def update_outreach_action(action_id):
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+
+    action = OutreachAction.query.filter_by(
+        id=action_id,
+        user_id=request.current_user["userId"],
+    ).first()
+    if not action:
+        return jsonify({"error": "Action not found"}), 404
+
+    if "status" in data:
+        if data["status"] not in VALID_ACTION_STATUSES:
+            return jsonify({"error": f"status must be one of: {', '.join(sorted(VALID_ACTION_STATUSES))}"}), 400
+        action.status = data["status"]
+        if action.status == "completed" and action.completed_at is None:
+            action.completed_at = time.time()
+    if "outcome" in data:
+        outcome = data.get("outcome") or None
+        if outcome and outcome not in VALID_ACTION_OUTCOMES:
+            return jsonify({"error": f"outcome must be one of: {', '.join(sorted(VALID_ACTION_OUTCOMES))}"}), 400
+        action.outcome = outcome
+    if "notes" in data:
+        action.notes = data.get("notes", "")
+
+    if action.notification and action.status == "completed":
+        action.notification.status = "actioned"
+
+    db.session.add(
+        _audit(
+            request.current_user["userId"],
+            "outreach_action_updated",
+            f"{action.action_type} for {action.patient_id}: {action.status}",
+        )
+    )
+    db.session.commit()
+
+    return jsonify({"message": "Action updated", "action": action.to_dict()})
 
 
 # ── Account Centre API ──

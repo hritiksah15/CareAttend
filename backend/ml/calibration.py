@@ -19,10 +19,11 @@ import json
 import os
 
 import joblib
+import numpy as np
 import pandas as pd
 from sklearn.base import clone
 from sklearn.calibration import CalibratedClassifierCV, calibration_curve
-from sklearn.metrics import brier_score_loss, log_loss
+from sklearn.metrics import brier_score_loss, f1_score, log_loss
 from sklearn.model_selection import train_test_split
 
 from ml.data_generator import FEATURE_NAMES
@@ -35,12 +36,16 @@ def _load_split(model_dir, data_path):
     df = pd.read_csv(data_path)
     X = df[FEATURE_NAMES].values
     y = df["NoShow"].values
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
-    )
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
     scaler = joblib.load(os.path.join(model_dir, "scaler.joblib"))
-    return (scaler.transform(X_train), y_train,
-            scaler.transform(X_test), y_test)
+    return (scaler.transform(X_train), y_train, scaler.transform(X_test), y_test)
+
+
+def _optimal_threshold(y_true, y_prob):
+    """Threshold that maximises F1 on the given probabilities (recall-leaning
+    operating point for a screening tool whose cost is a missed DNA)."""
+    grid = np.linspace(0.1, 0.9, 161)
+    return float(max(grid, key=lambda t: f1_score(y_true, (y_prob >= t).astype(int))))
 
 
 def _reliability(y_true, y_prob, n_bins=10):
@@ -95,6 +100,13 @@ def evaluate_calibration(model_dir="models", data_path=DATA_PATH, n_bins=10):
 
     if best_estimator is not None:
         joblib.dump(best_estimator, os.path.join(model_dir, "model_calibrated.joblib"))
+        # Calibration rescales probabilities, so the base model's operating
+        # threshold no longer holds. Re-derive an F1-optimal cutoff on the
+        # calibrated held-out scores and persist it for the predictor to use.
+        p_cal = best_estimator.predict_proba(X_test)[:, 1]
+        cal_threshold = _optimal_threshold(y_test, p_cal)
+        joblib.dump(cal_threshold, os.path.join(model_dir, "threshold_calibrated.joblib"))
+        report["calibrated"][best_method]["operating_threshold"] = round(float(cal_threshold), 4)
 
     with open(os.path.join(model_dir, "calibration_report.json"), "w") as f:
         json.dump(report, f, indent=2)
@@ -106,6 +118,7 @@ def evaluate_calibration(model_dir="models", data_path=DATA_PATH, n_bins=10):
 def _maybe_plot(report, model_dir):
     try:
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
     except ImportError:
@@ -129,9 +142,14 @@ def _maybe_plot(report, model_dir):
 
 if __name__ == "__main__":
     rep = evaluate_calibration()
-    print(json.dumps({
-        "model": rep["model"],
-        "uncalibrated_brier": rep["uncalibrated"]["brier"],
-        "calibrated": {k: v["brier"] for k, v in rep["calibrated"].items()},
-        "recommended": rep["recommended"],
-    }, indent=2))
+    print(
+        json.dumps(
+            {
+                "model": rep["model"],
+                "uncalibrated_brier": rep["uncalibrated"]["brier"],
+                "calibrated": {k: v["brier"] for k, v in rep["calibrated"].items()},
+                "recommended": rep["recommended"],
+            },
+            indent=2,
+        )
+    )

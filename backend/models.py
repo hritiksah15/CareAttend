@@ -166,6 +166,43 @@ class ScheduledNotification(db.Model):
         }
 
 
+class OutreachAction(db.Model):
+    __tablename__ = "outreach_actions"
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False)
+    notification_id = db.Column(db.String(36), db.ForeignKey("notifications.id"), nullable=True)
+    patient_id = db.Column(db.String(80), nullable=False)
+    action_type = db.Column(db.String(40), nullable=False)
+    risk_tier = db.Column(db.String(20), nullable=True)
+    appointment_date = db.Column(db.String(30), nullable=True)
+    status = db.Column(db.String(20), nullable=False, default="planned")
+    outcome = db.Column(db.String(40), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    created_by = db.Column(db.String(80), nullable=False)
+    created_at = db.Column(db.Float, nullable=False, default=time.time)
+    completed_at = db.Column(db.Float, nullable=True)
+
+    user = db.relationship("User", backref=db.backref("outreach_actions", lazy=True))
+    notification = db.relationship("ScheduledNotification", backref=db.backref("actions", lazy=True))
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "notification_id": self.notification_id or "",
+            "patient_id": self.patient_id,
+            "action_type": self.action_type,
+            "risk_tier": self.risk_tier or "",
+            "appointment_date": self.appointment_date or "",
+            "status": self.status,
+            "outcome": self.outcome or "",
+            "notes": self.notes or "",
+            "created_by": self.created_by,
+            "created_at": self.created_at,
+            "completed_at": self.completed_at,
+        }
+
+
 class AssessmentSummary(db.Model):
     __tablename__ = "assessment_summaries"
 
