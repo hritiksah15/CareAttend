@@ -217,6 +217,57 @@ paths:
         "400": { $ref: "#/components/responses/BadRequest" }
   /api/notifications:
     get: { tags: [Outreach], summary: List scheduled notifications, responses: { "200": { description: OK } } }
+  /api/actions:
+    post:
+      tags: [Outreach]
+      summary: Record a staff outreach/action outcome
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action_type]
+              properties:
+                notification_id: { type: string }
+                patient_id: { type: string }
+                action_type: { type: string, enum: [call, sms, letter, transport, carer_contact, reschedule, other] }
+                risk_tier: { type: string, enum: [High, Medium, Low] }
+                appointment_date: { type: string }
+                status: { type: string, enum: [planned, in_progress, completed, cancelled] }
+                outcome: { type: string, enum: [answered, left_message, sms_sent, transport_arranged, carer_contacted, rescheduled, attended, dna, no_response, not_needed] }
+                notes: { type: string }
+      responses:
+        "201": { description: Recorded }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "404": { description: Linked notification not found }
+    get:
+      tags: [Outreach]
+      summary: List staff outreach actions
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [planned, in_progress, completed, cancelled] } }
+        - { name: patient_id, in: query, schema: { type: string } }
+      responses:
+        "200": { description: OK }
+  /api/actions/{action_id}:
+    patch:
+      tags: [Outreach]
+      summary: Update an outreach action status/outcome
+      parameters:
+        - { name: action_id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status: { type: string, enum: [planned, in_progress, completed, cancelled] }
+                outcome: { type: string, enum: [answered, left_message, sms_sent, transport_arranged, carer_contacted, rescheduled, attended, dna, no_response, not_needed] }
+                notes: { type: string }
+      responses:
+        "200": { description: Updated }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "404": { description: Action not found }
 
   /api/profile:
     get: { tags: [Account & Security], summary: Get profile, responses: { "200": { description: OK }, "404": { description: Not found } } }

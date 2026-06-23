@@ -4,7 +4,7 @@
 
 **How it was built:** Requirement IDs harvested directly from `@requirement` tags in the source (`grep -rEn "FR-|NFR-|US-" backend/`). Implementation and test columns are verified file references, not claims. **Action for you:** replace each *Requirement (description)* cell with the exact wording from your AT2 report so the matrix is word-identical to your requirements section.
 
-**Test status:** 137 pytest tests, all passing (June 2026).
+**Test status:** 200 pytest tests, all passing (June 2026).
 
 ---
 
@@ -18,7 +18,7 @@
 | **FR-04** | Authenticate users (register / login / logout, RBAC) | Must | Sequence diagram (auth) | `auth.py`; `models.py` (User/Session) | `test_auth.py::TestAuthEndpoints` | ✅ |
 | **FR-05** | Generate contextual intervention recommendations | Must | Activity diagram | `ml/interventions.py` | `test_interventions.py` | ✅ |
 | **FR-06** | Priority-order & cap interventions (max 5, dedup) | Should | Activity diagram | `ml/interventions.py` | `test_interventions.py` (priority, dedup, max-5) | ✅ |
-| **FR-07** | Bias audit (demographic parity + equalised odds) | Must | Component diagram (fairness) | `ml/bias_monitor.py`; `app.py:246` | `test_bias_monitor.py`; `test_api::TestBiasEndpoint` | ✅ |
+| **FR-07** | Bias audit (demographic parity + equalised odds) | Must | Component diagram (fairness) | `ml/bias_monitor.py` using calibrated model + saved threshold; `app.py:/api/bias-audit` | `test_bias_monitor.py`; `test_api::TestBiasEndpoint` | ✅ |
 | **FR-08** | Batch CSV upload (≤100 records) → results CSV | Should | Sequence diagram (batch) | `app.py:188` `/api/batch` | `test_api.py` (batch path) | ✅ |
 | **FR-09** | *(if defined in report — e.g. PDF/print export)* | Could | — | frontend (jsPDF) | manual / UAT | ⚠️ confirm |
 
@@ -50,6 +50,7 @@
 | **(new)** | Patient nudge generator (4 langs) | `app.py:813` | `test_new_endpoints::TestPatientNudge` | ✅ |
 | **(new)** | Admin audit log | `app.py:868` | `test_new_endpoints::TestAuditLog` | ✅ |
 | **(new)** | Push-notification scheduling | `app.py:570` | `test_new_endpoints::TestNotifications` | ✅ |
+| **(new)** | Operational outreach action tracking | `/api/actions`; `models.py::OutreachAction` | `test_new_endpoints::TestOutreachActions` | ✅ |
 
 ---
 

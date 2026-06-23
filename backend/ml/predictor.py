@@ -21,11 +21,23 @@ class CareAttendPredictor:
 
         self.scaler = joblib.load(f"{model_dir}/scaler.joblib")
         self.background_data = np.load(f"{model_dir}/X_train_sample.npy")
-        try:
-            self.threshold = joblib.load(f"{model_dir}/threshold.joblib")
-        except FileNotFoundError:
-            self.threshold = 0.66
+        # The operating threshold must match the model that actually scores.
+        # threshold.joblib is tuned on the base model's raw probabilities;
+        # calibration rescales those probabilities, so the calibrated model
+        # needs its own threshold (threshold_calibrated.joblib) or it would
+        # apply the base cutoff to rescaled scores and collapse recall.
+        self.threshold = self._load_threshold(model_dir)
         self._init_explainer()
+
+    def _load_threshold(self, model_dir):
+        if self.model_source == "calibrated":
+            cal_path = os.path.join(model_dir, "threshold_calibrated.joblib")
+            if os.path.exists(cal_path):
+                return joblib.load(cal_path)
+        try:
+            return joblib.load(os.path.join(model_dir, "threshold.joblib"))
+        except FileNotFoundError:
+            return 0.66
 
     def _init_explainer(self):
         if hasattr(self.explanation_model, "estimators_"):
