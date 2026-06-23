@@ -26,7 +26,7 @@
 
 | Req ID | Requirement (sync wording w/ AT2) | MoSCoW | Design / standard | Implementation | Test evidence | Status |
 |--------|-----------------------------------|:------:|-------------------|----------------|---------------|:------:|
-| **NFR-01** | Privacy: session-scoped, zero patient data persisted | Must | GDPR Art 5(1)(c) | `app.py` in-memory `_prediction_log`; no patient table in `models.py` | `test_api.py` (NFR-01 noted) | ✅ |
+| **NFR-01** | Privacy: no raw patient input persisted; only anonymised assessment summaries for operations | Must | GDPR Art 5(1)(c) | `assessment_summaries` stores ID/probability/tier/age-group/feedback only; no patient table in `models.py` | `test_feature_coverage.py::TestDashboard::test_prediction_persists_anonymised_summary` | ✅ |
 | **NFR-04** | Model quality: F1 ≥ 0.72, Recall ≥ 0.70 | Must | Eval methodology | `ml/pipeline.py` (threshold opt); `training_results.json` | `test_predictor.py` (NFR-04) | ✅ |
 | **NFR-06** | Security: bcrypt hashing, 30-min session timeout, 2FA, RBAC | Must | OWASP / NHS DSPT | `auth.py:29` `SESSION_TIMEOUT=1800`; bcrypt; TOTP | `test_auth.py`; `test_new_endpoints::TestTwoFactor` | ✅ |
 | **NFR-02** | *(confirm — e.g. performance/latency)* | — | — | — | benchmark TODO | ⚠️ confirm |
