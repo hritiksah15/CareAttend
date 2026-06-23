@@ -18,12 +18,33 @@ from flask import Flask, render_template, request, jsonify, make_response
 from flask_cors import CORS
 from sqlalchemy import text as _sql_text
 
-from models import db, migrate, User, AuditLog, CarerProxy, PersistentFeedback
-from auth import (register_user, authenticate, logout, token_required,
-                  role_required, VALID_ROLES, REMEMBER_TIMEOUT,
-                  _hash_password, _verify_password, validate_password,
-                  setup_totp, enable_totp, disable_totp,
-                  request_password_reset, reset_password)
+from models import (
+    db,
+    migrate,
+    User,
+    AuditLog,
+    CarerProxy,
+    PersistentFeedback,
+    ScheduledNotification,
+    AssessmentSummary,
+)
+from auth import (
+    register_user,
+    authenticate,
+    logout,
+    token_required,
+    role_required,
+    VALID_ROLES,
+    REMEMBER_TIMEOUT,
+    _hash_password,
+    _verify_password,
+    validate_password,
+    setup_totp,
+    enable_totp,
+    disable_totp,
+    request_password_reset,
+    reset_password,
+)
 from ml.predictor import CareAttendPredictor
 from ml.bias_monitor import BiasMonitor
 from ml.interventions import generate_interventions
@@ -37,17 +58,14 @@ app = Flask(
     static_url_path="/static",
 )
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", os.urandom(32).hex())
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
-    "DATABASE_URL", "postgresql+psycopg://localhost:5432/careattend"
-)
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "postgresql+psycopg://localhost:5432/careattend")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # CORS: restrict to an explicit allowlist in production via CORS_ORIGINS
 # (comma-separated). Defaults to "*" for local/dev convenience only.
 _cors_origins = os.environ.get("CORS_ORIGINS", "*").strip()
 if _cors_origins and _cors_origins != "*":
-    CORS(app, origins=[o.strip() for o in _cors_origins.split(",") if o.strip()],
-         supports_credentials=True)
+    CORS(app, origins=[o.strip() for o in _cors_origins.split(",") if o.strip()], supports_credentials=True)
 else:
     CORS(app)
 
@@ -100,15 +118,16 @@ def _err_500(e):
 def _err_unhandled(e):
     # Let Flask's own HTTP exceptions (404/405/etc.) pass through to their handlers.
     from werkzeug.exceptions import HTTPException
+
     if isinstance(e, HTTPException):
         return e
     logger.exception("Unhandled exception")
     return jsonify({"error": "Internal server error"}), 500
 
+
 predictor = None
 bias_monitor = None
 training_results = None
-_prediction_log = []  # session-scoped assessment history for dashboard (NFR-01: not persisted)
 
 
 def load_models():
@@ -123,12 +142,14 @@ def load_models():
 
 # ── Pages ──
 
+
 @app.route("/")
 def index():
     return render_template("index.html")
 
 
 # ── Health / readiness probe (no auth — for load balancers & Docker) ──
+
 
 @app.route("/health", methods=["GET"])
 def health():
@@ -138,15 +159,18 @@ def health():
     except Exception:
         db_ok = False
     healthy = predictor is not None and db_ok
-    return jsonify({
-        "status": "ok" if healthy else "degraded",
-        "model_loaded": predictor is not None,
-        "database": "ok" if db_ok else "unavailable",
-        "uptime_seconds": round(time.time() - _START_TIME, 1),
-    }), (200 if healthy else 503)
+    return jsonify(
+        {
+            "status": "ok" if healthy else "degraded",
+            "model_loaded": predictor is not None,
+            "database": "ok" if db_ok else "unavailable",
+            "uptime_seconds": round(time.time() - _START_TIME, 1),
+        }
+    ), (200 if healthy else 503)
 
 
 # ── Auth Endpoints (FR-04, NFR-06) ──
+
 
 @app.route("/auth/register", methods=["POST"])
 def auth_register():
@@ -179,6 +203,10 @@ def auth_login():
     totp_code = data.get("totp_code")
     remember = bool(data.get("remember"))
 
+    # Bound TOTP code length (6-digit codes); reject oversized input early.
+    if totp_code is not None and len(str(totp_code)) > 10:
+        return jsonify({"error": "Invalid 2FA code"}), 401
+
     result, error = authenticate(username, password, totp_code, remember)
     if error:
         return jsonify({"error": error}), 401
@@ -189,9 +217,7 @@ def auth_login():
     token = result
     response = jsonify({"token": token, "message": "Login successful"})
     response.set_cookie(
-        "session_token", token,
-        httponly=True, samesite="Strict",
-        max_age=(REMEMBER_TIMEOUT if remember else 1800)
+        "session_token", token, httponly=True, samesite="Strict", max_age=(REMEMBER_TIMEOUT if remember else 1800)
     )
     return response
 
@@ -246,6 +272,7 @@ def auth_logout():
 
 # ── Prediction Endpoint (FR-01, FR-02, FR-03) ──
 
+
 @app.route("/api/predict", methods=["POST"])
 @token_required
 def predict():
@@ -253,10 +280,7 @@ def predict():
     if not data:
         return jsonify({"error": "No data provided"}), 400
 
-    required = [
-        "Age", "Gender", "AppointmentLeadTimeDays", "SMSReceived",
-        "PriorDNACount", "IMDDecile"
-    ]
+    required = ["Age", "Gender", "AppointmentLeadTimeDays", "SMSReceived", "PriorDNACount", "IMDDecile"]
     missing = [f for f in required if f not in data]
     if missing:
         return jsonify({"error": f"Missing fields: {', '.join(missing)}"}), 400
@@ -266,38 +290,40 @@ def predict():
         return jsonify({"error": error}), 400
 
     result = predictor.predict(patient)
-    interventions, risk_tier, age_group = generate_interventions(
-        patient, result["probability"], result["shap_values"]
-    )
+    interventions, risk_tier, age_group = generate_interventions(patient, result["probability"], result["shap_values"])
 
     nl_summary = _generate_nl_summary(patient, result, age_group)
     prediction_id = str(uuid.uuid4())
 
-    _prediction_log.append({
-        "id": prediction_id,
-        "timestamp": __import__("time").time(),
-        "patient": patient,
-        "probability": result["probability"],
-        "risk_tier": result["risk_tier"],
-        "age_group": age_group,
-        "feedback": None,
-    })
+    db.session.add(
+        AssessmentSummary(
+            id=prediction_id,
+            user_id=request.current_user["userId"],
+            probability=result["probability"],
+            risk_tier=result["risk_tier"],
+            age_group=age_group,
+        )
+    )
+    db.session.commit()
 
-    return jsonify({
-        "sessionId": prediction_id,
-        "probability": result["probability"],
-        "percentage": result["percentage"],
-        "risk_tier": result["risk_tier"],
-        "shap_values": result["shap_values"],
-        "interventions": interventions,
-        "age_group": age_group,
-        "model_used": result.get("model_used", "Random Forest"),
-        "patient_summary": patient,
-        "nl_summary": nl_summary,
-    })
+    return jsonify(
+        {
+            "sessionId": prediction_id,
+            "probability": result["probability"],
+            "percentage": result["percentage"],
+            "risk_tier": result["risk_tier"],
+            "shap_values": result["shap_values"],
+            "interventions": interventions,
+            "age_group": age_group,
+            "model_used": result.get("model_used", "Random Forest"),
+            "patient_summary": patient,
+            "nl_summary": nl_summary,
+        }
+    )
 
 
 # ── Batch CSV Endpoint (FR-08) ──
+
 
 @app.route("/api/batch", methods=["POST"])
 @token_required
@@ -311,7 +337,9 @@ def batch_predict():
         return jsonify({"error": "File must be CSV format"}), 400
 
     try:
-        content = file.read().decode("utf-8")
+        # utf-8-sig strips a UTF-8 BOM that Excel/Numbers prepend, which would
+        # otherwise corrupt the first header (e.g. "﻿Age") and fail every row.
+        content = file.read().decode("utf-8-sig")
         reader = csv.DictReader(io.StringIO(content))
         rows = list(reader)
     except Exception:
@@ -330,19 +358,19 @@ def batch_predict():
             continue
 
         pred = predictor.predict(patient)
-        _, risk_tier, age_group = generate_interventions(
-            patient, pred["probability"], pred["shap_values"]
-        )
+        _, risk_tier, age_group = generate_interventions(patient, pred["probability"], pred["shap_values"])
         top_shap = pred["shap_values"][0]["label"] if pred["shap_values"] else ""
 
-        results.append({
-            "row": i + 1,
-            "age": patient["Age"],
-            "risk_probability": pred["percentage"],
-            "risk_tier": risk_tier,
-            "age_group": age_group,
-            "top_risk_factor": top_shap,
-        })
+        results.append(
+            {
+                "row": i + 1,
+                "age": patient["Age"],
+                "risk_probability": pred["percentage"],
+                "risk_tier": risk_tier,
+                "age_group": age_group,
+                "top_risk_factor": top_shap,
+            }
+        )
 
     output = io.StringIO()
     if results:
@@ -358,6 +386,7 @@ def batch_predict():
 
 # ── Bias Audit Endpoint (FR-07) ──
 
+
 @app.route("/api/bias-audit", methods=["GET"])
 @token_required
 @role_required("admin")
@@ -367,6 +396,7 @@ def bias_audit():
 
 
 # ── Model Info & Comparison ──
+
 
 @app.route("/api/model-info", methods=["GET"])
 @token_required
@@ -383,65 +413,69 @@ def model_info():
 def model_comparison():
     if not training_results:
         return jsonify({"error": "No training results available"}), 404
-    return jsonify({
-        "selected_model": training_results.get("selected_model"),
-        "threshold": training_results.get("best_metrics", {}).get("threshold"),
-        "logistic_regression": training_results.get("lr_metrics"),
-        "random_forest": training_results.get("rf_metrics"),
-        "optimised_metrics": training_results.get("best_metrics"),
-        "dataset": {
-            "train_size": training_results.get("train_size"),
-            "test_size": training_results.get("test_size"),
-            "dna_rate": training_results.get("dna_rate"),
-        },
-    })
+    return jsonify(
+        {
+            "selected_model": training_results.get("selected_model"),
+            "threshold": training_results.get("best_metrics", {}).get("threshold"),
+            "logistic_regression": training_results.get("lr_metrics"),
+            "random_forest": training_results.get("rf_metrics"),
+            "optimised_metrics": training_results.get("best_metrics"),
+            "dataset": {
+                "train_size": training_results.get("train_size"),
+                "test_size": training_results.get("test_size"),
+                "dna_rate": training_results.get("dna_rate"),
+            },
+        }
+    )
 
 
 # ── Practice Dashboard (US-002, Feature 11) ──
+
 
 @app.route("/api/dashboard", methods=["GET"])
 @token_required
 @role_required("staff", "admin")
 def practice_dashboard():
-    if not _prediction_log:
+    assessments = (
+        AssessmentSummary.query.filter_by(user_id=request.current_user["userId"])
+        .order_by(AssessmentSummary.created_at.desc())
+        .all()
+    )
+    if not assessments:
         return jsonify({"message": "No assessments yet", "total": 0})
 
-    high = sum(1 for p in _prediction_log if p["risk_tier"] == "High")
-    medium = sum(1 for p in _prediction_log if p["risk_tier"] == "Medium")
-    low = sum(1 for p in _prediction_log if p["risk_tier"] == "Low")
-    avg_risk = sum(p["probability"] for p in _prediction_log) / len(_prediction_log)
+    high = sum(1 for p in assessments if p.risk_tier == "High")
+    medium = sum(1 for p in assessments if p.risk_tier == "Medium")
+    low = sum(1 for p in assessments if p.risk_tier == "Low")
+    avg_risk = sum(p.probability for p in assessments) / len(assessments)
 
     age_breakdown = {}
-    for p in _prediction_log:
-        ag = p["age_group"]
+    for p in assessments:
+        ag = p.age_group
         if ag not in age_breakdown:
             age_breakdown[ag] = {"total": 0, "high_risk": 0}
         age_breakdown[ag]["total"] += 1
-        if p["risk_tier"] == "High":
+        if p.risk_tier == "High":
             age_breakdown[ag]["high_risk"] += 1
 
-    recent = sorted(_prediction_log, key=lambda x: x["timestamp"], reverse=True)[:10]
-    recent_summary = [{
-        "id": r["id"][:8],
-        "age": r["patient"]["Age"],
-        "risk_tier": r["risk_tier"],
-        "probability": r["probability"],
-        "age_group": r["age_group"],
-    } for r in recent]
+    recent_summary = [r.to_recent_dict() for r in assessments[:10]]
 
-    return jsonify({
-        "total": len(_prediction_log),
-        "high_risk": high,
-        "medium_risk": medium,
-        "low_risk": low,
-        "average_risk": round(avg_risk, 4),
-        "age_breakdown": age_breakdown,
-        "recent_assessments": recent_summary,
-        "feedback_given": sum(1 for p in _prediction_log if p["feedback"] is not None),
-    })
+    return jsonify(
+        {
+            "total": len(assessments),
+            "high_risk": high,
+            "medium_risk": medium,
+            "low_risk": low,
+            "average_risk": round(avg_risk, 4),
+            "age_breakdown": age_breakdown,
+            "recent_assessments": recent_summary,
+            "feedback_given": sum(1 for p in assessments if p.feedback_outcome is not None),
+        }
+    )
 
 
 # ── Prediction Feedback Loop (Feature 12) ──
+
 
 @app.route("/api/feedback", methods=["POST"])
 @token_required
@@ -457,57 +491,108 @@ def submit_feedback():
     if outcome not in ("correct", "incorrect", "attended", "dna"):
         return jsonify({"error": "outcome must be: correct, incorrect, attended, or dna"}), 400
 
-    for p in _prediction_log:
-        if p["id"] == prediction_id:
-            p["feedback"] = outcome
-            # Persist an anonymised feedback record (tier/prob/outcome only — no
-            # patient data) for cross-session accuracy tracking & audit.
-            db.session.add(PersistentFeedback(
-                user_id=request.current_user["userId"],
-                prediction_risk_tier=p["risk_tier"],
-                prediction_probability=p["probability"],
-                outcome=outcome,
-            ))
-            db.session.add(_audit(request.current_user["userId"], "feedback_recorded",
-                                  f"{outcome} for {p['risk_tier']} risk prediction"))
-            db.session.commit()
-            return jsonify({"message": "Feedback recorded", "prediction_id": prediction_id})
+    assessment = AssessmentSummary.query.filter_by(
+        id=prediction_id,
+        user_id=request.current_user["userId"],
+    ).first()
+    if not assessment:
+        return jsonify({"error": "Prediction not found"}), 404
 
-    return jsonify({"error": "Prediction not found"}), 404
+    assessment.feedback_outcome = outcome
+    # Persist an anonymised feedback record (tier/prob/outcome only — no
+    # patient data) for cross-session accuracy tracking & audit.
+    db.session.add(
+        PersistentFeedback(
+            user_id=request.current_user["userId"],
+            prediction_risk_tier=assessment.risk_tier,
+            prediction_probability=assessment.probability,
+            outcome=outcome,
+        )
+    )
+    db.session.add(
+        _audit(
+            request.current_user["userId"], "feedback_recorded", f"{outcome} for {assessment.risk_tier} risk prediction"
+        )
+    )
+    db.session.commit()
+    return jsonify({"message": "Feedback recorded", "prediction_id": prediction_id})
 
 
 @app.route("/api/feedback/summary", methods=["GET"])
 @token_required
 @role_required("staff", "admin")
 def feedback_summary():
-    total = len(_prediction_log)
-    with_feedback = [p for p in _prediction_log if p["feedback"] is not None]
+    assessments = AssessmentSummary.query.filter_by(user_id=request.current_user["userId"]).all()
+    total = len(assessments)
+    with_feedback = [p for p in assessments if p.feedback_outcome is not None]
 
-    correct = sum(1 for p in with_feedback if p["feedback"] in ("correct", "dna"))
-    incorrect = sum(1 for p in with_feedback if p["feedback"] in ("incorrect", "attended"))
+    correct = sum(1 for p in with_feedback if p.feedback_outcome in ("correct", "dna"))
+    incorrect = sum(1 for p in with_feedback if p.feedback_outcome in ("incorrect", "attended"))
 
-    return jsonify({
-        "total_predictions": total,
-        "feedback_received": len(with_feedback),
-        "correct": correct,
-        "incorrect": incorrect,
-        "accuracy": round(correct / len(with_feedback), 4) if with_feedback else None,
-    })
+    return jsonify(
+        {
+            "total_predictions": total,
+            "feedback_received": len(with_feedback),
+            "correct": correct,
+            "incorrect": incorrect,
+            "accuracy": round(correct / len(with_feedback), 4) if with_feedback else None,
+        }
+    )
 
 
 # ── Mock NHS EHR Integration (Feature 10) ──
 
 EHR_MOCK_PATIENTS = {
-    "NHS001": {"name": "Margaret Thompson", "Age": 78, "Gender": 0, "IMDDecile": 3,
-               "Hypertension": 1, "Diabetes": 1, "Disability": 0, "PriorDNACount": 4},
-    "NHS002": {"name": "James Patel", "Age": 45, "Gender": 1, "IMDDecile": 7,
-               "Hypertension": 0, "Diabetes": 0, "Disability": 0, "PriorDNACount": 1},
-    "NHS003": {"name": "Fatima Ali", "Age": 82, "Gender": 0, "IMDDecile": 2,
-               "Hypertension": 1, "Diabetes": 0, "Disability": 1, "PriorDNACount": 6},
-    "NHS004": {"name": "David Williams", "Age": 34, "Gender": 1, "IMDDecile": 5,
-               "Hypertension": 0, "Diabetes": 0, "Disability": 0, "PriorDNACount": 0},
-    "NHS005": {"name": "Eileen O'Brien", "Age": 91, "Gender": 0, "IMDDecile": 1,
-               "Hypertension": 1, "Diabetes": 1, "Disability": 1, "PriorDNACount": 8},
+    "NHS001": {
+        "name": "Margaret Thompson",
+        "Age": 78,
+        "Gender": 0,
+        "IMDDecile": 3,
+        "Hypertension": 1,
+        "Diabetes": 1,
+        "Disability": 0,
+        "PriorDNACount": 4,
+    },
+    "NHS002": {
+        "name": "James Patel",
+        "Age": 45,
+        "Gender": 1,
+        "IMDDecile": 7,
+        "Hypertension": 0,
+        "Diabetes": 0,
+        "Disability": 0,
+        "PriorDNACount": 1,
+    },
+    "NHS003": {
+        "name": "Fatima Ali",
+        "Age": 82,
+        "Gender": 0,
+        "IMDDecile": 2,
+        "Hypertension": 1,
+        "Diabetes": 0,
+        "Disability": 1,
+        "PriorDNACount": 6,
+    },
+    "NHS004": {
+        "name": "David Williams",
+        "Age": 34,
+        "Gender": 1,
+        "IMDDecile": 5,
+        "Hypertension": 0,
+        "Diabetes": 0,
+        "Disability": 0,
+        "PriorDNACount": 0,
+    },
+    "NHS005": {
+        "name": "Eileen O'Brien",
+        "Age": 91,
+        "Gender": 0,
+        "IMDDecile": 1,
+        "Hypertension": 1,
+        "Diabetes": 1,
+        "Disability": 1,
+        "PriorDNACount": 8,
+    },
 }
 
 
@@ -517,25 +602,34 @@ EHR_MOCK_PATIENTS = {
 def ehr_lookup(nhs_number):
     patient = EHR_MOCK_PATIENTS.get(nhs_number)
     if not patient:
-        return jsonify({"error": "Patient not found", "note": "This is a mock EHR. "
-                        "Real integration requires NHS IG Toolkit approval (out of scope per AT2 Section 1.3)"}), 404
-    return jsonify({
-        "source": "Mock EMIS/SystmOne",
-        "nhs_number": nhs_number,
-        "patient": patient,
-        "note": "Mock data only. Real NHS EHR integration excluded per AT2 scope constraints.",
-    })
+        return jsonify(
+            {
+                "error": "Patient not found",
+                "note": "This is a mock EHR. "
+                "Real integration requires NHS IG Toolkit approval (out of scope per AT2 Section 1.3)",
+            }
+        ), 404
+    return jsonify(
+        {
+            "source": "Mock EMIS/SystmOne",
+            "nhs_number": nhs_number,
+            "patient": patient,
+            "note": "Mock data only. Real NHS EHR integration excluded per AT2 scope constraints.",
+        }
+    )
 
 
 @app.route("/api/ehr/patients", methods=["GET"])
 @token_required
 @role_required("staff", "admin")
 def ehr_list():
-    return jsonify({
-        "source": "Mock EMIS/SystmOne",
-        "patients": {k: v["name"] for k, v in EHR_MOCK_PATIENTS.items()},
-        "note": "Mock data only.",
-    })
+    return jsonify(
+        {
+            "source": "Mock EMIS/SystmOne",
+            "patients": {k: v["name"] for k, v in EHR_MOCK_PATIENTS.items()},
+            "note": "Mock data only.",
+        }
+    )
 
 
 # ── Multi-Trust Configuration (Feature 14) ──
@@ -543,8 +637,16 @@ def ehr_list():
 TRUST_CONFIGS = {
     "default": {"name": "Default NHS Trust", "region": "England", "risk_thresholds": {"low": 0.33, "high": 0.67}},
     "tower_hamlets": {"name": "Tower Hamlets CCG", "region": "London", "risk_thresholds": {"low": 0.30, "high": 0.60}},
-    "north_norfolk": {"name": "North Norfolk CCG", "region": "East of England", "risk_thresholds": {"low": 0.35, "high": 0.70}},
-    "belfast": {"name": "Belfast HSC Trust", "region": "Northern Ireland", "risk_thresholds": {"low": 0.33, "high": 0.67}},
+    "north_norfolk": {
+        "name": "North Norfolk CCG",
+        "region": "East of England",
+        "risk_thresholds": {"low": 0.35, "high": 0.70},
+    },
+    "belfast": {
+        "name": "Belfast HSC Trust",
+        "region": "Northern Ireland",
+        "risk_thresholds": {"low": 0.33, "high": 0.67},
+    },
 }
 
 
@@ -566,6 +668,7 @@ def get_trust(trust_id):
 
 
 # ── Rigorous Evaluation (Feature 15) ──
+
 
 @app.route("/api/evaluation/cross-validation", methods=["POST"])
 @token_required
@@ -639,7 +742,7 @@ NHSX_ETHICS_MAPPING = {
             "principle": "Privacy and data protection",
             "status": "Addressed",
             "evidence": [
-                "Session-scoped architecture: zero patient data persisted (NFR-01)",
+                "No raw patient inputs are persisted; only anonymised assessment summaries are stored for dashboard/feedback (NFR-01)",
                 "All API communication designed for HTTPS (TLS 1.2+)",
                 "Passwords hashed with bcrypt, session tokens expire after 30 minutes (NFR-06)",
                 "Data Protection Notice displayed on first launch (GDPR Art 5(1)(c))",
@@ -681,6 +784,7 @@ def ethics_framework():
 
 # ── Offline Model Export ──
 
+
 @app.route("/api/export-model", methods=["GET"])
 @token_required
 @role_required("admin")
@@ -688,23 +792,31 @@ def export_model():
     model_path = os.path.join("models", "model.joblib")
     if not os.path.exists(model_path):
         return jsonify({"error": "No model available"}), 404
-    return jsonify({
-        "message": "Model export available",
-        "format": "joblib",
-        "model": training_results.get("selected_model") if training_results else "Unknown",
-        "features": [
-            "Age", "Gender", "AppointmentLeadTimeDays", "SMSReceived",
-            "PriorDNACount", "Hypertension", "Diabetes", "Alcoholism",
-            "Disability", "IMDDecile"
-        ],
-        "threshold": training_results.get("best_metrics", {}).get("threshold", 0.5) if training_results else 0.5,
-        "note": "For offline Flutter deployment, convert to ONNX or TFLite format",
-    })
+    return jsonify(
+        {
+            "message": "Model export available",
+            "format": "joblib",
+            "model": training_results.get("selected_model") if training_results else "Unknown",
+            "features": [
+                "Age",
+                "Gender",
+                "AppointmentLeadTimeDays",
+                "SMSReceived",
+                "PriorDNACount",
+                "Hypertension",
+                "Diabetes",
+                "Alcoholism",
+                "Disability",
+                "IMDDecile",
+            ],
+            "threshold": training_results.get("best_metrics", {}).get("threshold", 0.5) if training_results else 0.5,
+            "note": "For offline Flutter deployment, convert to ONNX or TFLite format",
+        }
+    )
 
 
 # ── Push Notification Scheduling ──
 
-_notification_queue = []
 
 @app.route("/api/notifications/schedule", methods=["POST"])
 @token_required
@@ -721,31 +833,48 @@ def schedule_notification():
     if risk_tier not in ("High", "Medium"):
         return jsonify({"error": "Notifications only for High/Medium risk patients"}), 400
 
-    notification = {
-        "id": str(uuid.uuid4()),
-        "patient_id": patient_id,
-        "risk_tier": risk_tier,
-        "appointment_date": appointment_date,
-        "notify_at": data.get("notify_at", "24h_before"),
-        "status": "scheduled",
-        "created_by": getattr(request, 'current_user', {}).get('username', 'system'),
-    }
-    _notification_queue.append(notification)
+    notification = ScheduledNotification(
+        user_id=request.current_user["userId"],
+        patient_id=patient_id,
+        risk_tier=risk_tier,
+        appointment_date=appointment_date,
+        notify_at=data.get("notify_at", "24h_before"),
+        status="scheduled",
+        created_by=getattr(request, "current_user", {}).get("username", "system"),
+    )
+    db.session.add(notification)
+    db.session.add(
+        _audit(request.current_user["userId"], "notification_scheduled", f"{risk_tier} reminder for {patient_id}")
+    )
+    db.session.commit()
 
-    return jsonify({
-        "message": "Notification scheduled",
-        "notification": notification,
-    }), 201
+    return jsonify(
+        {
+            "message": "Notification scheduled",
+            "notification": notification.to_dict(),
+        }
+    ), 201
 
 
 @app.route("/api/notifications", methods=["GET"])
 @token_required
 @role_required("staff", "admin")
 def list_notifications():
-    return jsonify({"notifications": _notification_queue, "total": len(_notification_queue)})
+    notifications = (
+        ScheduledNotification.query.filter_by(user_id=request.current_user["userId"])
+        .order_by(ScheduledNotification.created_at.desc())
+        .all()
+    )
+    return jsonify(
+        {
+            "notifications": [n.to_dict() for n in notifications],
+            "total": len(notifications),
+        }
+    )
 
 
 # ── Account Centre API ──
+
 
 @app.route("/api/profile", methods=["GET"])
 @token_required
@@ -821,6 +950,7 @@ def change_password():
 
 # ── 2FA Endpoints ──
 
+
 @app.route("/api/profile/2fa/setup", methods=["POST"])
 @token_required
 def setup_2fa():
@@ -856,6 +986,7 @@ def disable_2fa():
 
 # ── Carer / Family Proxy Mode (Digital Inclusion Bridge) ──
 
+
 @app.route("/api/carer-proxy", methods=["POST"])
 @token_required
 @role_required("staff", "admin")
@@ -881,8 +1012,7 @@ def create_carer_proxy():
         reason=data.get("reason", "").strip() or None,
     )
     db.session.add(proxy)
-    db.session.add(_audit(user_id, "carer_proxy_created",
-                          f"Proxy for {patient_id} by {carer_name} ({relationship})"))
+    db.session.add(_audit(user_id, "carer_proxy_created", f"Proxy for {patient_id} by {carer_name} ({relationship})"))
     db.session.commit()
     return jsonify({"message": "Carer proxy registered", "proxy": proxy.to_dict()}), 201
 
@@ -891,13 +1021,16 @@ def create_carer_proxy():
 @token_required
 @role_required("staff", "admin")
 def list_carer_proxies():
-    proxies = (CarerProxy.query
-               .filter_by(staff_user_id=request.current_user["userId"])
-               .order_by(CarerProxy.created_at.desc()).all())
+    proxies = (
+        CarerProxy.query.filter_by(staff_user_id=request.current_user["userId"])
+        .order_by(CarerProxy.created_at.desc())
+        .all()
+    )
     return jsonify({"proxies": [p.to_dict() for p in proxies]})
 
 
 # ── Appointment Slot Optimisation ──
+
 
 @app.route("/api/slot-optimisation", methods=["POST"])
 @token_required
@@ -928,24 +1061,39 @@ def slot_optimisation():
             overbookable_slots += 1
         expected_waste = prob * slot_minutes
         total_wasted_minutes += expected_waste
-        rec = ("Strong overbook candidate. Consider double-booking or waitlist patient." if prob >= 0.7
-               else "Moderate DNA risk. Consider standby patient or phone reminder 24h before." if prob >= 0.4
-               else "Low-moderate risk. Standard SMS reminder sufficient." if prob >= 0.2
-               else "Low risk. No action needed.")
-        results.append({
-            "slot": i + 1, "dna_probability": round(prob, 4), "risk_tier": risk_tier,
-            "can_overbook": can_overbook, "expected_waste_minutes": round(expected_waste, 1),
-            "recommendation": rec,
-        })
+        rec = (
+            "Strong overbook candidate. Consider double-booking or waitlist patient."
+            if prob >= 0.7
+            else "Moderate DNA risk. Consider standby patient or phone reminder 24h before."
+            if prob >= 0.4
+            else "Low-moderate risk. Standard SMS reminder sufficient."
+            if prob >= 0.2
+            else "Low risk. No action needed."
+        )
+        results.append(
+            {
+                "slot": i + 1,
+                "dna_probability": round(prob, 4),
+                "risk_tier": risk_tier,
+                "can_overbook": can_overbook,
+                "expected_waste_minutes": round(expected_waste, 1),
+                "recommendation": rec,
+            }
+        )
 
-    return jsonify({
-        "slots": results,
-        "summary": {
-            "total_slots": len(appointments), "overbookable": overbookable_slots,
-            "total_expected_waste_minutes": round(total_wasted_minutes, 1),
-            "potential_recovery_percent": round((overbookable_slots / len(appointments)) * 100, 1) if appointments else 0,
-        },
-    })
+    return jsonify(
+        {
+            "slots": results,
+            "summary": {
+                "total_slots": len(appointments),
+                "overbookable": overbookable_slots,
+                "total_expected_waste_minutes": round(total_wasted_minutes, 1),
+                "potential_recovery_percent": round((overbookable_slots / len(appointments)) * 100, 1)
+                if appointments
+                else 0,
+            },
+        }
+    )
 
 
 # ── Patient Nudge Message Generator ──
@@ -1031,24 +1179,31 @@ def generate_patient_nudge():
     if prob >= 0.5:
         factors.append("high_risk")
 
-    return jsonify({
-        "nudge_type": nudge_type, "language": language, "message": message,
-        "risk_probability": result["percentage"], "risk_tier": result["risk_tier"],
-        "personalisation_factors": factors,
-    })
+    return jsonify(
+        {
+            "nudge_type": nudge_type,
+            "language": language,
+            "message": message,
+            "risk_probability": result["percentage"],
+            "risk_tier": result["risk_tier"],
+            "personalisation_factors": factors,
+        }
+    )
 
 
 # ── Audit Log ──
+
 
 @app.route("/api/audit-log", methods=["GET"])
 @token_required
 @role_required("admin")
 def get_audit_log():
-    logs = (AuditLog.query.order_by(AuditLog.created_at.desc()).limit(100).all())
+    logs = AuditLog.query.order_by(AuditLog.created_at.desc()).limit(100).all()
     return jsonify({"logs": [log.to_dict() for log in logs]})
 
 
 # ── Admin User Management (admin-only RBAC, FR-04) ──
+
 
 @app.route("/api/admin/users", methods=["GET"])
 @token_required
@@ -1077,8 +1232,9 @@ def admin_set_role(user_id):
 
     old_role = target.role
     target.role = new_role
-    db.session.add(_audit(request.current_user["userId"], "role_changed",
-                          f"{target.username}: {old_role} -> {new_role}"))
+    db.session.add(
+        _audit(request.current_user["userId"], "role_changed", f"{target.username}: {old_role} -> {new_role}")
+    )
     db.session.commit()
     return jsonify({"message": "Role updated", "user": target.to_dict()})
 
@@ -1102,12 +1258,15 @@ def admin_delete_user(user_id):
 def _audit(user_id, action, detail=None):
     """Build an AuditLog row (caller commits)."""
     return AuditLog(
-        user_id=user_id, action=action, detail=detail,
+        user_id=user_id,
+        action=action,
+        detail=detail,
         ip_address=request.remote_addr,
     )
 
 
 # ── Helpers ──
+
 
 def _validate_patient(data):
     try:
@@ -1177,9 +1336,11 @@ def _generate_nl_summary(patient, result, age_group):
     elif len(top_factors) >= 3:
         factors_text = f"{', '.join(top_factors[:-1])}, and {top_factors[-1]}"
 
-    return (f"This {age}-year-old {gender_word} patient ({age_group} age group) "
-            f"has a {prob}% risk of missing their appointment ({tier} risk). "
-            f"The main contributing factors are that the patient {factors_text}.")
+    return (
+        f"This {age}-year-old {gender_word} patient ({age_group} age group) "
+        f"has a {prob}% risk of missing their appointment ({tier} risk). "
+        f"The main contributing factors are that the patient {factors_text}."
+    )
 
 
 def ensure_database():

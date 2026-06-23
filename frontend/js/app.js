@@ -422,7 +422,7 @@ function renderAccountCentre(profile) {
 function switchAccountTab(tab) {
     document.querySelectorAll('.ac-tab').forEach(function(t) { t.classList.remove('active'); });
     document.querySelectorAll('.ac-panel').forEach(function(p) { p.classList.remove('active'); });
-    document.querySelector('.ac-tab[onclick*="' + tab + '"]').classList.add('active');
+    document.querySelector('.ac-tab[data-tab="' + tab + '"]').classList.add('active');
     document.getElementById('ac-panel-' + tab).classList.add('active');
 }
 
@@ -1209,7 +1209,7 @@ function renderBatchResults(csvText) {
     `;
 
     let tableHtml = '<table class="audit-table"><thead><tr>';
-    headers.forEach(h => tableHtml += `<th>${h}</th>`);
+    headers.forEach(h => tableHtml += `<th>${escapeHtml(h)}</th>`);
     tableHtml += '</tr></thead><tbody>';
     rows.forEach(r => {
         tableHtml += '<tr>';
@@ -1220,7 +1220,7 @@ function renderBatchResults(csvText) {
                       cell === 'Medium' ? 'style="color:#B8860B;font-weight:700"' :
                       'style="color:#007F3B;font-weight:700"';
             }
-            tableHtml += `<td ${cls}>${cell}</td>`;
+            tableHtml += `<td ${cls}>${escapeHtml(cell)}</td>`;
         });
         tableHtml += '</tr>';
     });
@@ -1486,8 +1486,9 @@ function renderEthicsFramework(data) {
     container.style.display = 'block';
 }
 
-async function runCrossValidation() {
-    const btn = event.target;
+async function runCrossValidation(e) {
+    const btn = (e && (e.currentTarget || e.target))
+        || document.querySelector('[onclick*="runCrossValidation"]');
     btn.disabled = true;
     btn.textContent = 'Running (may take 30s)...';
 
@@ -1763,6 +1764,13 @@ async function start2FASetup() {
             document.getElementById('2fa-setup-area').style.display = 'none';
             document.getElementById('2fa-qr-area').style.display = 'block';
             document.getElementById('2fa-secret-key').textContent = data.secret;
+            // Render the otpauth:// URI as a scannable QR code (vendored qrcode lib).
+            var qrBox = document.getElementById('2fa-qr-code');
+            qrBox.innerHTML = '';
+            if (typeof QRCode !== 'undefined' && data.uri) {
+                new QRCode(qrBox, { text: data.uri, width: 180, height: 180,
+                    colorDark: '#003087', colorLight: '#ffffff' });
+            }
         } else {
             alert(data.error || '2FA setup failed.');
         }
@@ -1993,7 +2001,7 @@ const _origShowMainApp = showMainApp;
 showMainApp = function(...args) {
     _origShowMainApp(...args);  // forward username AND role (role was dropped before -> badge/tabs defaulted to 'user')
     startSessionCountdown();
-    if (typeof lucide !== 'undefined') lucide.createIcons();
+    refreshIcons();
 };
 
 
@@ -2175,15 +2183,14 @@ function openShortcuts() {
         labelEl.textContent = 'Switch tabs (' + names.join(', ') + ')';
     }
     document.getElementById('shortcuts-overlay').style.display = 'flex';
-    if (typeof lucide !== 'undefined') lucide.createIcons();
+    refreshIcons();
 }
 
 function closeShortcuts() {
     document.getElementById('shortcuts-overlay').style.display = 'none';
 }
 
-// Override existing keyboard handler
-document.removeEventListener('keydown', arguments.callee);
+// Global keyboard shortcuts (number keys = tabs, etc.)
 document.addEventListener('keydown', function(e) {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
     if (!authToken) return;
@@ -2349,11 +2356,14 @@ function printResults() {
 // ── Dark Mode Icon Update ──
 
 function updateDarkModeIcon() {
-    var icon = document.getElementById('dark-mode-icon');
-    if (!icon) return;
+    var btn = document.getElementById('dark-mode-btn');
+    if (!btn) return;
     var isDark = document.body.classList.contains('dark-mode');
-    icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
-    if (typeof lucide !== 'undefined') lucide.createIcons();
+    // Rebuild a fresh <i data-lucide> each toggle; lucide replaces it with an
+    // <svg> on createIcons, so re-setting the attribute on the svg won't convert.
+    btn.innerHTML = '<i data-lucide="' + (isDark ? 'sun' : 'moon')
+        + '" id="dark-mode-icon" style="width:18px;height:18px;"></i>';
+    refreshIcons();
 }
 
 var _origToggleDark = toggleDarkMode;
@@ -2425,8 +2435,22 @@ function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+// Idempotent Lucide render. Safe to call repeatedly; swallows errors so a single
+// bad icon name can never abort the rest of init (defensive against blank icons).
+function refreshIcons() {
+    try {
+        if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+        // Decorative icons: hide from screen readers (WCAG 2.1, NFR-03). Adjacent
+        // text or the button's aria-label conveys meaning; the glyph is noise to AT.
+        document.querySelectorAll('svg.lucide:not([aria-hidden])')
+            .forEach(function(s) { s.setAttribute('aria-hidden', 'true'); });
+    } catch (e) { /* non-fatal: leave any unconverted icon rather than break init */ }
+}
+// Belt-and-suspenders: re-run after full load in case lucide settled late.
+window.addEventListener('load', refreshIcons);
+
 document.addEventListener('DOMContentLoaded', async function() {
-    if (typeof lucide !== 'undefined') lucide.createIcons();
+    refreshIcons();
     enhancePasswordFields();
     attachPwMeter('reg-password', 'reg-pw-meter');
     attachPwMeter('reset-newpw', 'reset-pw-meter');

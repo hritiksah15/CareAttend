@@ -1,31 +1,42 @@
 import numpy as np
 import joblib
 import shap
+import os
 
 from ml.data_generator import FEATURE_NAMES, PLAIN_ENGLISH_NAMES
 
 
 class CareAttendPredictor:
     def __init__(self, model_dir="models"):
-        self.model = joblib.load(f"{model_dir}/model.joblib")
+        base_model_path = os.path.join(model_dir, "model.joblib")
+        calibrated_model_path = os.path.join(model_dir, "model_calibrated.joblib")
+
+        self.explanation_model = joblib.load(base_model_path)
+        if os.path.exists(calibrated_model_path):
+            self.model = joblib.load(calibrated_model_path)
+            self.model_source = "calibrated"
+        else:
+            self.model = self.explanation_model
+            self.model_source = "base"
+
         self.scaler = joblib.load(f"{model_dir}/scaler.joblib")
         self.background_data = np.load(f"{model_dir}/X_train_sample.npy")
         try:
             self.threshold = joblib.load(f"{model_dir}/threshold.joblib")
         except FileNotFoundError:
-            self.threshold = 0.5
+            self.threshold = 0.66
         self._init_explainer()
 
     def _init_explainer(self):
-        if hasattr(self.model, "estimators_"):
+        if hasattr(self.explanation_model, "estimators_"):
             self.explainer = shap.TreeExplainer(
-                self.model,
+                self.explanation_model,
                 data=self.background_data,
                 feature_names=FEATURE_NAMES,
             )
         else:
             self.explainer = shap.LinearExplainer(
-                self.model,
+                self.explanation_model,
                 masker=self.background_data,
                 feature_names=FEATURE_NAMES,
             )
@@ -40,23 +51,28 @@ class CareAttendPredictor:
         return {
             "probability": round(probability, 4),
             "percentage": round(probability * 100, 1),
-            "risk_tier": self._risk_tier(probability),
+            "risk_tier": self._risk_tier(probability, self.threshold),
             "shap_values": shap_values,
+            "model_source": self.model_source,
+            "threshold": round(float(self.threshold), 4),
         }
 
     def _extract_features(self, data):
-        return np.array([
-            data.get("Age", 0),
-            data.get("Gender", 0),
-            data.get("AppointmentLeadTimeDays", 0),
-            data.get("SMSReceived", 0),
-            data.get("PriorDNACount", 0),
-            data.get("Hypertension", 0),
-            data.get("Diabetes", 0),
-            data.get("Alcoholism", 0),
-            data.get("Disability", 0),
-            data.get("IMDDecile", 5),
-        ], dtype=float)
+        return np.array(
+            [
+                data.get("Age", 0),
+                data.get("Gender", 0),
+                data.get("AppointmentLeadTimeDays", 0),
+                data.get("SMSReceived", 0),
+                data.get("PriorDNACount", 0),
+                data.get("Hypertension", 0),
+                data.get("Diabetes", 0),
+                data.get("Alcoholism", 0),
+                data.get("Disability", 0),
+                data.get("IMDDecile", 5),
+            ],
+            dtype=float,
+        )
 
     def _compute_shap(self, features_scaled):
         sv = self.explainer.shap_values(features_scaled)
@@ -72,19 +88,23 @@ class CareAttendPredictor:
 
         result = []
         for feat_name, val in indexed[:5]:
-            result.append({
-                "feature": feat_name,
-                "label": PLAIN_ENGLISH_NAMES.get(feat_name, feat_name),
-                "value": round(val, 4),
-                "direction": "risk-increasing" if val > 0 else "risk-reducing",
-            })
+            result.append(
+                {
+                    "feature": feat_name,
+                    "label": PLAIN_ENGLISH_NAMES.get(feat_name, feat_name),
+                    "value": round(val, 4),
+                    "direction": "risk-increasing" if val > 0 else "risk-reducing",
+                }
+            )
         return result
 
     @staticmethod
-    def _risk_tier(prob):
-        if prob <= 0.33:
+    def _risk_tier(prob, high_threshold=0.66):
+        high_threshold = float(high_threshold)
+        low_threshold = min(0.33, high_threshold / 2)
+        if prob <= low_threshold:
             return "Low"
-        elif prob <= 0.66:
+        elif prob < high_threshold:
             return "Medium"
         else:
             return "High"
