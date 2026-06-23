@@ -10,12 +10,11 @@
     <link rel="stylesheet" href="/static/css/driver.css">
     <link rel="stylesheet" href="/static/css/plotly-dark-theme.css">
     <link rel="stylesheet" href="/static/css/mobile-responsive.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-    <script src="/static/vendor/jspdf.umd.min.js"></script>
-    <script src="/static/vendor/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script defer src="/static/vendor/chart.umd.min.js"></script>
+    <script defer src="/static/vendor/jspdf.umd.min.js"></script>
+    <script defer src="/static/vendor/jspdf.plugin.autotable.min.js"></script>
+    <script defer src="/static/vendor/lucide.min.js"></script>
+    <script defer src="/static/vendor/qrcode.min.js"></script>
 </head>
 <body>
     <!-- LOGIN SCREEN (Fig 3.6a) -->
@@ -142,10 +141,10 @@
                     <h1>Care Attend</h1>
                 </div>
                 <div class="header-right">
-                    <button class="header-icon-btn" onclick="toggleDarkMode()" title="Toggle dark mode" aria-label="Toggle dark mode">
+                    <button class="header-icon-btn" id="dark-mode-btn" onclick="toggleDarkMode()" title="Toggle dark mode" aria-label="Toggle dark mode">
                         <i data-lucide="moon" id="dark-mode-icon" style="width:18px;height:18px;"></i>
                     </button>
-                    <button class="btn-guide" onclick="startGuidedTour()" title="Guided Tour"><i data-lucide="help-circle" style="width:18px;height:18px;"></i></button>
+                    <button class="btn-guide" onclick="startGuidedTour()" title="Guided Tour" aria-label="Start guided tour"><i data-lucide="help-circle" style="width:18px;height:18px;"></i></button>
                     <div class="notif-wrapper">
                         <button class="header-icon-btn" onclick="toggleNotifications()" title="Notifications" aria-label="Notifications" id="notif-btn">
                             <i data-lucide="bell" style="width:18px;height:18px;"></i>
@@ -169,31 +168,31 @@
 
         <nav class="tab-nav" role="tablist" aria-label="Main navigation">
             <button class="tab-btn active" data-tab="assessment" role="tab" aria-selected="true" aria-controls="tab-assessment">
-                <span class="tab-icon">&#9998;</span> Patient Assessment
+                <span class="tab-icon"><i data-lucide="clipboard-list" style="width:16px;height:16px;"></i></span> Patient Assessment
             </button>
             <button class="tab-btn" data-tab="results" role="tab" aria-selected="false" aria-controls="tab-results">
-                <span class="tab-icon">&#9776;</span> Risk Dashboard
+                <span class="tab-icon"><i data-lucide="activity" style="width:16px;height:16px;"></i></span> Risk Dashboard
             </button>
             <button class="tab-btn" data-tab="dashboard" role="tab" aria-selected="false" aria-controls="tab-dashboard">
-                <span class="tab-icon">&#128200;</span> Dashboard
+                <span class="tab-icon"><i data-lucide="layout-dashboard" style="width:16px;height:16px;"></i></span> Dashboard
             </button>
             <button class="tab-btn" data-tab="batch" role="tab" aria-selected="false" aria-controls="tab-batch">
-                <span class="tab-icon">&#128196;</span> Batch Upload
+                <span class="tab-icon"><i data-lucide="upload" style="width:16px;height:16px;"></i></span> Batch Upload
             </button>
             <button class="tab-btn" data-tab="bias" role="tab" aria-selected="false" aria-controls="tab-bias">
-                <span class="tab-icon">&#9878;</span> Bias Monitor
+                <span class="tab-icon"><i data-lucide="scale" style="width:16px;height:16px;"></i></span> Bias Monitor
             </button>
             <button class="tab-btn" data-tab="ethics" role="tab" aria-selected="false" aria-controls="tab-ethics">
-                <span class="tab-icon">&#9881;</span> Ethics
+                <span class="tab-icon"><i data-lucide="shield-check" style="width:16px;height:16px;"></i></span> Ethics
             </button>
             <button class="tab-btn" data-tab="slots" role="tab" aria-selected="false" aria-controls="tab-slots">
-                <span class="tab-icon">&#128197;</span> Slots
+                <span class="tab-icon"><i data-lucide="calendar-clock" style="width:16px;height:16px;"></i></span> Slots
             </button>
             <button class="tab-btn" data-tab="nudge" role="tab" aria-selected="false" aria-controls="tab-nudge">
-                <span class="tab-icon">&#128172;</span> Nudge
+                <span class="tab-icon"><i data-lucide="message-circle" style="width:16px;height:16px;"></i></span> Nudge
             </button>
             <button class="tab-btn" data-tab="admin" role="tab" aria-selected="false" aria-controls="tab-admin">
-                <span class="tab-icon">&#128081;</span> Admin
+                <span class="tab-icon"><i data-lucide="shield" style="width:16px;height:16px;"></i></span> Admin
             </button>
         </nav>
 
@@ -639,7 +638,7 @@
                     <p class="card-description">Mapping against NHS England (2024) Guide to Good Practice for Digital and Data-Driven Health Technologies.</p>
                     <div class="result-actions">
                         <button class="btn-primary btn-half" onclick="loadEthicsFramework()">Load Ethics Mapping</button>
-                        <button class="btn-primary btn-half btn-dark" onclick="runCrossValidation()">Run Cross-Validation</button>
+                        <button class="btn-primary btn-half btn-dark" onclick="runCrossValidation(event)">Run Cross-Validation</button>
                     </div>
                 </div>
 
@@ -714,9 +713,9 @@
 
             <!-- Account Tabs -->
             <div class="ac-tabs">
-                <button class="ac-tab active" onclick="switchAccountTab('personal')">&#128100; Personal</button>
-                <button class="ac-tab" onclick="switchAccountTab('security')">&#128274; Security</button>
-                <button class="ac-tab" onclick="switchAccountTab('privacy')">&#128272; Privacy</button>
+                <button class="ac-tab active" data-tab="personal" onclick="switchAccountTab('personal')">&#128100; Personal</button>
+                <button class="ac-tab" data-tab="security" onclick="switchAccountTab('security')">&#128274; Security</button>
+                <button class="ac-tab" data-tab="privacy" onclick="switchAccountTab('privacy')">&#128272; Privacy</button>
             </div>
 
             <!-- Personal Info Tab -->
@@ -848,11 +847,12 @@
                         <div class="ac-2fa-steps">
                             <div class="ac-step">
                                 <span class="ac-step-num">1</span>
-                                <span>Copy secret key and add to your authenticator app</span>
+                                <span>Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.)</span>
                             </div>
-                            <div class="ac-manual-key">
-                                <label>Secret key:</label>
-                                <code id="2fa-secret-key" style="font-size:14px;background:#F0F4F5;padding:4px 12px;border-radius:4px;">--</code>
+                            <div id="2fa-qr-code" style="display:flex;justify-content:center;padding:16px;background:#fff;border-radius:8px;margin:8px 0;"></div>
+                            <div class="ac-manual-key" style="text-align:center;">
+                                <label style="font-size:12px;color:var(--nhs-dark-grey);">Can't scan? Enter this key manually:</label>
+                                <code id="2fa-secret-key" style="display:inline-block;margin-top:4px;font-size:14px;background:#F0F4F5;padding:4px 12px;border-radius:4px;">--</code>
                             </div>
                             <div class="ac-step">
                                 <span class="ac-step-num">2</span>
@@ -941,7 +941,9 @@
     </div>
 
     <!-- AI Chatbot Widget -->
-    <div class="chatbot-fab" id="chatbot-fab" onclick="toggleChatbot()" title="Care Attend AI Assistant">
+    <div class="chatbot-fab" id="chatbot-fab" onclick="toggleChatbot()" title="Care Attend AI Assistant"
+         role="button" tabindex="0" aria-label="Open Care Attend AI assistant"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleChatbot();}">
         <i data-lucide="bot" style="width:24px;height:24px;"></i>
     </div>
     <div class="chatbot-panel" id="chatbot-panel" style="display:none;">
@@ -953,7 +955,7 @@
                     <span class="chatbot-status"><span class="status-dot"></span> Online</span>
                 </div>
             </div>
-            <button class="chatbot-close" onclick="toggleChatbot()"><i data-lucide="x" style="width:18px;height:18px;"></i></button>
+            <button class="chatbot-close" onclick="toggleChatbot()" aria-label="Close chat"><i data-lucide="x" style="width:18px;height:18px;"></i></button>
         </div>
         <div class="chatbot-messages" id="chatbot-messages">
             <div class="chat-msg bot">
@@ -968,8 +970,8 @@
             </div>
         </div>
         <div class="chatbot-input-area">
-            <input type="text" id="chatbot-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendChatMessage()">
-            <button class="chatbot-send" onclick="sendChatMessage()"><i data-lucide="send" style="width:18px;height:18px;"></i></button>
+            <input type="text" id="chatbot-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter'){event.preventDefault();sendChatMessage();}">
+            <button class="chatbot-send" onclick="sendChatMessage()" aria-label="Send message"><i data-lucide="send" style="width:18px;height:18px;"></i></button>
         </div>
     </div>
 
@@ -990,7 +992,7 @@
         </div>
     </div>
 
-    <script src="/static/js/i18n.js"></script>
-    <script src="/static/js/app.js"></script>
+    <script defer src="/static/js/i18n.js"></script>
+    <script defer src="/static/js/app.js"></script>
 </body>
 </html>

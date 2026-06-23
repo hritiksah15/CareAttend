@@ -21,9 +21,8 @@ pytestmark = pytest.mark.skipif(
     reason="Models not trained yet",
 )
 
-import app as app_module  # noqa: E402
 from app import app as flask_app, load_models  # noqa: E402
-from models import db, User  # noqa: E402
+from models import db, User, AssessmentSummary  # noqa: E402
 
 
 @pytest.fixture(scope="module")
@@ -48,18 +47,28 @@ def client(app):
 def clean_state(app):
     with app.app_context():
         yield
-        for table in ("carer_proxies", "audit_logs", "feedback", "sessions", "users"):
+        for table in (
+            "assessment_summaries",
+            "notifications",
+            "carer_proxies",
+            "audit_logs",
+            "feedback",
+            "sessions",
+            "users",
+        ):
             db.session.execute(db.text(f"DELETE FROM {table}"))
         db.session.commit()
-    app_module._prediction_log.clear()
-    app_module._notification_queue.clear()
 
 
 def login(client, username="test", role="staff"):
-    client.post("/auth/register", json={
-        "username": username, "email": f"{username}@nhs.uk",
-        "password": "Password123!",
-    })
+    client.post(
+        "/auth/register",
+        json={
+            "username": username,
+            "email": f"{username}@nhs.uk",
+            "password": "Password123!",
+        },
+    )
     # Public register forces role 'user'; promote in the DB for role-gated tests.
     if role != "user":
         with flask_app.app_context():
@@ -67,9 +76,13 @@ def login(client, username="test", role="staff"):
             if u:
                 u.role = role
                 db.session.commit()
-    res = client.post("/auth/login", json={
-        "username": username, "password": "Password123!",
-    })
+    res = client.post(
+        "/auth/login",
+        json={
+            "username": username,
+            "password": "Password123!",
+        },
+    )
     return json.loads(res.data)["token"]
 
 
@@ -78,18 +91,23 @@ def auth(token):
 
 
 HIGH_RISK_PATIENT = {
-    "Age": 80, "Gender": 0, "AppointmentLeadTimeDays": 28,
-    "SMSReceived": 0, "PriorDNACount": 6, "IMDDecile": 1, "Disability": 1,
+    "Age": 80,
+    "Gender": 0,
+    "AppointmentLeadTimeDays": 28,
+    "SMSReceived": 0,
+    "PriorDNACount": 6,
+    "IMDDecile": 1,
+    "Disability": 1,
 }
 
 
 def make_prediction(client, token, patient=None):
-    res = client.post("/api/predict", headers=auth(token),
-                      json=patient or HIGH_RISK_PATIENT)
+    res = client.post("/api/predict", headers=auth(token), json=patient or HIGH_RISK_PATIENT)
     return json.loads(res.data)
 
 
 # ── Practice Dashboard (US-002) ──
+
 
 class TestDashboard:
     def test_requires_auth(self, client):
@@ -110,9 +128,30 @@ class TestDashboard:
         assert data["high_risk"] + data["medium_risk"] + data["low_risk"] == 1
         assert "age_breakdown" in data
         assert len(data["recent_assessments"]) == 1
+        assert data["recent_assessments"][0]["age"] == "Not stored"
+
+    def test_prediction_persists_anonymised_summary(self, client, app):
+        token = login(client)
+        pred = make_prediction(client, token)
+        with app.app_context():
+            row = db.session.get(AssessmentSummary, pred["sessionId"])
+            assert row is not None
+            assert row.risk_tier == pred["risk_tier"]
+            assert row.age_group
+
+    def test_dashboard_is_practice_wide(self, client):
+        # US-002: the dashboard aggregates every staff member's assessments,
+        # so each user sees the whole practice, not only their own rows.
+        token_a = login(client, username="dash_a")
+        token_b = login(client, username="dash_b")
+        make_prediction(client, token_a)
+        make_prediction(client, token_b)
+        res = client.get("/api/dashboard", headers=auth(token_a))
+        assert json.loads(res.data)["total"] == 2
 
 
 # ── NL Summary (Feature 13) ──
+
 
 class TestNLSummary:
     def test_summary_present_and_descriptive(self, client):
@@ -125,27 +164,29 @@ class TestNLSummary:
 
 # ── Feedback Loop (Feature 12) ──
 
+
 class TestFeedback:
     def test_requires_auth(self, client):
         assert client.post("/api/feedback", json={}).status_code == 401
 
     def test_invalid_outcome(self, client):
         token = login(client)
-        res = client.post("/api/feedback", headers=auth(token),
-                          json={"prediction_id": "x", "outcome": "maybe"})
+        res = client.post("/api/feedback", headers=auth(token), json={"prediction_id": "x", "outcome": "maybe"})
         assert res.status_code == 400
 
     def test_unknown_prediction(self, client):
         token = login(client)
-        res = client.post("/api/feedback", headers=auth(token),
-                          json={"prediction_id": "does-not-exist", "outcome": "dna"})
+        res = client.post(
+            "/api/feedback", headers=auth(token), json={"prediction_id": "does-not-exist", "outcome": "dna"}
+        )
         assert res.status_code == 404
 
     def test_record_and_summary(self, client):
         token = login(client)
         pred = make_prediction(client, token)
-        rec = client.post("/api/feedback", headers=auth(token),
-                          json={"prediction_id": pred["sessionId"], "outcome": "dna"})
+        rec = client.post(
+            "/api/feedback", headers=auth(token), json={"prediction_id": pred["sessionId"], "outcome": "dna"}
+        )
         assert rec.status_code == 200
         summ = client.get("/api/feedback/summary", headers=auth(token))
         data = json.loads(summ.data)
@@ -153,12 +194,30 @@ class TestFeedback:
         assert data["correct"] == 1
         assert data["accuracy"] == 1.0
 
+    def test_feedback_practice_wide(self, client):
+        # Practice-wide: any staff member may record the outcome of an
+        # assessment made by a colleague (shared accuracy tracking).
+        token_a = login(client, username="owner_a")
+        token_b = login(client, username="owner_b")
+        pred = make_prediction(client, token_a)
+        res = client.post(
+            "/api/feedback", headers=auth(token_b), json={"prediction_id": pred["sessionId"], "outcome": "dna"}
+        )
+        assert res.status_code == 200
+
+    def test_feedback_unknown_prediction_404(self, client):
+        token = login(client)
+        res = client.post(
+            "/api/feedback", headers=auth(token), json={"prediction_id": "does-not-exist", "outcome": "dna"}
+        )
+        assert res.status_code == 404
+
     def test_feedback_persisted_to_db(self, client, app):
         token = login(client)
         pred = make_prediction(client, token)
-        client.post("/api/feedback", headers=auth(token),
-                    json={"prediction_id": pred["sessionId"], "outcome": "dna"})
+        client.post("/api/feedback", headers=auth(token), json={"prediction_id": pred["sessionId"], "outcome": "dna"})
         from models import PersistentFeedback
+
         with app.app_context():
             rows = PersistentFeedback.query.all()
             assert len(rows) == 1
@@ -166,6 +225,7 @@ class TestFeedback:
 
 
 # ── Mock EHR (Feature 10) ──
+
 
 class TestEHR:
     def test_requires_auth(self, client):
@@ -190,6 +250,7 @@ class TestEHR:
 
 # ── Multi-Trust Config (Feature 14) ──
 
+
 class TestTrusts:
     def test_list(self, client):
         token = login(client)
@@ -209,6 +270,7 @@ class TestTrusts:
 
 # ── NHSX Ethics Mapping (Feature 19) ──
 
+
 class TestEthicsFramework:
     def test_requires_auth(self, client):
         assert client.get("/api/ethics-framework").status_code == 401
@@ -222,6 +284,7 @@ class TestEthicsFramework:
 
 
 # ── Model Info / Comparison / Export ──
+
 
 class TestModelInfo:
     def test_model_info(self, client):
@@ -244,10 +307,10 @@ class TestModelInfo:
 
 # ── Rigorous Evaluation / Cross-Validation (Feature 15) ──
 
+
 class TestCrossValidation:
     @pytest.mark.skipif(
-        not (os.path.exists("data/synthetic_dataset.csv")
-             and os.path.exists("models/test_data.csv")),
+        not (os.path.exists("data/synthetic_dataset.csv") and os.path.exists("models/test_data.csv")),
         reason="Evaluation datasets not present",
     )
     def test_cv_runs(self, client):
@@ -259,6 +322,7 @@ class TestCrossValidation:
 
 
 # ── Role-Based Access Control (FR-04) ──
+
 
 class TestRBAC:
     def test_user_can_predict(self, client):
@@ -273,6 +337,26 @@ class TestRBAC:
     def test_user_denied_batch(self, client):
         token = login(client, username="u3", role="user")
         assert client.post("/api/batch", headers=auth(token)).status_code == 403
+
+    def test_batch_handles_utf8_bom(self, client):
+        # Excel/Numbers prepend a UTF-8 BOM; the first header must still parse
+        # so every row doesn't fail with "Invalid data format".
+        import io
+
+        token = login(client, username="bom1", role="staff")
+        csv_bom = ("﻿Age,Gender,AppointmentLeadTimeDays,SMSReceived," "PriorDNACount,IMDDecile\n78,0,21,0,4,2\n").encode(
+            "utf-8"
+        )
+        res = client.post(
+            "/api/batch",
+            headers=auth(token),
+            data={"file": (io.BytesIO(csv_bom), "bom.csv")},
+            content_type="multipart/form-data",
+        )
+        assert res.status_code == 200
+        body = res.data.decode()
+        assert "Invalid data format" not in body
+        assert "risk_tier" in body  # header row of a successful result
 
     def test_staff_denied_bias(self, client):
         token = login(client, username="s1", role="staff")
@@ -293,6 +377,7 @@ class TestRBAC:
 
 # ── Admin User Management ──
 
+
 class TestAdminUserManagement:
     def test_list_requires_admin(self, client):
         token = login(client, username="staff_x", role="staff")
@@ -312,8 +397,7 @@ class TestAdminUserManagement:
         token = login(client, username="boss", role="admin")
         users = json.loads(client.get("/api/admin/users", headers=auth(token)).data)["users"]
         target_id = next(u["userId"] for u in users if u["username"] == "target")
-        res = client.put(f"/api/admin/users/{target_id}/role",
-                         headers=auth(token), json={"role": "staff"})
+        res = client.put(f"/api/admin/users/{target_id}/role", headers=auth(token), json={"role": "staff"})
         assert res.status_code == 200
         assert json.loads(res.data)["user"]["role"] == "staff"
 
@@ -322,16 +406,14 @@ class TestAdminUserManagement:
         token = login(client, username="boss", role="admin")
         users = json.loads(client.get("/api/admin/users", headers=auth(token)).data)["users"]
         target_id = next(u["userId"] for u in users if u["username"] == "target")
-        res = client.put(f"/api/admin/users/{target_id}/role",
-                         headers=auth(token), json={"role": "superuser"})
+        res = client.put(f"/api/admin/users/{target_id}/role", headers=auth(token), json={"role": "superuser"})
         assert res.status_code == 400
 
     def test_admin_cannot_self_demote(self, client):
         token = login(client, username="boss", role="admin")
         users = json.loads(client.get("/api/admin/users", headers=auth(token)).data)["users"]
         own_id = next(u["userId"] for u in users if u["username"] == "boss")
-        res = client.put(f"/api/admin/users/{own_id}/role",
-                         headers=auth(token), json={"role": "staff"})
+        res = client.put(f"/api/admin/users/{own_id}/role", headers=auth(token), json={"role": "staff"})
         assert res.status_code == 400
 
     def test_admin_deletes_user(self, client):

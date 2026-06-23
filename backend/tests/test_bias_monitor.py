@@ -3,10 +3,7 @@
 import pytest
 import os
 
-pytestmark = pytest.mark.skipif(
-    not os.path.exists("models/model.joblib"),
-    reason="Models not trained yet"
-)
+pytestmark = pytest.mark.skipif(not os.path.exists("models/model.joblib"), reason="Models not trained yet")
 
 from ml.bias_monitor import BiasMonitor
 
@@ -47,6 +44,11 @@ class TestBiasAudit:
         assert "f1_score" in om
         assert "confusion_matrix" in om
         assert "total_samples" in om
+
+    def test_audit_reports_operating_threshold(self, monitor):
+        results = monitor.run_audit()
+        assert results["model_source"] in ("base", "calibrated")
+        assert 0 < results["threshold"] < 1
 
     def test_metrics_in_valid_range(self, monitor):
         results = monitor.run_audit()

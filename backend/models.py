@@ -136,3 +136,91 @@ class CarerProxy(db.Model):
             "reason": self.reason,
             "createdAt": self.created_at,
         }
+
+
+class ScheduledNotification(db.Model):
+    __tablename__ = "notifications"
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False)
+    patient_id = db.Column(db.String(80), nullable=False)
+    risk_tier = db.Column(db.String(20), nullable=False)
+    appointment_date = db.Column(db.String(30), nullable=True)
+    notify_at = db.Column(db.String(50), nullable=False, default="24h_before")
+    status = db.Column(db.String(20), nullable=False, default="scheduled")
+    created_by = db.Column(db.String(80), nullable=False)
+    created_at = db.Column(db.Float, nullable=False, default=time.time)
+
+    user = db.relationship("User", backref=db.backref("notifications", lazy=True))
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "patient_id": self.patient_id,
+            "risk_tier": self.risk_tier,
+            "appointment_date": self.appointment_date or "",
+            "notify_at": self.notify_at,
+            "status": self.status,
+            "created_by": self.created_by,
+            "created_at": self.created_at,
+        }
+
+
+class OutreachAction(db.Model):
+    __tablename__ = "outreach_actions"
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False)
+    notification_id = db.Column(db.String(36), db.ForeignKey("notifications.id"), nullable=True)
+    patient_id = db.Column(db.String(80), nullable=False)
+    action_type = db.Column(db.String(40), nullable=False)
+    risk_tier = db.Column(db.String(20), nullable=True)
+    appointment_date = db.Column(db.String(30), nullable=True)
+    status = db.Column(db.String(20), nullable=False, default="planned")
+    outcome = db.Column(db.String(40), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    created_by = db.Column(db.String(80), nullable=False)
+    created_at = db.Column(db.Float, nullable=False, default=time.time)
+    completed_at = db.Column(db.Float, nullable=True)
+
+    user = db.relationship("User", backref=db.backref("outreach_actions", lazy=True))
+    notification = db.relationship("ScheduledNotification", backref=db.backref("actions", lazy=True))
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "notification_id": self.notification_id or "",
+            "patient_id": self.patient_id,
+            "action_type": self.action_type,
+            "risk_tier": self.risk_tier or "",
+            "appointment_date": self.appointment_date or "",
+            "status": self.status,
+            "outcome": self.outcome or "",
+            "notes": self.notes or "",
+            "created_by": self.created_by,
+            "created_at": self.created_at,
+            "completed_at": self.completed_at,
+        }
+
+
+class AssessmentSummary(db.Model):
+    __tablename__ = "assessment_summaries"
+
+    id = db.Column(db.String(36), primary_key=True)
+    user_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False)
+    probability = db.Column(db.Float, nullable=False)
+    risk_tier = db.Column(db.String(20), nullable=False)
+    age_group = db.Column(db.String(40), nullable=False)
+    feedback_outcome = db.Column(db.String(20), nullable=True)
+    created_at = db.Column(db.Float, nullable=False, default=time.time)
+
+    user = db.relationship("User", backref=db.backref("assessment_summaries", lazy=True))
+
+    def to_recent_dict(self):
+        return {
+            "id": self.id[:8],
+            "age": "Not stored",
+            "risk_tier": self.risk_tier,
+            "probability": self.probability,
+            "age_group": self.age_group,
+        }
