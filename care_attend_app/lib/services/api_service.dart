@@ -26,6 +26,7 @@ class ApiService {
   // Frontend RBAC mirror of the backend role_required gating.
   static bool _has(List<String> roles) => roles.contains(role);
   static bool get canDashboard => _has(['staff', 'admin']);
+  static bool get canClinic => _has(['staff', 'admin']);
   static bool get canSlots => _has(['staff', 'admin']);
   static bool get canNudge => _has(['staff', 'admin']);
   static bool get canBias => _has(['admin']);
@@ -307,6 +308,73 @@ class ApiService {
     final res = await http.get(
       Uri.parse('$baseUrl/api/dashboard'),
       headers: _headers,
+    );
+    return _handleResponse(res);
+  }
+
+  static Future<Map<String, dynamic>> operationalOutcomes(
+      {String? from, String? to}) async {
+    final params = <String, String>{};
+    if (from != null) params['from'] = from;
+    if (to != null) params['to'] = to;
+    final uri = Uri.parse('$baseUrl/api/operational-outcomes')
+        .replace(queryParameters: params.isEmpty ? null : params);
+    final res = await http.get(uri, headers: _headers);
+    return _handleResponse(res);
+  }
+
+  // ── Appointment clinic list ──
+
+  static Future<Map<String, dynamic>> createAppointments(
+      Map<String, dynamic> payload) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/api/appointments'),
+      headers: _headers,
+      body: jsonEncode(payload),
+    );
+    return _handleResponse(res);
+  }
+
+  static Future<Map<String, dynamic>> clinicList(String date) async {
+    final uri = Uri.parse('$baseUrl/api/clinic-list')
+        .replace(queryParameters: {'date': date});
+    final res = await http.get(uri, headers: _headers);
+    return _handleResponse(res);
+  }
+
+  static Future<Map<String, dynamic>> updateAppointmentStatus(
+      String appointmentId, String status) async {
+    final res = await http.patch(
+      Uri.parse('$baseUrl/api/appointments/$appointmentId/status'),
+      headers: _headers,
+      body: jsonEncode({'status': status}),
+    );
+    return _handleResponse(res);
+  }
+
+  static Future<Map<String, dynamic>> scheduleNotification({
+    required String patientId,
+    required String riskTier,
+    required String appointmentDate,
+  }) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/api/notifications/schedule'),
+      headers: _headers,
+      body: jsonEncode({
+        'patient_id': patientId,
+        'risk_tier': riskTier,
+        'appointment_date': appointmentDate,
+      }),
+    );
+    return _handleResponse(res);
+  }
+
+  static Future<Map<String, dynamic>> createOutreachAction(
+      Map<String, dynamic> fields) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/api/actions'),
+      headers: _headers,
+      body: jsonEncode(fields),
     );
     return _handleResponse(res);
   }

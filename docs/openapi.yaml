@@ -166,6 +166,16 @@ paths:
         "404": { description: Prediction not found }
   /api/feedback/summary:
     get: { tags: [Dashboard & Feedback], summary: Feedback accuracy summary, responses: { "200": { description: OK } } }
+  /api/operational-outcomes:
+    get:
+      tags: [Dashboard & Feedback]
+      summary: Operational outcomes summary across appointments and outreach
+      parameters:
+        - { name: from, in: query, schema: { type: string, example: "2026-07-01" } }
+        - { name: to, in: query, schema: { type: string, example: "2026-07-31" } }
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/BadRequest" }
 
   /api/ehr/lookup/{nhs_number}:
     get:
@@ -178,6 +188,54 @@ paths:
         "404": { description: Not found }
   /api/ehr/patients:
     get: { tags: [EHR], summary: List mock EHR patients, responses: { "200": { description: OK } } }
+
+  /api/appointments:
+    post:
+      tags: [Appointments]
+      summary: Import appointment records and score DNA risk
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                appointments: { type: array, items: { type: object } }
+                patient_id: { type: string }
+                appointment_date: { type: string, example: "2026-07-01" }
+                appointment_time: { type: string, example: "09:00" }
+                clinic: { type: string }
+                patient: { $ref: "#/components/schemas/PatientInput" }
+      responses:
+        "201": { description: Created and scored }
+        "400": { $ref: "#/components/responses/BadRequest" }
+  /api/clinic-list:
+    get:
+      tags: [Appointments]
+      summary: List appointments for a date with risk and outreach progress
+      parameters:
+        - { name: date, in: query, schema: { type: string, example: "2026-07-01" } }
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/BadRequest" }
+  /api/appointments/{appointment_id}/status:
+    patch:
+      tags: [Appointments]
+      summary: Update appointment attendance/status outcome
+      parameters:
+        - { name: appointment_id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [scheduled, confirmed, attended, dna, cancelled, rescheduled] }
+      responses:
+        "200": { description: Updated }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "404": { description: Appointment not found }
 
   /api/trusts:
     get: { tags: [Config], summary: List trust configs (Feature 14), responses: { "200": { description: OK } } }

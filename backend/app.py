@@ -13,6 +13,7 @@ import logging
 import os
 import time
 import uuid
+from datetime import date, datetime, timedelta
 
 from flask import Flask, render_template, request, jsonify, make_response
 from flask_cors import CORS
@@ -27,6 +28,7 @@ from models import (
     PersistentFeedback,
     ScheduledNotification,
     OutreachAction,
+    AppointmentRecord,
     AssessmentSummary,
 )
 from auth import (
@@ -625,6 +627,256 @@ def ehr_list():
             "source": "Mock EMIS/SystmOne",
             "patients": {k: v["name"] for k, v in EHR_MOCK_PATIENTS.items()},
             "note": "Mock data only.",
+        }
+    )
+
+
+# ── Appointment Worklist ──
+
+VALID_APPOINTMENT_STATUSES = {"scheduled", "confirmed", "attended", "dna", "cancelled", "rescheduled"}
+
+
+@app.route("/api/appointments", methods=["POST"])
+@token_required
+@role_required("staff", "admin")
+def create_appointments():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+
+    raw_appointments = data.get("appointments") if isinstance(data.get("appointments"), list) else [data]
+    if not raw_appointments or len(raw_appointments) > 100:
+        return jsonify({"error": "Provide 1-100 appointments"}), 400
+
+    created = []
+    errors = []
+    for i, item in enumerate(raw_appointments):
+        if not isinstance(item, dict):
+            errors.append({"row": i + 1, "error": "appointment row must be an object"})
+            continue
+
+        patient_id = str(item.get("patient_id", "")).strip()
+        appointment_date = str(item.get("appointment_date", "")).strip()
+        if not patient_id or not appointment_date:
+            errors.append({"row": i + 1, "error": "patient_id and appointment_date are required"})
+            continue
+        if not _parse_iso_date(appointment_date):
+            errors.append({"row": i + 1, "error": "appointment_date must be YYYY-MM-DD"})
+            continue
+
+        status = item.get("status", "scheduled")
+        if status not in VALID_APPOINTMENT_STATUSES:
+            errors.append(
+                {"row": i + 1, "error": f"status must be one of: {', '.join(sorted(VALID_APPOINTMENT_STATUSES))}"}
+            )
+            continue
+
+        patient, error = _appointment_patient_payload(item)
+        if error:
+            errors.append({"row": i + 1, "error": error})
+            continue
+
+        pred = predictor.predict(patient)
+        _, _, age_group = generate_interventions(patient, pred["probability"], pred["shap_values"])
+        appointment = AppointmentRecord(
+            user_id=request.current_user["userId"],
+            patient_id=patient_id,
+            appointment_date=appointment_date,
+            appointment_time=str(item.get("appointment_time", "")).strip() or None,
+            clinic=str(item.get("clinic", "")).strip() or None,
+            status=status,
+            probability=pred["probability"],
+            risk_tier=pred["risk_tier"],
+            age_group=age_group,
+        )
+        db.session.add(appointment)
+        created.append(appointment)
+
+    if not created:
+        return jsonify({"error": "No valid appointments", "errors": errors}), 400
+
+    db.session.add(
+        _audit(request.current_user["userId"], "appointments_created", f"{len(created)} appointment(s) imported")
+    )
+    db.session.commit()
+    return jsonify(
+        {"appointments": [appt.to_dict() for appt in created], "created": len(created), "errors": errors}
+    ), 201
+
+
+@app.route("/api/clinic-list", methods=["GET"])
+@token_required
+@role_required("staff", "admin")
+def clinic_list():
+    appointment_date = request.args.get("date") or (date.today() + timedelta(days=1)).isoformat()
+    if not _parse_iso_date(appointment_date):
+        return jsonify({"error": "date must be YYYY-MM-DD"}), 400
+
+    appointments = (
+        AppointmentRecord.query.filter_by(
+            user_id=request.current_user["userId"],
+            appointment_date=appointment_date,
+        )
+        .order_by(AppointmentRecord.appointment_time.asc(), AppointmentRecord.created_at.asc())
+        .all()
+    )
+    patient_ids = [appt.patient_id for appt in appointments]
+
+    actions = []
+    notifications = []
+    if patient_ids:
+        actions = (
+            OutreachAction.query.filter(
+                OutreachAction.user_id == request.current_user["userId"],
+                OutreachAction.patient_id.in_(patient_ids),
+            )
+            .order_by(OutreachAction.created_at.desc())
+            .all()
+        )
+        notifications = (
+            ScheduledNotification.query.filter(
+                ScheduledNotification.user_id == request.current_user["userId"],
+                ScheduledNotification.patient_id.in_(patient_ids),
+            )
+            .order_by(ScheduledNotification.created_at.desc())
+            .all()
+        )
+
+    actions_by_patient = {}
+    for action in actions:
+        actions_by_patient.setdefault(action.patient_id, []).append(action)
+    notifications_by_patient = {}
+    for notification in notifications:
+        notifications_by_patient.setdefault(notification.patient_id, []).append(notification)
+
+    rows = []
+    for appt in appointments:
+        appt_actions = actions_by_patient.get(appt.patient_id, [])
+        appt_notifications = notifications_by_patient.get(appt.patient_id, [])
+        row = appt.to_dict()
+        row.update(
+            {
+                "action_count": len(appt_actions),
+                "notification_count": len(appt_notifications),
+                "latest_action": appt_actions[0].to_dict() if appt_actions else None,
+                "needs_action": appt.risk_tier in ("High", "Medium") and not appt_actions,
+            }
+        )
+        rows.append(row)
+
+    return jsonify(
+        {
+            "date": appointment_date,
+            "appointments": rows,
+            "summary": {
+                "total": len(rows),
+                "high_risk": sum(1 for appt in appointments if appt.risk_tier == "High"),
+                "medium_risk": sum(1 for appt in appointments if appt.risk_tier == "Medium"),
+                "low_risk": sum(1 for appt in appointments if appt.risk_tier == "Low"),
+                "actioned": sum(1 for row in rows if row["action_count"] > 0),
+                "needs_action": sum(1 for row in rows if row["needs_action"]),
+            },
+        }
+    )
+
+
+@app.route("/api/appointments/<appointment_id>/status", methods=["PATCH"])
+@token_required
+@role_required("staff", "admin")
+def update_appointment_status(appointment_id):
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+    status = data.get("status", "")
+    if status not in VALID_APPOINTMENT_STATUSES:
+        return jsonify({"error": f"status must be one of: {', '.join(sorted(VALID_APPOINTMENT_STATUSES))}"}), 400
+
+    appointment = AppointmentRecord.query.filter_by(
+        id=appointment_id,
+        user_id=request.current_user["userId"],
+    ).first()
+    if not appointment:
+        return jsonify({"error": "Appointment not found"}), 404
+
+    appointment.status = status
+    appointment.updated_at = time.time()
+    db.session.add(
+        _audit(request.current_user["userId"], "appointment_status_updated", f"{appointment.patient_id}: {status}")
+    )
+    db.session.commit()
+    return jsonify({"message": "Appointment status updated", "appointment": appointment.to_dict()})
+
+
+@app.route("/api/operational-outcomes", methods=["GET"])
+@token_required
+@role_required("staff", "admin")
+def operational_outcomes():
+    start_date = request.args.get("from") or None
+    end_date = request.args.get("to") or None
+    if start_date and not _parse_iso_date(start_date):
+        return jsonify({"error": "from must be YYYY-MM-DD"}), 400
+    if end_date and not _parse_iso_date(end_date):
+        return jsonify({"error": "to must be YYYY-MM-DD"}), 400
+
+    appointments = AppointmentRecord.query.all()
+    if start_date or end_date:
+        appointments = [appt for appt in appointments if _appointment_in_period(appt, start_date, end_date)]
+
+    completed_actions = OutreachAction.query.filter_by(status="completed").all()
+    if start_date or end_date:
+        completed_actions = [
+            action for action in completed_actions if _date_in_period(action.appointment_date, start_date, end_date)
+        ]
+    # Match on (patient_id, appointment_date) only — NOT user_id. Outcomes are
+    # practice-wide (every staff member's appointments), so an appointment booked
+    # by one staff member and actioned by a colleague must still count as actioned.
+    action_keys = {
+        (action.patient_id, action.appointment_date)
+        for action in completed_actions
+        if action.patient_id and action.appointment_date
+    }
+
+    completed = [appt for appt in appointments if appt.status in ("attended", "dna")]
+    actioned_completed = [appt for appt in completed if (appt.patient_id, appt.appointment_date) in action_keys]
+    unactioned_completed = [appt for appt in completed if (appt.patient_id, appt.appointment_date) not in action_keys]
+
+    actioned_stats = _appointment_outcome_stats(actioned_completed)
+    unactioned_stats = _appointment_outcome_stats(unactioned_completed)
+    dna_rate_gap = None
+    if actioned_stats["total"] > 0 and unactioned_stats["total"] > 0:
+        dna_rate_gap = round(unactioned_stats["dna_rate"] - actioned_stats["dna_rate"], 4)
+
+    by_tier = {}
+    for tier in ("High", "Medium", "Low"):
+        by_tier[tier.lower()] = _appointment_outcome_stats([appt for appt in completed if appt.risk_tier == tier])
+
+    return jsonify(
+        {
+            "period": {"from": start_date, "to": end_date},
+            "appointments": {
+                "total": len(appointments),
+                "completed": len(completed),
+                "awaiting_outcome": sum(
+                    1 for appt in appointments if appt.status in ("scheduled", "confirmed", "rescheduled")
+                ),
+                "cancelled": sum(1 for appt in appointments if appt.status == "cancelled"),
+            },
+            "outcomes": _appointment_outcome_stats(completed),
+            "by_risk_tier": by_tier,
+            "interventions": {
+                "completed_actions": len(completed_actions),
+                "actioned_completed_appointments": actioned_stats,
+                "unactioned_completed_appointments": unactioned_stats,
+                "intervention_success_rate": actioned_stats["attended_rate"] if actioned_stats["total"] else None,
+                "actioned_vs_unactioned_dna_gap": dna_rate_gap,
+                "note": (
+                    "Observational only — NOT a causal effect. Gap = unactioned DNA rate "
+                    "minus actioned DNA rate for completed appointments. Confounded by "
+                    "indication: high-risk patients are preferentially actioned, so the "
+                    "actioned cohort differs systematically from the unactioned one. "
+                    "Interpret alongside by_risk_tier."
+                ),
+            },
         }
     )
 
@@ -1427,6 +1679,75 @@ def _validate_patient(data):
         return None, "IMD Decile must be between 1 and 10"
 
     return patient, None
+
+
+def _parse_iso_date(value):
+    try:
+        return datetime.strptime(str(value), "%Y-%m-%d").date()
+    except (TypeError, ValueError):
+        return None
+
+
+def _date_in_period(value, start_date=None, end_date=None):
+    parsed = _parse_iso_date(value)
+    if not parsed:
+        return False
+    if start_date and parsed < _parse_iso_date(start_date):
+        return False
+    if end_date and parsed > _parse_iso_date(end_date):
+        return False
+    return True
+
+
+def _appointment_in_period(appointment, start_date=None, end_date=None):
+    return _date_in_period(appointment.appointment_date, start_date, end_date)
+
+
+def _appointment_outcome_stats(appointments):
+    total = len(appointments)
+    attended = sum(1 for appt in appointments if appt.status == "attended")
+    dna = sum(1 for appt in appointments if appt.status == "dna")
+    return {
+        "total": total,
+        "attended": attended,
+        "dna": dna,
+        "attended_rate": round(attended / total, 4) if total else 0,
+        "dna_rate": round(dna / total, 4) if total else 0,
+    }
+
+
+def _appointment_lead_time_days(appointment_date):
+    parsed = _parse_iso_date(appointment_date)
+    if not parsed:
+        return 0
+    return max((parsed - date.today()).days, 0)
+
+
+def _appointment_patient_payload(item):
+    patient_id = str(item.get("patient_id", "")).strip()
+    payload = {}
+    if patient_id in EHR_MOCK_PATIENTS:
+        payload.update({k: v for k, v in EHR_MOCK_PATIENTS[patient_id].items() if k != "name"})
+    payload.update(item.get("patient") or item.get("patient_data") or {})
+
+    for field in (
+        "Age",
+        "Gender",
+        "AppointmentLeadTimeDays",
+        "SMSReceived",
+        "PriorDNACount",
+        "Hypertension",
+        "Diabetes",
+        "Alcoholism",
+        "Disability",
+        "IMDDecile",
+    ):
+        if field in item:
+            payload[field] = item[field]
+
+    payload.setdefault("AppointmentLeadTimeDays", _appointment_lead_time_days(item.get("appointment_date")))
+    payload.setdefault("SMSReceived", 1)
+    return _validate_patient(payload)
 
 
 def _generate_nl_summary(patient, result, age_group):

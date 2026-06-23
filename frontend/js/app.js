@@ -13,6 +13,7 @@ const TAB_ROLES = {
     assessment: ['user', 'staff', 'admin'],
     results: ['user', 'staff', 'admin'],
     dashboard: ['staff', 'admin'],
+    clinic: ['staff', 'admin'],
     batch: ['staff', 'admin'],
     bias: ['admin'],
     ethics: ['admin'],
@@ -35,7 +36,7 @@ function canOperateTab(tabName) {
 
 // Tabs the current role can actually USE, in nav order. Drives number-key
 // shortcuts and the guided tour so both match what the role can do.
-const TAB_ORDER = ['assessment', 'results', 'dashboard', 'batch', 'bias', 'ethics', 'slots', 'nudge', 'admin'];
+const TAB_ORDER = ['assessment', 'results', 'dashboard', 'clinic', 'batch', 'bias', 'ethics', 'slots', 'nudge', 'admin'];
 function operableTabs() {
     return TAB_ORDER.filter(t => isTabVisible(t) && canOperateTab(t));
 }
@@ -691,7 +692,9 @@ function switchTab(tabName) {
         tabBtn.setAttribute('aria-selected', 'true');
     }
     document.getElementById(`tab-${tabName}`).classList.add('active');
+    if (tabName === 'dashboard') loadDashboard();
     if (tabName === 'admin') loadAdminUsers();
+    if (tabName === 'clinic') initClinicList();
 }
 
 // ── Bias Tab Navigation ──
@@ -1373,31 +1376,35 @@ async function submitFeedback(outcome) {
 
 async function loadDashboard() {
     try {
-        const res = await fetch('/api/dashboard', { headers: authHeaders() });
+        const [res, outcomesRes] = await Promise.all([
+            fetch('/api/dashboard', { headers: authHeaders() }),
+            fetch('/api/operational-outcomes', { headers: authHeaders() }),
+        ]);
         if (res.status === 401) { handleLogout(); return; }
+        if (outcomesRes.status === 401) { handleLogout(); return; }
         const data = await res.json();
-        renderDashboard(data);
+        const outcomes = outcomesRes.ok ? await outcomesRes.json() : null;
+        renderDashboard(data, outcomes);
         document.getElementById('dashboard-content').style.display = 'block';
     } catch {
         alert('Dashboard load failed.');
     }
 }
 
-function renderDashboard(data) {
+function renderDashboard(data, outcomes) {
     if (data.total === 0) {
         document.getElementById('dashboard-metrics').innerHTML =
             '<p style="text-align:center;color:#AEB7BD;padding:20px;">No assessments yet. Complete patient assessments to populate dashboard.</p>';
-        return;
+    } else {
+        document.getElementById('dashboard-metrics').innerHTML = `
+            <div class="metric-box"><div class="metric-value">${data.total}</div><div class="metric-label">Total Assessed</div></div>
+            <div class="metric-box" style="border-top:3px solid #DA291C"><div class="metric-value">${data.high_risk}</div><div class="metric-label">High Risk</div></div>
+            <div class="metric-box" style="border-top:3px solid #FFB81C"><div class="metric-value">${data.medium_risk}</div><div class="metric-label">Medium Risk</div></div>
+            <div class="metric-box" style="border-top:3px solid #007F3B"><div class="metric-value">${data.low_risk}</div><div class="metric-label">Low Risk</div></div>
+            <div class="metric-box"><div class="metric-value">${(data.average_risk * 100).toFixed(1)}%</div><div class="metric-label">Avg Risk</div></div>
+            <div class="metric-box"><div class="metric-value">${data.feedback_given}</div><div class="metric-label">Feedback Given</div></div>
+        `;
     }
-
-    document.getElementById('dashboard-metrics').innerHTML = `
-        <div class="metric-box"><div class="metric-value">${data.total}</div><div class="metric-label">Total Assessed</div></div>
-        <div class="metric-box" style="border-top:3px solid #DA291C"><div class="metric-value">${data.high_risk}</div><div class="metric-label">High Risk</div></div>
-        <div class="metric-box" style="border-top:3px solid #FFB81C"><div class="metric-value">${data.medium_risk}</div><div class="metric-label">Medium Risk</div></div>
-        <div class="metric-box" style="border-top:3px solid #007F3B"><div class="metric-value">${data.low_risk}</div><div class="metric-label">Low Risk</div></div>
-        <div class="metric-box"><div class="metric-value">${(data.average_risk * 100).toFixed(1)}%</div><div class="metric-label">Avg Risk</div></div>
-        <div class="metric-box"><div class="metric-value">${data.feedback_given}</div><div class="metric-label">Feedback Given</div></div>
-    `;
 
     // Age breakdown
     let ageHtml = '<table class="audit-table"><thead><tr><th>Age Group</th><th>Total</th><th>High Risk</th><th>% High</th></tr></thead><tbody>';
@@ -1422,6 +1429,264 @@ function renderDashboard(data) {
     document.getElementById('dashboard-feedback').innerHTML = data.feedback_given > 0
         ? `<p>${data.feedback_given} feedback responses received out of ${data.total} predictions.</p>`
         : '<p style="color:#AEB7BD;">No feedback submitted yet.</p>';
+    renderOperationalOutcomes(outcomes);
+}
+
+function pct(value) {
+    return typeof value === 'number' ? `${(value * 100).toFixed(1)}%` : '--';
+}
+
+function renderOperationalOutcomes(data) {
+    const el = document.getElementById('dashboard-outcomes');
+    if (!el) return;
+    if (!data || !data.appointments || data.appointments.total === 0) {
+        el.innerHTML = '<p style="color:#AEB7BD;">No appointment outcomes recorded yet. Use Clinic List to mark attended or DNA.</p>';
+        return;
+    }
+
+    const outcomes = data.outcomes || {};
+    const interventions = data.interventions || {};
+    const actioned = interventions.actioned_completed_appointments || {};
+    const unactioned = interventions.unactioned_completed_appointments || {};
+    const delta = interventions.actioned_vs_unactioned_dna_gap;
+    const deltaText = typeof delta === 'number' ? pct(delta) : 'Need both cohorts';
+
+    el.innerHTML = `
+        <div class="metrics-row">
+            <div class="metric-box"><div class="metric-value">${data.appointments.completed || 0}</div><div class="metric-label">Completed Appts</div></div>
+            <div class="metric-box" style="border-top:3px solid #007F3B"><div class="metric-value">${pct(outcomes.attended_rate)}</div><div class="metric-label">Attendance Rate</div></div>
+            <div class="metric-box" style="border-top:3px solid #DA291C"><div class="metric-value">${pct(outcomes.dna_rate)}</div><div class="metric-label">DNA Rate</div></div>
+            <div class="metric-box"><div class="metric-value">${interventions.completed_actions || 0}</div><div class="metric-label">Actions Done</div></div>
+            <div class="metric-box" title="Observational gap (unactioned − actioned DNA rate); confounded by indication"><div class="metric-value">${deltaText}</div><div class="metric-label">DNA Gap (obs.)</div></div>
+        </div>
+        <table class="audit-table">
+            <thead><tr><th>Cohort</th><th>Completed</th><th>Attended</th><th>DNA</th><th>DNA Rate</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Actioned</strong></td><td>${actioned.total || 0}</td><td>${actioned.attended || 0}</td><td>${actioned.dna || 0}</td><td>${pct(actioned.dna_rate)}</td></tr>
+                <tr><td><strong>Unactioned</strong></td><td>${unactioned.total || 0}</td><td>${unactioned.attended || 0}</td><td>${unactioned.dna || 0}</td><td>${pct(unactioned.dna_rate)}</td></tr>
+            </tbody>
+        </table>
+        <p class="clinic-muted" style="margin-top:10px;">${escapeHtml(interventions.note || '')}</p>
+    `;
+}
+
+// ── Clinic List / Appointment Worklist ──
+
+const CLINIC_STATUSES = ['scheduled', 'confirmed', 'attended', 'dna', 'cancelled', 'rescheduled'];
+let clinicListLoaded = false;
+
+function defaultClinicDate() {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${d.getFullYear()}-${month}-${day}`;
+}
+
+function initClinicList() {
+    const dateInput = document.getElementById('clinic-date');
+    if (dateInput && !dateInput.value) dateInput.value = defaultClinicDate();
+    if (!clinicListLoaded) loadClinicList();
+}
+
+function clinicDateValue() {
+    const dateInput = document.getElementById('clinic-date');
+    if (!dateInput.value) dateInput.value = defaultClinicDate();
+    return dateInput.value;
+}
+
+async function createClinicAppointment() {
+    const patientId = document.getElementById('clinic-patient-id').value.trim();
+    const appointmentDate = clinicDateValue();
+    const appointmentTime = document.getElementById('clinic-time').value.trim();
+    const clinic = document.getElementById('clinic-name').value.trim();
+
+    if (!patientId) {
+        showToast('Enter a patient ID, for example NHS001.', 'warning');
+        return;
+    }
+
+    await postClinicAppointments({
+        patient_id: patientId,
+        appointment_date: appointmentDate,
+        appointment_time: appointmentTime,
+        clinic,
+    });
+}
+
+async function importClinicAppointments() {
+    const textarea = document.getElementById('clinic-bulk-json');
+    let payload;
+    try {
+        const parsed = JSON.parse(textarea.value);
+        payload = Array.isArray(parsed) ? { appointments: parsed } : parsed;
+    } catch {
+        showToast('Appointment JSON is not valid.', 'error');
+        return;
+    }
+    await postClinicAppointments(payload);
+}
+
+async function postClinicAppointments(payload) {
+    try {
+        const res = await fetch('/api/appointments', {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (res.status === 401) { handleLogout(); return; }
+        if (!res.ok) {
+            const first = data.errors && data.errors.length ? ': ' + data.errors[0].error : '';
+            showToast((data.error || 'Appointment import failed') + first, 'error');
+            return;
+        }
+        showToast(`${data.created} appointment(s) imported.`, data.errors && data.errors.length ? 'warning' : 'success');
+        document.getElementById('clinic-patient-id').value = '';
+        document.getElementById('clinic-time').value = '';
+        await loadClinicList();
+    } catch {
+        showToast('Could not reach the server.', 'error');
+    }
+}
+
+async function loadClinicList() {
+    const appointmentDate = clinicDateValue();
+    try {
+        const res = await fetch('/api/clinic-list?date=' + encodeURIComponent(appointmentDate), { headers: authHeaders() });
+        const data = await res.json();
+        if (res.status === 401) { handleLogout(); return; }
+        if (!res.ok) {
+            showToast(data.error || 'Could not load clinic list.', 'error');
+            return;
+        }
+        clinicListLoaded = true;
+        renderClinicList(data);
+    } catch {
+        showToast('Could not reach the server.', 'error');
+    }
+}
+
+function renderClinicList(data) {
+    document.getElementById('clinic-results').style.display = 'block';
+    document.getElementById('clinic-list-date-label').textContent = data.date;
+    const summary = data.summary || {};
+    document.getElementById('clinic-summary').innerHTML = `
+        <div class="metric-box"><div class="metric-value">${summary.total || 0}</div><div class="metric-label">Appointments</div></div>
+        <div class="metric-box" style="border-top:3px solid #DA291C"><div class="metric-value">${summary.high_risk || 0}</div><div class="metric-label">High Risk</div></div>
+        <div class="metric-box" style="border-top:3px solid #FFB81C"><div class="metric-value">${summary.medium_risk || 0}</div><div class="metric-label">Medium Risk</div></div>
+        <div class="metric-box" style="border-top:3px solid #007F3B"><div class="metric-value">${summary.actioned || 0}</div><div class="metric-label">Actioned</div></div>
+        <div class="metric-box"><div class="metric-value">${summary.needs_action || 0}</div><div class="metric-label">Needs Action</div></div>
+    `;
+
+    const rows = data.appointments || [];
+    if (!rows.length) {
+        document.getElementById('clinic-table-container').innerHTML =
+            '<div class="clinic-empty">No appointments imported for this date.</div>';
+        return;
+    }
+
+    let html = '<table class="audit-table clinic-table"><thead><tr><th>Time</th><th>Patient</th><th>Clinic</th><th>Risk</th><th>Status</th><th>Outreach</th><th>Actions</th></tr></thead><tbody>';
+    rows.forEach(row => {
+        const tier = row.risk_tier || 'Low';
+        const tierKey = tier.toLowerCase();
+        const probability = typeof row.probability === 'number' ? (row.probability * 100).toFixed(1) + '%' : '--';
+        const statusOptions = CLINIC_STATUSES.map(s => `<option value="${s}"${s === row.status ? ' selected' : ''}>${s}</option>`).join('');
+        const canNotify = tier === 'High' || tier === 'Medium';
+        html += `<tr>
+            <td>${escapeHtml(row.appointment_time || '--')}</td>
+            <td><strong>${escapeHtml(row.patient_id)}</strong><br><span class="clinic-muted">${escapeHtml(row.age_group || '')}</span></td>
+            <td>${escapeHtml(row.clinic || '--')}</td>
+            <td><span class="clinic-risk-badge tier-${tierKey}">${escapeHtml(tier)}</span><br><span class="clinic-muted">${probability}</span></td>
+            <td><select class="clinic-status-select" data-appt-id="${escapeHtml(row.id)}">${statusOptions}</select></td>
+            <td>
+                <span class="${row.needs_action ? 'clinic-needs-action' : 'clinic-actioned'}">${row.needs_action ? 'Needs action' : 'Tracked'}</span><br>
+                <span class="clinic-muted">${row.action_count || 0} action(s), ${row.notification_count || 0} reminder(s)</span>
+            </td>
+            <td>
+                <div class="clinic-row-actions">
+                    <button class="btn-secondary btn-small-fit clinic-reminder-btn" data-patient-id="${escapeHtml(row.patient_id)}" data-risk-tier="${escapeHtml(tier)}" data-date="${escapeHtml(row.appointment_date)}"${canNotify ? '' : ' disabled'}>Reminder</button>
+                    <button class="btn-secondary btn-small-fit clinic-call-btn" data-patient-id="${escapeHtml(row.patient_id)}" data-risk-tier="${escapeHtml(tier)}" data-date="${escapeHtml(row.appointment_date)}">Call</button>
+                </div>
+            </td>
+        </tr>`;
+    });
+    html += '</tbody></table>';
+    const container = document.getElementById('clinic-table-container');
+    container.innerHTML = html;
+    container.querySelectorAll('.clinic-status-select').forEach(select => {
+        select.addEventListener('change', () => updateClinicStatus(select.dataset.apptId, select.value));
+    });
+    container.querySelectorAll('.clinic-reminder-btn').forEach(btn => {
+        btn.addEventListener('click', () => scheduleClinicReminder(btn.dataset.patientId, btn.dataset.riskTier, btn.dataset.date));
+    });
+    container.querySelectorAll('.clinic-call-btn').forEach(btn => {
+        btn.addEventListener('click', () => recordClinicCall(btn.dataset.patientId, btn.dataset.riskTier, btn.dataset.date));
+    });
+}
+
+async function updateClinicStatus(appointmentId, status) {
+    try {
+        const res = await fetch('/api/appointments/' + encodeURIComponent(appointmentId) + '/status', {
+            method: 'PATCH',
+            headers: authHeaders(),
+            body: JSON.stringify({ status }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            showToast(data.error || 'Status update failed.', 'error');
+            return;
+        }
+        showToast('Appointment status updated.', 'success');
+    } catch {
+        showToast('Could not reach the server.', 'error');
+    }
+}
+
+async function scheduleClinicReminder(patientId, riskTier, appointmentDate) {
+    try {
+        const res = await fetch('/api/notifications/schedule', {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({ patient_id: patientId, risk_tier: riskTier, appointment_date: appointmentDate }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            showToast(data.error || 'Reminder scheduling failed.', 'error');
+            return;
+        }
+        showToast('Reminder scheduled.', 'success');
+        await loadClinicList();
+    } catch {
+        showToast('Could not reach the server.', 'error');
+    }
+}
+
+async function recordClinicCall(patientId, riskTier, appointmentDate) {
+    try {
+        const res = await fetch('/api/actions', {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({
+                patient_id: patientId,
+                risk_tier: riskTier,
+                appointment_date: appointmentDate,
+                action_type: 'call',
+                status: 'completed',
+                outcome: 'left_message',
+                notes: 'Recorded from clinic list.',
+            }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            showToast(data.error || 'Action recording failed.', 'error');
+            return;
+        }
+        showToast('Call action recorded.', 'success');
+        await loadClinicList();
+    } catch {
+        showToast('Could not reach the server.', 'error');
+    }
 }
 
 // ── EHR Lookup (Feature 10 - Mock) ──

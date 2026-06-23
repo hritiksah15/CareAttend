@@ -862,6 +862,74 @@ body > * {
     font-size: 13px;
 }
 
+/* ── CLINIC LIST ── */
+.clinic-actions,
+.clinic-list-header,
+.clinic-row-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.clinic-actions {
+    margin-top: 16px;
+}
+.clinic-list-header {
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+.clinic-import-details {
+    margin-top: 16px;
+    border-top: 1px solid var(--nhs-pale-grey);
+    padding-top: 12px;
+}
+.clinic-import-details summary {
+    cursor: pointer;
+    color: var(--nhs-blue);
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+.clinic-table td {
+    vertical-align: middle;
+}
+.clinic-status-select {
+    min-width: 130px;
+    min-height: 38px;
+    padding: 7px 10px;
+    border: 1.5px solid var(--nhs-grey);
+    border-radius: 4px;
+    background: #fff;
+    font: inherit;
+}
+.clinic-risk-badge {
+    display: inline-block;
+    min-width: 68px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 800;
+    text-align: center;
+}
+.clinic-risk-badge.tier-high { background: var(--risk-high-bg); color: var(--risk-high); }
+.clinic-risk-badge.tier-medium { background: var(--risk-medium-bg); color: #8A5A00; }
+.clinic-risk-badge.tier-low { background: var(--risk-low-bg); color: var(--risk-low); }
+.clinic-muted {
+    color: var(--nhs-dark-grey);
+    font-size: 12px;
+}
+.clinic-needs-action,
+.clinic-actioned {
+    font-size: 12px;
+    font-weight: 800;
+}
+.clinic-needs-action { color: var(--risk-high); }
+.clinic-actioned { color: var(--risk-low); }
+.clinic-empty {
+    padding: 20px;
+    text-align: center;
+    color: var(--nhs-dark-grey);
+}
+
 /* ── LANGUAGE SELECTOR ── */
 .lang-selector {
     background: rgba(255,255,255,0.15);
@@ -1099,6 +1167,10 @@ body.dark-mode .audit-table thead th { background: #2a2a3e; color: #7eb8f7; bord
 body.dark-mode .audit-table td { border-bottom-color: #3a3a4e; color: #d0d0d0; }
 body.dark-mode .audit-table tbody tr:nth-child(even) td { background: rgba(255,255,255,0.03); }
 body.dark-mode .audit-table tbody tr:hover td { background: #353548; }
+body.dark-mode .clinic-import-details { border-top-color: #3a3a4e; }
+body.dark-mode .clinic-status-select { background: #1f1f32; color: #e8e8f0; border-color: #4a4a60; }
+body.dark-mode .clinic-muted,
+body.dark-mode .clinic-empty { color: #b0b0c0; }
 
 /* Dark mode - Bias */
 body.dark-mode .bias-tab { background: #3a3a4e; color: #7eb8f7; border-color: #5a8fd4; }
