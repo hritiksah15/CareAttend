@@ -34,9 +34,9 @@ class GuidedTour {
     },
     {
       'title': '4. More features',
-      'body': 'Batch upload, Slot optimisation, Patient nudge, Bias monitor, '
-          'Ethics and User management are in the bottom bar and the menu, '
-          'depending on your role.',
+      'body': 'Clinic list, Batch upload, Slot optimisation, Patient nudge, '
+          'Bias monitor, Ethics and User management are in the bottom bar '
+          'and the menu, depending on your role.',
       'tab': null,
     },
     {

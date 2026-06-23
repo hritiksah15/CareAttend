@@ -10,6 +10,7 @@ import 'patient_form_screen.dart';
 import 'result_screen.dart';
 import 'bias_screen.dart';
 import 'dashboard_screen.dart';
+import 'clinic_screen.dart';
 import 'slots_screen.dart';
 import 'nudge_screen.dart';
 import 'ethics_screen.dart';
@@ -58,6 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _NavItem('Assessment', Icons.edit_note, 0),
     _NavItem('Results', Icons.insights, 1),
     _NavItem('Dashboard', Icons.dashboard, 2, ['staff', 'admin']),
+    _NavItem('Clinic List', Icons.event_note, 10, ['staff', 'admin']),
     _NavItem('Batch Upload', Icons.upload_file, 9, ['staff', 'admin']),
     _NavItem('Slot Optimisation', Icons.event_available, 4, ['staff', 'admin']),
     _NavItem('Patient Nudge', Icons.message, 5, ['staff', 'admin']),
@@ -211,6 +213,8 @@ class _HomeScreenState extends State<HomeScreen> {
         return const AdminScreen();
       case 9:
         return const BatchScreen();
+      case 10:
+        return const ClinicScreen();
       default:
         return const SizedBox.shrink();
     }
