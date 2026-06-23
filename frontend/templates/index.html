@@ -176,6 +176,9 @@
             <button class="tab-btn" data-tab="dashboard" role="tab" aria-selected="false" aria-controls="tab-dashboard">
                 <span class="tab-icon"><i data-lucide="layout-dashboard" style="width:16px;height:16px;"></i></span> Dashboard
             </button>
+            <button class="tab-btn" data-tab="clinic" role="tab" aria-selected="false" aria-controls="tab-clinic">
+                <span class="tab-icon"><i data-lucide="calendar-check" style="width:16px;height:16px;"></i></span> Clinic List
+            </button>
             <button class="tab-btn" data-tab="batch" role="tab" aria-selected="false" aria-controls="tab-batch">
                 <span class="tab-icon"><i data-lucide="upload" style="width:16px;height:16px;"></i></span> Batch Upload
             </button>
@@ -463,6 +466,67 @@
                     <div class="card">
                         <h3 class="card-title">Feedback Accuracy</h3>
                         <div id="dashboard-feedback"></div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">Operational Outcomes</h3>
+                        <div id="dashboard-outcomes"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CLINIC LIST TAB -->
+            <section id="tab-clinic" class="tab-content" role="tabpanel">
+                <div class="card">
+                    <h2 class="card-title">Clinic List</h2>
+                    <p class="card-description">Import appointment records, score DNA risk, and track outreach progress for a selected clinic date.</p>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="clinic-date">Clinic Date</label>
+                            <input type="date" id="clinic-date">
+                        </div>
+                        <div class="form-group">
+                            <label for="clinic-patient-id">Patient ID</label>
+                            <input type="text" id="clinic-patient-id" placeholder="NHS001">
+                        </div>
+                        <div class="form-group">
+                            <label for="clinic-time">Time</label>
+                            <input type="time" id="clinic-time">
+                        </div>
+                        <div class="form-group">
+                            <label for="clinic-name">Clinic</label>
+                            <input type="text" id="clinic-name" placeholder="Diabetes Review">
+                        </div>
+                    </div>
+                    <div class="clinic-actions">
+                        <button class="btn-primary" onclick="createClinicAppointment()"><i data-lucide="calendar-plus" style="width:14px;height:14px;margin-right:4px;"></i> Add Appointment</button>
+                        <button class="btn-secondary" onclick="loadClinicList()"><i data-lucide="refresh-cw" style="width:14px;height:14px;margin-right:4px;"></i> Load Clinic List</button>
+                    </div>
+                    <details class="clinic-import-details">
+                        <summary>Bulk JSON import</summary>
+                        <div class="form-group">
+                            <label for="clinic-bulk-json">Appointments JSON</label>
+                            <textarea id="clinic-bulk-json" rows="6" class="slot-textarea" placeholder='[
+  {"patient_id":"NHS001","appointment_date":"2026-07-01","appointment_time":"09:00","clinic":"Diabetes Review"},
+  {"patient_id":"NHS003","appointment_date":"2026-07-01","appointment_time":"09:20","clinic":"Diabetes Review"}
+]'></textarea>
+                        </div>
+                        <button class="btn-secondary" onclick="importClinicAppointments()">Import JSON</button>
+                    </details>
+                </div>
+
+                <div id="clinic-results" style="display:none;">
+                    <div class="card">
+                        <div class="clinic-list-header">
+                            <div>
+                                <h3 class="card-title" style="margin-bottom:4px;">Daily Worklist</h3>
+                                <p class="card-description" id="clinic-list-date-label" style="margin:0;"></p>
+                            </div>
+                            <button class="btn-secondary" onclick="loadClinicList()"><i data-lucide="refresh-cw" style="width:14px;height:14px;margin-right:4px;"></i> Refresh</button>
+                        </div>
+                        <div class="metrics-row" id="clinic-summary"></div>
+                    </div>
+                    <div class="card">
+                        <div id="clinic-table-container" class="audit-table-wrap"></div>
                     </div>
                 </div>
             </section>

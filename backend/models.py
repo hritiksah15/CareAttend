@@ -203,6 +203,40 @@ class OutreachAction(db.Model):
         }
 
 
+class AppointmentRecord(db.Model):
+    __tablename__ = "appointments"
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False)
+    patient_id = db.Column(db.String(80), nullable=False)
+    appointment_date = db.Column(db.String(30), nullable=False)
+    appointment_time = db.Column(db.String(20), nullable=True)
+    clinic = db.Column(db.String(120), nullable=True)
+    status = db.Column(db.String(20), nullable=False, default="scheduled")
+    probability = db.Column(db.Float, nullable=True)
+    risk_tier = db.Column(db.String(20), nullable=True)
+    age_group = db.Column(db.String(40), nullable=True)
+    created_at = db.Column(db.Float, nullable=False, default=time.time)
+    updated_at = db.Column(db.Float, nullable=False, default=time.time)
+
+    user = db.relationship("User", backref=db.backref("appointments", lazy=True))
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "patient_id": self.patient_id,
+            "appointment_date": self.appointment_date,
+            "appointment_time": self.appointment_time or "",
+            "clinic": self.clinic or "",
+            "status": self.status,
+            "probability": self.probability,
+            "risk_tier": self.risk_tier or "",
+            "age_group": self.age_group or "",
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+        }
+
+
 class AssessmentSummary(db.Model):
     __tablename__ = "assessment_summaries"
 

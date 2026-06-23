@@ -4,7 +4,7 @@
 
 **How it was built:** Requirement IDs harvested directly from `@requirement` tags in the source (`grep -rEn "FR-|NFR-|US-" backend/`). Implementation and test columns are verified file references, not claims. **Action for you:** replace each *Requirement (description)* cell with the exact wording from your AT2 report so the matrix is word-identical to your requirements section.
 
-**Test status:** 200 pytest tests, all passing (June 2026).
+**Test status:** 209 pytest tests, all passing (June 2026).
 
 ---
 
@@ -50,7 +50,9 @@
 | **(new)** | Patient nudge generator (4 langs) | `app.py:813` | `test_new_endpoints::TestPatientNudge` | ✅ |
 | **(new)** | Admin audit log | `app.py:868` | `test_new_endpoints::TestAuditLog` | ✅ |
 | **(new)** | Push-notification scheduling | `app.py:570` | `test_new_endpoints::TestNotifications` | ✅ |
+| **(new)** | Appointment clinic-list workflow | `/api/appointments`; `/api/clinic-list`; `models.py::AppointmentRecord` | `test_new_endpoints::TestAppointmentWorklist` | ✅ |
 | **(new)** | Operational outreach action tracking | `/api/actions`; `models.py::OutreachAction` | `test_new_endpoints::TestOutreachActions` | ✅ |
+| **(new)** | Operational outcomes dashboard | `/api/operational-outcomes`; `frontend/js/app.js` dashboard render | `test_new_endpoints::TestAppointmentWorklist::test_operational_outcomes_aggregates_actioned_vs_unactioned` | ✅ |
 
 ---
 

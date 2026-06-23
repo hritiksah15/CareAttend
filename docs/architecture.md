@@ -31,10 +31,10 @@ flowchart TB
         api["Flask REST API<br/><i>app.py — 25+ endpoints</i>"]
         authc["Auth module<br/><i>auth.py — bcrypt, TOTP, sessions</i>"]
         ml["ML layer<br/><i>predictor, bias_monitor,<br/>interventions, calibration, evaluation</i>"]
-        mem["In-memory stores<br/><i>predictions, audit, proxies (NFR-01)</i>"]
+        mem["In-memory stores<br/><i>prediction log only (NFR-01)</i>"]
     end
 
-    db[("PostgreSQL 16<br/><i>users, sessions, audit_logs,<br/>feedback, carer_proxies</i>")]
+    db[("PostgreSQL 16<br/><i>users, sessions, audit_logs,<br/>feedback, carer_proxies,<br/>assessment_summaries, notifications,<br/>outreach_actions, appointments</i>")]
     models[("Serialised models<br/><i>joblib: LR + scaler + threshold<br/>+ calibrated</i>")]
 
     spa -->|"HTTPS / JSON + Bearer"| api
@@ -120,7 +120,7 @@ erDiagram
     }
 ```
 
-**Note on NFR-01:** there is intentionally **no patient table**. Prediction inputs/outputs are processed in memory and never persisted, satisfying the privacy/data-minimisation requirement (GDPR Art 5(1)(c)). Only operational data (users, auth, audit, anonymised feedback, carer-proxy admin records) is persisted.
+**Note on NFR-01:** there is intentionally **no patient table**. Prediction inputs/outputs are processed in memory and never persisted, satisfying the privacy/data-minimisation requirement (GDPR Art 5(1)(c)). Operational workflow data now persists in PostgreSQL: assessments, notifications, appointments, outreach actions, anonymised feedback, carer-proxy admin records, users, sessions, and audit logs.
 
 ---
 
@@ -135,7 +135,7 @@ erDiagram
 - `/api/feedback` → writes an **anonymised** `PersistentFeedback` row (tier, probability, outcome — no patient data, NFR-01 safe) + an `AuditLog` row.
 - New `_audit(user_id, action, detail)` helper records actor + `ip_address`.
 
-**Still intentionally in-memory:** `_prediction_log` (patient prediction inputs/outputs) — session-scoped per NFR-01, never persisted.
+**Still intentionally in-memory:** `_prediction_log` (patient prediction inputs/outputs) — session-scoped per NFR-01, never persisted. The new appointment/outreach/outcome workflow is persisted.
 
 **Tests:** persistence asserted in `test_new_endpoints::TestCarerProxy::test_create_writes_audit_entry` and `test_feature_coverage::TestFeedback::test_feedback_persisted_to_db`.
 
