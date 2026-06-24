@@ -1690,7 +1690,17 @@ async function scheduleClinicReminder(patientId, riskTier, appointmentDate) {
             showToast(data.error || 'Reminder scheduling failed.', 'error');
             return;
         }
-        showToast('Reminder scheduled.', 'success');
+        // Close the loop: dispatch the reminder via the (simulated) provider so
+        // its delivery lifecycle is recorded, not just queued.
+        const id = data.notification && data.notification.id;
+        if (id) {
+            const dres = await fetch('/api/notifications/' + id + '/dispatch', {
+                method: 'POST', headers: authHeaders(), body: JSON.stringify({ channel: 'sms' }),
+            });
+            showToast(dres.ok ? 'Reminder scheduled and sent (simulated).' : 'Scheduled, but delivery failed — retry from the notifications list.', dres.ok ? 'success' : 'error');
+        } else {
+            showToast('Reminder scheduled.', 'success');
+        }
         await loadClinicList();
     } catch {
         showToast('Could not reach the server.', 'error');

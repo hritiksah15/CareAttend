@@ -307,6 +307,34 @@ paths:
         "400": { $ref: "#/components/responses/BadRequest" }
   /api/notifications:
     get: { tags: [Outreach], summary: List scheduled notifications, responses: { "200": { description: OK } } }
+  /api/notifications/{notification_id}/dispatch:
+    post:
+      tags: [Outreach]
+      summary: Dispatch a reminder via the simulated delivery provider
+      description: >
+        Transitions delivery_status pending|failed -> sent|failed and records
+        the attempt (channel, attempts, provider_ref, failure_reason). No real
+        message is sent — delivery is simulated (no SMS/email gateway). A failed
+        attempt is retryable. `simulate_failure` forces the gateway error path.
+      parameters:
+        - name: notification_id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                channel: { type: string, enum: [sms, email], default: sms }
+                simulate_failure: { type: boolean, default: false }
+      responses:
+        "200": { description: Delivered (simulated) }
+        "400": { description: Invalid channel or already delivered }
+        "404": { description: Notification not found }
+        "502": { description: Delivery failed (retryable) }
   /api/actions:
     post:
       tags: [Outreach]

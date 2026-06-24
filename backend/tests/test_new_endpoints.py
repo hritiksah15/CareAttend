@@ -639,6 +639,73 @@ class TestNotifications:
         assert data["notifications"][0]["patient_id"] == "NHS001"
 
 
+class TestNotificationDispatch:
+    def _schedule(self, client, token, patient_id="NHS001"):
+        res = client.post(
+            "/api/notifications/schedule",
+            headers=auth(token),
+            json={"patient_id": patient_id, "risk_tier": "High", "appointment_date": "2026-07-01"},
+        )
+        return json.loads(res.data)["notification"]["id"]
+
+    def test_dispatch_marks_sent(self, client, app):
+        token = login(client)
+        nid = self._schedule(client, token)
+        res = client.post(f"/api/notifications/{nid}/dispatch", headers=auth(token), json={"channel": "sms"})
+        assert res.status_code == 200
+        n = json.loads(res.data)["notification"]
+        assert n["delivery_status"] == "sent"
+        assert n["status"] == "sent"
+        assert n["delivery_attempts"] == 1
+        assert n["provider_ref"]
+        with app.app_context():
+            assert AuditLog.query.filter_by(action="notification_dispatched").count() == 1
+
+    def test_dispatch_failure_is_retryable(self, client, app):
+        token = login(client)
+        nid = self._schedule(client, token)
+        # First attempt forced to fail.
+        res = client.post(
+            f"/api/notifications/{nid}/dispatch",
+            headers=auth(token),
+            json={"channel": "sms", "simulate_failure": True},
+        )
+        assert res.status_code == 502
+        n = json.loads(res.data)["notification"]
+        assert n["delivery_status"] == "failed"
+        assert n["failure_reason"]
+        assert n["delivery_attempts"] == 1
+        # Retry succeeds; attempts increments.
+        res2 = client.post(f"/api/notifications/{nid}/dispatch", headers=auth(token), json={"channel": "sms"})
+        assert res2.status_code == 200
+        n2 = json.loads(res2.data)["notification"]
+        assert n2["delivery_status"] == "sent"
+        assert n2["delivery_attempts"] == 2
+        assert n2["failure_reason"] is None
+        with app.app_context():
+            assert AuditLog.query.filter_by(action="notification_dispatch_failed").count() == 1
+
+    def test_dispatch_rejects_bad_channel(self, client):
+        token = login(client)
+        nid = self._schedule(client, token)
+        res = client.post(f"/api/notifications/{nid}/dispatch", headers=auth(token), json={"channel": "carrier-pigeon"})
+        assert res.status_code == 400
+
+    def test_dispatch_rejects_double_send(self, client):
+        token = login(client)
+        nid = self._schedule(client, token)
+        client.post(f"/api/notifications/{nid}/dispatch", headers=auth(token), json={"channel": "sms"})
+        res = client.post(f"/api/notifications/{nid}/dispatch", headers=auth(token), json={"channel": "sms"})
+        assert res.status_code == 400
+
+    def test_dispatch_scoped_to_owner(self, client):
+        token_a = login(client, username="staffa")
+        token_b = login(client, username="staffb")
+        nid = self._schedule(client, token_a)
+        res = client.post(f"/api/notifications/{nid}/dispatch", headers=auth(token_b), json={"channel": "sms"})
+        assert res.status_code == 404
+
+
 # ── Appointment Worklist / Clinic List ──
 
 

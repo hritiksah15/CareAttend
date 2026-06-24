@@ -51,6 +51,7 @@ from auth import (
 from ml.predictor import CareAttendPredictor
 from ml.bias_monitor import BiasMonitor
 from ml.interventions import generate_interventions
+from notification_provider import provider as notification_provider, VALID_CHANNELS
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
 
@@ -1145,6 +1146,66 @@ def list_notifications():
             "total": len(notifications),
         }
     )
+
+
+@app.route("/api/notifications/<notification_id>/dispatch", methods=["POST"])
+@token_required
+@role_required("staff", "admin")
+def dispatch_notification(notification_id):
+    """Dispatch a scheduled reminder via the (simulated) delivery provider.
+
+    Transitions delivery_status pending|failed -> sent|failed and records the
+    attempt. No real message is sent — see notification_provider.py.
+    """
+    data = request.get_json(silent=True) or {}
+    channel = data.get("channel", "sms")
+    if channel not in VALID_CHANNELS:
+        return jsonify({"error": f"channel must be one of: {', '.join(sorted(VALID_CHANNELS))}"}), 400
+
+    notification = ScheduledNotification.query.filter_by(
+        id=notification_id,
+        user_id=request.current_user["userId"],
+    ).first()
+    if not notification:
+        return jsonify({"error": "Notification not found"}), 404
+    if notification.delivery_status == "sent":
+        return jsonify({"error": "Notification already delivered"}), 400
+
+    result = notification_provider.send(
+        patient_id=notification.patient_id,
+        channel=channel,
+        force_failure=bool(data.get("simulate_failure")),
+    )
+
+    notification.delivery_channel = channel
+    notification.delivery_attempts = (notification.delivery_attempts or 0) + 1
+    notification.last_attempt_at = time.time()
+    if result.success:
+        notification.delivery_status = "sent"
+        notification.provider_ref = result.provider_ref
+        notification.failure_reason = None
+        if notification.status == "scheduled":
+            notification.status = "sent"
+        audit_detail = (
+            f"{channel} to {notification.patient_id} via {notification_provider.name} (ref {result.provider_ref})"
+        )
+        audit_action = "notification_dispatched"
+    else:
+        notification.delivery_status = "failed"
+        notification.failure_reason = result.failure_reason
+        audit_detail = f"{channel} to {notification.patient_id} failed: {result.failure_reason}"
+        audit_action = "notification_dispatch_failed"
+
+    db.session.add(_audit(request.current_user["userId"], audit_action, audit_detail))
+    db.session.commit()
+
+    status_code = 200 if result.success else 502
+    return jsonify(
+        {
+            "message": "Notification delivered" if result.success else "Delivery failed (retryable)",
+            "notification": notification.to_dict(),
+        }
+    ), status_code
 
 
 # ── Operational Action Tracking ──
