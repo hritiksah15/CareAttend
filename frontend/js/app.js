@@ -2685,16 +2685,26 @@ async function loadAdminUsers() {
         const res = await fetch('/api/admin/users', { headers: authHeaders() });
         const data = await res.json();
         if (!res.ok) { status.textContent = data.error || 'Failed to load users.'; return; }
-        status.textContent = data.total + ' user(s).';
+        const pendingCount = data.users.filter(u => !u.approved).length;
+        status.textContent = data.total + ' user(s)'
+            + (pendingCount ? ` · ${pendingCount} awaiting approval` : '') + '.';
         const roles = ['user', 'staff', 'admin'];
-        let html = '<table class="audit-table"><thead><tr><th>Username</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead><tbody>';
+        let html = '<table class="audit-table"><thead><tr><th>Username</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
         data.users.forEach(u => {
             const opts = roles.map(r => `<option value="${r}"${r === u.role ? ' selected' : ''}>${r}</option>`).join('');
+            const statusTag = u.approved
+                ? '<span class="status-badge pass">Approved</span>'
+                : '<span class="status-badge fail">Pending</span>';
+            const approveBtn = u.approved
+                ? ''
+                : `<button class="btn-secondary" onclick="approveUser('${u.userId}', '${escapeHtml(u.username)}')">Approve</button>`;
             html += `<tr>
                 <td>${escapeHtml(u.username)}</td>
                 <td>${escapeHtml(u.email)}</td>
                 <td><select id="role-${u.userId}">${opts}</select></td>
+                <td>${statusTag}</td>
                 <td>
+                    ${approveBtn}
                     <button class="btn-secondary" onclick="changeUserRole('${u.userId}')">Save Role</button>
                     <button class="btn-secondary" onclick="deleteUser('${u.userId}', '${escapeHtml(u.username)}')">Delete</button>
                 </td>
@@ -2715,6 +2725,18 @@ async function changeUserRole(userId) {
         });
         const data = await res.json();
         alert(res.ok ? 'Role updated.' : (data.error || 'Failed.'));
+        if (res.ok) loadAdminUsers();
+    } catch { alert('Could not reach the server.'); }
+}
+
+async function approveUser(userId, username) {
+    if (!confirm('Approve "' + username + '" as staff? They will gain operational access.')) return;
+    try {
+        const res = await fetch('/api/admin/users/' + userId + '/approve', {
+            method: 'POST', headers: authHeaders(), body: JSON.stringify({ role: 'staff' }),
+        });
+        const data = await res.json();
+        alert(res.ok ? data.message : (data.error || 'Failed.'));
         if (res.ok) loadAdminUsers();
     } catch { alert('Could not reach the server.'); }
 }

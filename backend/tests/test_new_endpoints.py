@@ -438,6 +438,60 @@ class TestAuditLog:
         assert any(log["action"] == "carer_proxy_created" for log in logs)
 
 
+class TestUserApproval:
+    def test_pending_requires_admin(self, client):
+        staff = login(client, username="clerk", role="staff")
+        assert client.get("/api/admin/pending-users", headers=auth(staff)).status_code == 403
+
+    def test_pending_lists_only_unapproved(self, client):
+        _register(client, username="newbie", role="user")  # stays role 'user'
+        admin = login(client, username="boss", role="admin")
+        res = client.get("/api/admin/pending-users", headers=auth(admin))
+        assert res.status_code == 200
+        usernames = [u["username"] for u in json.loads(res.data)["pending"]]
+        assert "newbie" in usernames
+        assert "boss" not in usernames  # admin not pending
+
+    def test_approve_elevates_to_staff(self, client, app):
+        _register(client, username="newbie", role="user")
+        admin = login(client, username="boss", role="admin")
+        with app.app_context():
+            uid = User.query.filter_by(username="newbie").first().id
+        res = client.post(f"/api/admin/users/{uid}/approve", headers=auth(admin), json={})
+        assert res.status_code == 200
+        body = json.loads(res.data)
+        assert body["user"]["role"] == "staff"
+        assert body["user"]["approved"] is True
+        # No longer in the pending queue.
+        pending = client.get("/api/admin/pending-users", headers=auth(admin))
+        assert "newbie" not in [u["username"] for u in json.loads(pending.data)["pending"]]
+
+    def test_approve_writes_audit_entry(self, client, app):
+        _register(client, username="newbie", role="user")
+        admin = login(client, username="boss", role="admin")
+        with app.app_context():
+            uid = User.query.filter_by(username="newbie").first().id
+        client.post(f"/api/admin/users/{uid}/approve", headers=auth(admin), json={})
+        logs = json.loads(client.get("/api/audit-log", headers=auth(admin)).data)["logs"]
+        assert any(log["action"] == "user_approved" for log in logs)
+
+    def test_approve_rejects_already_approved(self, client, app):
+        login(client, username="clerk", role="staff")  # already staff
+        admin = login(client, username="boss", role="admin")
+        with app.app_context():
+            uid = User.query.filter_by(username="clerk").first().id
+        res = client.post(f"/api/admin/users/{uid}/approve", headers=auth(admin), json={})
+        assert res.status_code == 400
+
+    def test_approve_rejects_bad_role(self, client, app):
+        _register(client, username="newbie", role="user")
+        admin = login(client, username="boss", role="admin")
+        with app.app_context():
+            uid = User.query.filter_by(username="newbie").first().id
+        res = client.post(f"/api/admin/users/{uid}/approve", headers=auth(admin), json={"role": "user"})
+        assert res.status_code == 400
+
+
 # ── Forgot / Reset Password ──
 
 

@@ -1637,6 +1637,42 @@ def admin_set_role(user_id):
     return jsonify({"message": "Role updated", "user": target.to_dict()})
 
 
+@app.route("/api/admin/pending-users", methods=["GET"])
+@token_required
+@role_required("admin")
+def admin_pending_users():
+    """Onboarding queue: self-registered accounts (role 'user') awaiting
+    approval. Approving one elevates it to an operational role."""
+    pending = User.query.filter_by(role="user").order_by(User.created_at.asc()).all()
+    return jsonify({"pending": [u.to_dict() for u in pending], "total": len(pending)})
+
+
+@app.route("/api/admin/users/<user_id>/approve", methods=["POST"])
+@token_required
+@role_required("admin")
+def admin_approve_user(user_id):
+    """Approve a pending registration, granting an operational role.
+
+    Approval target defaults to 'staff'; an admin may grant 'admin'. Approving
+    is idempotent-safe: a user already at staff/admin is reported as such.
+    """
+    data = request.get_json() or {}
+    grant_role = data.get("role", "staff")
+    if grant_role not in ("staff", "admin"):
+        return jsonify({"error": "Approval role must be 'staff' or 'admin'"}), 400
+
+    target = db.session.get(User, user_id)
+    if not target:
+        return jsonify({"error": "User not found"}), 404
+    if target.role != "user":
+        return jsonify({"error": f"User already approved (role: {target.role})"}), 400
+
+    target.role = grant_role
+    db.session.add(_audit(request.current_user["userId"], "user_approved", f"{target.username}: user -> {grant_role}"))
+    db.session.commit()
+    return jsonify({"message": f"User approved as {grant_role}", "user": target.to_dict()})
+
+
 @app.route("/api/admin/users/<user_id>", methods=["DELETE"])
 @token_required
 @role_required("admin")
@@ -1819,6 +1855,38 @@ def ensure_database():
             print("Database ready (schema ensured).")
         except Exception as exc:  # pragma: no cover
             print(f"WARNING: could not initialise database: {exc}")
+
+
+@app.cli.command("create-admin")
+def create_admin_command():
+    """Seed/promote an admin account OUT-OF-BAND (never via the public route).
+
+    Public /auth/register can only create unprivileged 'user' accounts; the
+    first admin must be created here. Credentials come from the environment so
+    they are never hard-coded:
+        CAREATTEND_ADMIN_USER, CAREATTEND_ADMIN_EMAIL, CAREATTEND_ADMIN_PASSWORD
+    Run: `flask --app app create-admin`. Idempotent — promotes if user exists.
+    """
+    username = os.environ.get("CAREATTEND_ADMIN_USER")
+    email = os.environ.get("CAREATTEND_ADMIN_EMAIL")
+    password = os.environ.get("CAREATTEND_ADMIN_PASSWORD")
+    if not (username and email and password):
+        print("Set CAREATTEND_ADMIN_USER, CAREATTEND_ADMIN_EMAIL and CAREATTEND_ADMIN_PASSWORD first.")
+        return
+
+    db.create_all()
+    existing = User.query.filter((User.username == username) | (User.email == email)).first()
+    if existing:
+        existing.role = "admin"
+        db.session.commit()
+        print(f"Promoted existing account '{existing.username}' to admin.")
+        return
+
+    user_id, error = register_user(username, email, password, "admin")
+    if error:
+        print(f"Could not create admin: {error}")
+        return
+    print(f"Admin account '{username}' created ({user_id}).")
 
 
 if __name__ == "__main__":

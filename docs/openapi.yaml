@@ -477,6 +477,38 @@ paths:
         "200": { description: OK }
         "403": { description: Admin access required }
 
+  /api/admin/pending-users:
+    get:
+      tags: [Admin]
+      summary: List self-registered accounts awaiting approval (admin only)
+      description: "Onboarding queue. Returns accounts still at role 'user' (no operational privileges) for an admin to review and approve."
+      responses:
+        "200": { description: List of pending accounts }
+        "403": { description: Admin access required }
+
+  /api/admin/users/{user_id}/approve:
+    post:
+      tags: [Admin]
+      summary: Approve a pending registration, granting an operational role (admin only)
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role: { type: string, enum: [staff, admin], default: staff }
+      responses:
+        "200": { description: User approved }
+        "400": { description: Already approved or invalid approval role }
+        "403": { description: Admin access required }
+        "404": { description: User not found }
+
 components:
   securitySchemes:
     bearerAuth:

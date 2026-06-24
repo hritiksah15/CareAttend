@@ -42,6 +42,10 @@ class User(db.Model):
             "username": self.username,
             "email": self.email,
             "role": self.role,
+            # Self-registered accounts start as role "user" with no operational
+            # privileges; an admin approval elevates them to "staff". "approved"
+            # is therefore derived from role (no separate column to desync).
+            "approved": self.role != "user",
             "displayName": self.display_name,
             "avatar": self.avatar,
             "jobTitle": self.job_title,
