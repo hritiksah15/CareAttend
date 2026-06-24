@@ -6,7 +6,41 @@ to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.2.0] — 2026-06-24
+
 ### Added
+- Fairness governance gate: per-attribute demographic-parity / equalised-odds
+  aggregated into a PASS / ACTION_REQUIRED verdict (0.10 tolerance) with
+  human-oversight actions; breaches audited (deduplicated per 24h).
+- Staff approval flow: self-registered accounts start as `user` (no privileges);
+  admin approves to `staff`/`admin` (`/api/admin/pending-users`, `/approve`).
+  `flask create-admin` CLI seeds an admin out-of-band.
+- Appointment worklist: import (1–100, EHR auto-fill, risk-scored), per-user
+  clinic day list, status transitions, operational-outcomes analytics
+  (anonymised attended/DNA rates by tier, actioned-vs-unactioned cohorts).
+- Notification delivery lifecycle: simulated provider, dispatch endpoint with
+  pending → sent / failed states (retryable, owner-scoped, audited).
+- Outreach action tracking (`/api/actions` POST/GET/PATCH) with completion loop.
+- Probability calibration (isotonic/sigmoid) + calibrated operating threshold;
+  deployed calibrated model restores recall 0.735 / F1 0.721.
+- DB persistence for assessments, notifications, appointments, feedback,
+  outreach, carer proxies, audit logs (predictive feature vector stays
+  session-scoped — NFR-01 honoured for patient data).
+- Practice-wide dashboard + feedback summary; cross-validation evaluation
+  endpoint; model comparison; mock EHR lookup; multi-trust config.
+- Flutter app feature parity: dashboard, bias, batch, clinic, slots, nudge,
+  ethics, profile, admin screens; dark mode; guided tour; chatbot.
+
+### Changed
+- SHAP attribution trimmed to top-3 (matches FR-03 acceptance criterion).
+- `model_used` now reports the real algorithm (Logistic Regression, calibrated)
+  instead of a hard-coded "Random Forest".
+
+### Documentation
+- AT2 conformance audit, NFR-01 persistence justification, traceability matrix,
+  model card, OpenAPI spec, architecture (C4 + ERD), a11y + perf reports.
+
+### Added (governance / tooling, prior)
 - Repository governance: `LICENSE` (MIT + clinical disclaimer), `CONTRIBUTING.md`,
   `CODE_OF_CONDUCT.md`, `SECURITY.md`, issue/PR templates, `CHANGELOG.md`.
 - Tooling: pre-commit (ruff + detect-secrets + hygiene), `.secrets.baseline`,
