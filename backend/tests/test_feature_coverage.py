@@ -22,7 +22,7 @@ pytestmark = pytest.mark.skipif(
 )
 
 from app import app as flask_app, load_models  # noqa: E402
-from models import db, User, AssessmentSummary  # noqa: E402
+from models import db, User, AssessmentSummary, AuditLog  # noqa: E402
 
 
 @pytest.fixture(scope="module")
@@ -373,6 +373,16 @@ class TestRBAC:
     def test_admin_allowed_bias(self, client):
         token = login(client, username="a1", role="admin")
         assert client.get("/api/bias-audit", headers=auth(token)).status_code == 200
+
+    def test_bias_audit_breach_log_is_deduped(self, client, app):
+        # Repeated GETs must not flood the audit trail: a given breach signature
+        # is logged at most once per 24h (robust whether the model passes or
+        # breaches — count is 0 or 1, never per-view).
+        token = login(client, username="a2", role="admin")
+        for _ in range(3):
+            client.get("/api/bias-audit", headers=auth(token))
+        with app.app_context():
+            assert AuditLog.query.filter_by(action="bias_governance_breach").count() <= 1
 
 
 # ── Admin User Management ──

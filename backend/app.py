@@ -398,14 +398,18 @@ def bias_audit():
     results = bias_monitor.run_audit()
     governance = results.get("governance", {})
     if governance.get("verdict") == "ACTION_REQUIRED":
-        db.session.add(
-            _audit(
-                request.current_user["userId"],
-                "bias_governance_breach",
-                f"{governance.get('breach_count', 0)} fairness breach(es) flagged for review",
-            )
-        )
-        db.session.commit()
+        detail = f"{governance.get('breach_count', 0)} fairness breach(es) flagged for review"
+        # Dedup: this is a GET, so log the breach at most once per 24h per
+        # distinct breach signature — otherwise repeated dashboard views would
+        # flood the audit trail with identical rows.
+        already_logged = AuditLog.query.filter(
+            AuditLog.action == "bias_governance_breach",
+            AuditLog.detail == detail,
+            AuditLog.created_at >= time.time() - 86400,
+        ).first()
+        if not already_logged:
+            db.session.add(_audit(request.current_user["userId"], "bias_governance_breach", detail))
+            db.session.commit()
     return jsonify(results)
 
 
