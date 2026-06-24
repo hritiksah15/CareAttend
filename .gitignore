@@ -12,3 +12,6 @@ data/
 .DS_Store
 Archive.zip
 submission 2/
+
+# Local agent config (Claude Code)
+.claude/
