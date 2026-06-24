@@ -1064,7 +1064,42 @@ function generateBiasSummary(data) {
     } else {
         text.textContent = `Model shows acceptable fairness across most groups. The following exceed the 0.10 threshold: ${failures.join(', ')}. This may reflect genuine clinical risk rather than algorithmic bias.`;
     }
+    renderGovernanceVerdict(data.governance);
     card.style.display = 'block';
+}
+
+function renderGovernanceVerdict(governance) {
+    const card = document.getElementById('bias-summary-card');
+    let banner = document.getElementById('governance-verdict');
+    if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'governance-verdict';
+        banner.style.marginTop = '16px';
+        card.appendChild(banner);
+    }
+    if (!governance) { banner.innerHTML = ''; return; }
+
+    const pass = governance.verdict === 'PASS';
+    const cls = pass ? 'pass' : 'fail';
+    const label = pass ? 'PASS' : 'ACTION REQUIRED';
+    let html = `
+        <div class="audit-metric ${cls}">
+            <span class="status-badge ${cls}">${label}</span>
+            Fairness governance gate — ${governance.breach_count} breach(es) at ${(governance.tolerance * 100).toFixed(0)}% tolerance
+        </div>`;
+    if (governance.breaches && governance.breaches.length) {
+        html += '<ul style="margin:8px 0 0 18px;font-size:13px;">';
+        for (const b of governance.breaches) {
+            html += `<li>${escapeHtml(b.attribute)} — ${escapeHtml(b.metric.replace('_', ' '))}: ${b.value} (over by ${b.excess})</li>`;
+        }
+        html += '</ul>';
+    }
+    if (governance.recommended_actions && governance.recommended_actions.length) {
+        html += '<div style="margin-top:8px;font-size:13px;"><strong>Recommended actions</strong><ul style="margin:4px 0 0 18px;">';
+        for (const a of governance.recommended_actions) html += `<li>${escapeHtml(a)}</li>`;
+        html += '</ul></div>';
+    }
+    banner.innerHTML = html;
 }
 
 // ── Dark Mode ──

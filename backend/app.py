@@ -395,6 +395,16 @@ def batch_predict():
 @role_required("admin")
 def bias_audit():
     results = bias_monitor.run_audit()
+    governance = results.get("governance", {})
+    if governance.get("verdict") == "ACTION_REQUIRED":
+        db.session.add(
+            _audit(
+                request.current_user["userId"],
+                "bias_governance_breach",
+                f"{governance.get('breach_count', 0)} fairness breach(es) flagged for review",
+            )
+        )
+        db.session.commit()
     return jsonify(results)
 
 

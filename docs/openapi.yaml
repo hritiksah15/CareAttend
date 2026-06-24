@@ -133,8 +133,40 @@ paths:
     get:
       tags: [Fairness]
       summary: Demographic parity + equalised odds audit (FR-07)
+      description: >
+        Audits by age/gender/IMD and returns a `governance` block: an aggregate
+        fairness verdict (PASS | ACTION_REQUIRED) at the 0.10 tolerance, the list
+        of breaching attribute/metric pairs, and recommended human-oversight
+        actions. Monitoring only — no protected-attribute thresholds applied.
       responses:
-        "200": { description: Audit by age/gender/IMD }
+        "200":
+          description: Audit by age/gender/IMD plus governance verdict
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  model_source: { type: string, enum: [base, calibrated] }
+                  threshold: { type: number }
+                  governance:
+                    type: object
+                    properties:
+                      verdict: { type: string, enum: [PASS, ACTION_REQUIRED] }
+                      tolerance: { type: number }
+                      breach_count: { type: integer }
+                      breaches:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            attribute: { type: string }
+                            metric: { type: string, enum: [demographic_parity, equalised_odds] }
+                            value: { type: number }
+                            tolerance: { type: number }
+                            excess: { type: number }
+                      recommended_actions:
+                        type: array
+                        items: { type: string }
         "401": { $ref: "#/components/responses/Unauthorized" }
 
   /api/model-info:
