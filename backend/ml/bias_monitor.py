@@ -5,6 +5,15 @@ import os
 from ml.data_generator import FEATURE_NAMES, derive_age_group
 
 
+# Maximum tolerated disparity between demographic groups before the audit
+# raises a governance breach. 0.10 follows the fairness band used in the
+# project's reporting (Caton & Haas, 2024). A breach is a *flag for human
+# review*, not an automated model change: deciding care by a protected
+# attribute (e.g. a per-group threshold) could be direct discrimination under
+# the Equality Act 2010, so mitigation here is governance, not group cutoffs.
+FAIRNESS_TOLERANCE = 0.10
+
+
 class BiasMonitor:
     def __init__(self, model_dir="models"):
         calibrated_model_path = os.path.join(model_dir, "model_calibrated.joblib")
@@ -52,7 +61,70 @@ class BiasMonitor:
             "model_source": self.model_source,
             "threshold": round(self.threshold, 4),
         }
+        results["governance"] = self._governance_summary(results)
         return results
+
+    def _governance_summary(self, results):
+        """Aggregate per-attribute fairness checks into one governance verdict.
+
+        Monitoring only — flags breaches for human oversight. Does NOT alter the
+        model or apply protected-attribute thresholds (Equality Act risk).
+        """
+        attributes = {
+            "age_group": "Age group",
+            "gender": "Gender",
+            "imd_band": "Deprivation (IMD)",
+        }
+        breaches = []
+        for key, label in attributes.items():
+            block = results.get(key, {})
+            dp = block.get("demographic_parity_diff")
+            eo = block.get("equalised_odds_diff")
+            if dp is not None and dp > FAIRNESS_TOLERANCE:
+                breaches.append(
+                    {
+                        "attribute": label,
+                        "metric": "demographic_parity",
+                        "value": round(dp, 4),
+                        "tolerance": FAIRNESS_TOLERANCE,
+                        "excess": round(dp - FAIRNESS_TOLERANCE, 4),
+                    }
+                )
+            if eo is not None and eo > FAIRNESS_TOLERANCE:
+                breaches.append(
+                    {
+                        "attribute": label,
+                        "metric": "equalised_odds",
+                        "value": round(eo, 4),
+                        "tolerance": FAIRNESS_TOLERANCE,
+                        "excess": round(eo - FAIRNESS_TOLERANCE, 4),
+                    }
+                )
+
+        verdict = "PASS" if not breaches else "ACTION_REQUIRED"
+        if breaches:
+            flagged = sorted({b["attribute"] for b in breaches})
+            recommended_actions = [
+                f"Manually review intervention allocation for: {', '.join(flagged)}.",
+                "Apply human oversight before acting on model scores for the flagged group(s).",
+                "Record the breach and rationale in the governance log; consider model retraining "
+                "with reweighing if the disparity persists across audits.",
+                "Do NOT set a per-group decision threshold on a protected attribute "
+                "(potential direct discrimination under the Equality Act 2010).",
+            ]
+        else:
+            recommended_actions = [
+                f"All demographic disparities within the {FAIRNESS_TOLERANCE:.0%} tolerance. "
+                "Continue routine monitoring."
+            ]
+
+        return {
+            "verdict": verdict,
+            "tolerance": FAIRNESS_TOLERANCE,
+            "breach_count": len(breaches),
+            "breaches": breaches,
+            "recommended_actions": recommended_actions,
+        }
 
     def _audit_group(self, column, y_true, y_pred, label_map=None):
         groups = self.test_data[column].unique()

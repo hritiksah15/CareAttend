@@ -42,6 +42,10 @@ class User(db.Model):
             "username": self.username,
             "email": self.email,
             "role": self.role,
+            # Self-registered accounts start as role "user" with no operational
+            # privileges; an admin approval elevates them to "staff". "approved"
+            # is therefore derived from role (no separate column to desync).
+            "approved": self.role != "user",
             "displayName": self.display_name,
             "avatar": self.avatar,
             "jobTitle": self.job_title,
@@ -150,6 +154,15 @@ class ScheduledNotification(db.Model):
     status = db.Column(db.String(20), nullable=False, default="scheduled")
     created_by = db.Column(db.String(80), nullable=False)
     created_at = db.Column(db.Float, nullable=False, default=time.time)
+    # Delivery lifecycle (simulated provider — no real SMS gateway integrated).
+    # delivery_status: pending -> sent | failed (retryable). Tracks the dispatch
+    # attempt so the loop from scheduled to delivered is auditable.
+    delivery_status = db.Column(db.String(20), nullable=False, default="pending")
+    delivery_channel = db.Column(db.String(20), nullable=True)
+    delivery_attempts = db.Column(db.Integer, nullable=False, default=0)
+    last_attempt_at = db.Column(db.Float, nullable=True)
+    provider_ref = db.Column(db.String(64), nullable=True)
+    failure_reason = db.Column(db.String(200), nullable=True)
 
     user = db.relationship("User", backref=db.backref("notifications", lazy=True))
 
@@ -163,6 +176,12 @@ class ScheduledNotification(db.Model):
             "status": self.status,
             "created_by": self.created_by,
             "created_at": self.created_at,
+            "delivery_status": self.delivery_status,
+            "delivery_channel": self.delivery_channel,
+            "delivery_attempts": self.delivery_attempts,
+            "last_attempt_at": self.last_attempt_at,
+            "provider_ref": self.provider_ref,
+            "failure_reason": self.failure_reason,
         }
 
 

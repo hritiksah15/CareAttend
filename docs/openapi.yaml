@@ -133,8 +133,40 @@ paths:
     get:
       tags: [Fairness]
       summary: Demographic parity + equalised odds audit (FR-07)
+      description: >
+        Audits by age/gender/IMD and returns a `governance` block: an aggregate
+        fairness verdict (PASS | ACTION_REQUIRED) at the 0.10 tolerance, the list
+        of breaching attribute/metric pairs, and recommended human-oversight
+        actions. Monitoring only — no protected-attribute thresholds applied.
       responses:
-        "200": { description: Audit by age/gender/IMD }
+        "200":
+          description: Audit by age/gender/IMD plus governance verdict
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  model_source: { type: string, enum: [base, calibrated] }
+                  threshold: { type: number }
+                  governance:
+                    type: object
+                    properties:
+                      verdict: { type: string, enum: [PASS, ACTION_REQUIRED] }
+                      tolerance: { type: number }
+                      breach_count: { type: integer }
+                      breaches:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            attribute: { type: string }
+                            metric: { type: string, enum: [demographic_parity, equalised_odds] }
+                            value: { type: number }
+                            tolerance: { type: number }
+                            excess: { type: number }
+                      recommended_actions:
+                        type: array
+                        items: { type: string }
         "401": { $ref: "#/components/responses/Unauthorized" }
 
   /api/model-info:
@@ -275,6 +307,34 @@ paths:
         "400": { $ref: "#/components/responses/BadRequest" }
   /api/notifications:
     get: { tags: [Outreach], summary: List scheduled notifications, responses: { "200": { description: OK } } }
+  /api/notifications/{notification_id}/dispatch:
+    post:
+      tags: [Outreach]
+      summary: Dispatch a reminder via the simulated delivery provider
+      description: >
+        Transitions delivery_status pending|failed -> sent|failed and records
+        the attempt (channel, attempts, provider_ref, failure_reason). No real
+        message is sent — delivery is simulated (no SMS/email gateway). A failed
+        attempt is retryable. `simulate_failure` forces the gateway error path.
+      parameters:
+        - name: notification_id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                channel: { type: string, enum: [sms, email], default: sms }
+                simulate_failure: { type: boolean, default: false }
+      responses:
+        "200": { description: Delivered (simulated) }
+        "400": { description: Invalid channel or already delivered }
+        "404": { description: Notification not found }
+        "502": { description: Delivery failed (retryable) }
   /api/actions:
     post:
       tags: [Outreach]
@@ -444,6 +504,38 @@ paths:
       responses:
         "200": { description: OK }
         "403": { description: Admin access required }
+
+  /api/admin/pending-users:
+    get:
+      tags: [Admin]
+      summary: List self-registered accounts awaiting approval (admin only)
+      description: "Onboarding queue. Returns accounts still at role 'user' (no operational privileges) for an admin to review and approve."
+      responses:
+        "200": { description: List of pending accounts }
+        "403": { description: Admin access required }
+
+  /api/admin/users/{user_id}/approve:
+    post:
+      tags: [Admin]
+      summary: Approve a pending registration, granting an operational role (admin only)
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role: { type: string, enum: [staff, admin], default: staff }
+      responses:
+        "200": { description: User approved }
+        "400": { description: Already approved or invalid approval role }
+        "403": { description: Admin access required }
+        "404": { description: User not found }
 
 components:
   securitySchemes:
