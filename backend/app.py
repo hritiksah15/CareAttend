@@ -1943,11 +1943,14 @@ def create_admin_command():
         print(f"Promoted existing account '{existing.username}' to admin.")
         return
 
-    user_id, error = register_user(username, email, password, "admin")
+    _, error = register_user(username, email, password, "admin")
     if error:
-        print(f"Could not create admin: {error}")
+        # Note: 'error' is a static validation message (e.g. the password rule),
+        # never the credential itself — but keep it out of the printed line so
+        # no value derived from the password call reaches stdout.
+        print("Could not create admin — check the username/email/password meet the rules.")
         return
-    print(f"Admin account '{username}' created ({user_id}).")
+    print(f"Admin account '{username}' created.")
 
 
 if __name__ == "__main__":
