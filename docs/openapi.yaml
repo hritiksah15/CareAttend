@@ -92,6 +92,55 @@ paths:
                     properties: { requires_2fa: { type: boolean }, message: { type: string } }
         "401": { $ref: "#/components/responses/Unauthorized" }
 
+  /auth/forgot-password:
+    post:
+      tags: [Auth]
+      summary: Request a password-reset code
+      description: "Generates a 6-digit OTP and emails it to the address if registered. Always returns the same message regardless of whether the account exists (no account enumeration). When SMTP is not configured the code is returned in `dev_code` for testing only."
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        "200":
+          description: Reset code sent (or would have been, if registered)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  dev_code: { type: string, description: "Only present when SMTP_HOST is unset (testing)" }
+                  note: { type: string }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /auth/reset-password:
+    post:
+      tags: [Auth]
+      summary: Reset password using an OTP code
+      description: "Verifies the 6-digit code from /auth/forgot-password and sets a new password. Codes expire after 10 minutes."
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, code, newPassword]
+              properties:
+                email: { type: string, format: email }
+                code: { type: string, description: "6-digit OTP" }
+                newPassword: { type: string, minLength: 8 }
+      responses:
+        "200": { description: Password reset successful }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
   /auth/logout:
     post:
       tags: [Auth]
