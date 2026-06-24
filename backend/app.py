@@ -319,7 +319,7 @@ def predict():
             "shap_values": result["shap_values"],
             "interventions": interventions,
             "age_group": age_group,
-            "model_used": result.get("model_used", "Random Forest"),
+            "model_used": result.get("model_used", "Logistic Regression"),
             "patient_summary": patient,
             "nl_summary": nl_summary,
         }

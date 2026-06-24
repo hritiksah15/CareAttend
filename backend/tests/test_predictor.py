@@ -93,7 +93,7 @@ class TestPredictor:
         }
         result = predictor.predict(patient)
         shap = result["shap_values"]
-        assert len(shap) >= 3
+        assert len(shap) == 3  # FR-03 / US-004: exactly top-3 factors
         for sv in shap:
             assert "feature" in sv
             assert "label" in sv

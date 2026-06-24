@@ -167,12 +167,12 @@ class ResultScreen extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                         color: NHSTheme.blue)),
                 const SizedBox(height: 16),
-                ...shapValues.take(5).map((sv) {
+                ...shapValues.take(3).map((sv) {
                   final value = (sv['value'] as num).toDouble();
                   final isRisk = value > 0;
                   final absVal = value.abs();
                   final maxVal = shapValues
-                      .take(5)
+                      .take(3)
                       .map((s) => (s['value'] as num).toDouble().abs())
                       .reduce(max);
                   final barWidth = maxVal > 0 ? absVal / maxVal : 0.0;
