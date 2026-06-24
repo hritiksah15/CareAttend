@@ -30,7 +30,7 @@
 | **NFR-01** | Privacy: no raw patient input persisted; only anonymised assessment summaries for operations | Must | GDPR Art 5(1)(c) | `assessment_summaries` stores ID/probability/tier/age-group/feedback only; no patient table in `models.py` | `test_feature_coverage.py::TestDashboard::test_prediction_persists_anonymised_summary` | ✅ |
 | **NFR-04** | Model quality: F1 ≥ 0.72, Recall ≥ 0.70 | Must | Eval methodology | `ml/pipeline.py` (threshold opt); `training_results.json` | `test_predictor.py` (NFR-04) | ✅ |
 | **NFR-06** | Security: bcrypt hashing, 30-min session timeout, 2FA, RBAC | Must | OWASP / NHS DSPT | `auth.py:29` `SESSION_TIMEOUT=1800`; bcrypt; TOTP | `test_auth.py`; `test_new_endpoints::TestTwoFactor` | ✅ |
-| **NFR-02** | *(confirm — e.g. performance/latency)* | — | — | — | benchmark TODO | ⚠️ confirm |
+| **NFR-02** | Performance: interactive endpoints respond within budget (`/predict` p95 ≤ 500 ms, `/bias-audit` p95 ≤ 1000 ms) | Must | Latency benchmark | `backend/benchmark_latency.py` | `docs/perf_benchmark.md` — measured p95 1.35 ms (`/predict`) and 4.48 ms (`/bias-audit`), both well under target | ✅ |
 | **NFR-03** | *(confirm — e.g. usability / WCAG AA)* | — | WCAG 2.2 | dark mode, contrast | SUS test (A5) TODO | ⚠️ confirm |
 | **NFR-05** | *(confirm — e.g. portability / Docker)* | — | OCI / 12-factor | `Dockerfile`; GHCR image published by CI; SQLite/Postgres via `DATABASE_URL` | CI Docker build + `/health` gate green on every master push | ⚠️ confirm wording (evidence present) |
 
@@ -65,6 +65,7 @@
 - **Sprint-3 advanced endpoints:** automated-tested ✅
 - **Features 10/12/13/14/15/19 + US-002:** now automated-tested ✅
 - **Fairness governance, staff approval, notification delivery:** automated-tested ✅ (added June 2026)
-- **Remaining (⚠️):** US-011 PDF export = frontend, needs UAT evidence. NFR-02 (performance) needs a documented latency benchmark — no formal numbers captured yet (the `/health` endpoint reports uptime but is not a load benchmark). NFR-03 (usability/WCAG) needs a SUS study (A5) — WCAG 2.2 design measures (contrast, dark mode, keyboard) are in place but unaudited. NFR-05 (portability) evidence is present (Docker + CI/GHCR); only the report wording needs confirming.
+- **NFR-02 (performance):** latency benchmark captured ✅ — `docs/perf_benchmark.md` + repeatable `backend/benchmark_latency.py` (June 2026).
+- **Remaining (⚠️):** US-011 PDF export = frontend, needs UAT evidence. NFR-03 (usability/WCAG) needs a SUS study (A5) — WCAG 2.2 design measures (contrast, dark mode, keyboard) are in place but unaudited. NFR-05 (portability) evidence is present (Docker + CI/GHCR); only the report wording needs confirming.
 
 **Distinction tip:** in the report prose, state *"every Must requirement is traced to an automated test; Should/Could items to UAT"* and cite this table. That sentence + table is what moves the 40% bucket from 70 to 85.
