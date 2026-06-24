@@ -1,0 +1,14 @@
+{
+  "name": "careattend-a11y",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WCAG 2.2 automated accessibility scan (NFR-03) for the CareAttend web client",
+  "type": "module",
+  "scripts": {
+    "scan": "node axe_scan.mjs"
+  },
+  "dependencies": {
+    "@axe-core/playwright": "^4.10.0",
+    "playwright": "^1.49.0"
+  }
+}

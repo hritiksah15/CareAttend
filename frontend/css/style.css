@@ -468,7 +468,7 @@ body > * {
     box-shadow: 0 0 0 3px rgba(0,48,135,0.15);
 }
 .form-group input.invalid { border-color: var(--risk-high); }
-.field-hint { font-size: 12px; color: var(--nhs-grey); margin-top: 4px; }
+.field-hint { font-size: 12px; color: #5a6b78; margin-top: 4px; }
 .error-msg { font-size: 12px; color: var(--risk-high); min-height: 16px; margin-top: 2px; }
 
 /* Age group auto-display */
@@ -1111,7 +1111,7 @@ body.dark-mode .validation-status.valid { background: #1e3a1e; color: #6fcf6f; }
 body.dark-mode .validation-status.invalid { background: #3a1e1e; color: #ff7777; }
 
 /* Dark mode - Buttons */
-body.dark-mode .btn-primary { background: #4a7bc7; }
+body.dark-mode .btn-primary { background: #3a6cbf; }
 body.dark-mode .btn-primary:hover { background: #5a8fd4; }
 body.dark-mode .btn-outline { background: #2d2d3f; color: #7eb8f7; border-color: #5a8fd4; }
 body.dark-mode .btn-outline:hover { background: #5a8fd4; color: #fff; }
@@ -2037,11 +2037,12 @@ body.dark-mode .toast-error { background: #3a1a1a; }
 
 .session-timer {
     font-size: 12px;
-    color: #AEB7BD;
+    color: #e8eef5;
     padding: 4px 8px;
 }
 
 /* ── Dark Mode overrides for new features ── */
+body.dark-mode .field-hint { color: #9aa6b0; }
 body.dark-mode .proxy-panel { background: #1a1a2e; border-color: #333; }
 body.dark-mode .slot-textarea { background: #1a1a2e; color: #e0e0e0; border-color: #333; }
 body.dark-mode .nudge-message-box { background: #1a1a2e; }
