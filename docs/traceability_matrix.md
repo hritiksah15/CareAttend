@@ -4,7 +4,7 @@
 
 **How it was built:** Requirement IDs harvested directly from `@requirement` tags in the source (`grep -rEn "FR-|NFR-|US-" backend/`). Implementation and test columns are verified file references, not claims. **Action for you:** replace each *Requirement (description)* cell with the exact wording from your AT2 report so the matrix is word-identical to your requirements section.
 
-**Test status:** 209 pytest tests, all passing (June 2026).
+**Test status:** 226 pytest tests, all passing (June 2026).
 
 ---
 
@@ -19,6 +19,7 @@
 | **FR-05** | Generate contextual intervention recommendations | Must | Activity diagram | `ml/interventions.py` | `test_interventions.py` | ✅ |
 | **FR-06** | Priority-order & cap interventions (max 5, dedup) | Should | Activity diagram | `ml/interventions.py` | `test_interventions.py` (priority, dedup, max-5) | ✅ |
 | **FR-07** | Bias audit (demographic parity + equalised odds) | Must | Component diagram (fairness) | `ml/bias_monitor.py` using calibrated model + saved threshold; `app.py:/api/bias-audit` | `test_bias_monitor.py`; `test_api::TestBiasEndpoint` | ✅ |
+| **FR-07a** | Fairness **governance gate**: aggregate PASS/ACTION_REQUIRED verdict at 0.10 tolerance + human-oversight actions (monitoring only — no protected-attribute thresholds) | Should | Component diagram (governance) | `ml/bias_monitor.py::_governance_summary`; `app.py:/api/bias-audit` (audits breaches) | `test_bias_monitor.py::TestGovernanceGate` (5 tests) | ✅ |
 | **FR-08** | Batch CSV upload (≤100 records) → results CSV | Should | Sequence diagram (batch) | `app.py:188` `/api/batch` | `test_api.py` (batch path) | ✅ |
 | **FR-09** | *(if defined in report — e.g. PDF/print export)* | Could | — | frontend (jsPDF) | manual / UAT | ⚠️ confirm |
 
@@ -31,7 +32,7 @@
 | **NFR-06** | Security: bcrypt hashing, 30-min session timeout, 2FA, RBAC | Must | OWASP / NHS DSPT | `auth.py:29` `SESSION_TIMEOUT=1800`; bcrypt; TOTP | `test_auth.py`; `test_new_endpoints::TestTwoFactor` | ✅ |
 | **NFR-02** | *(confirm — e.g. performance/latency)* | — | — | — | benchmark TODO | ⚠️ confirm |
 | **NFR-03** | *(confirm — e.g. usability / WCAG AA)* | — | WCAG 2.2 | dark mode, contrast | SUS test (A5) TODO | ⚠️ confirm |
-| **NFR-05** | *(confirm — e.g. portability / Docker)* | — | — | `Dockerfile` | manual | ⚠️ confirm |
+| **NFR-05** | *(confirm — e.g. portability / Docker)* | — | OCI / 12-factor | `Dockerfile`; GHCR image published by CI; SQLite/Postgres via `DATABASE_URL` | CI Docker build + `/health` gate green on every master push | ⚠️ confirm wording (evidence present) |
 
 ## User Stories & Features (selected, code-tagged)
 
@@ -53,6 +54,8 @@
 | **(new)** | Appointment clinic-list workflow | `/api/appointments`; `/api/clinic-list`; `models.py::AppointmentRecord` | `test_new_endpoints::TestAppointmentWorklist` | ✅ |
 | **(new)** | Operational outreach action tracking | `/api/actions`; `models.py::OutreachAction` | `test_new_endpoints::TestOutreachActions` | ✅ |
 | **(new)** | Operational outcomes dashboard | `/api/operational-outcomes`; `frontend/js/app.js` dashboard render | `test_new_endpoints::TestAppointmentWorklist::test_operational_outcomes_aggregates_actioned_vs_unactioned` | ✅ |
+| **(new)** | Staff onboarding **approval flow** (pending queue → approve → role elevation; out-of-band admin seed) | `app.py:/api/admin/pending-users`, `/api/admin/users/<id>/approve`; `flask create-admin` CLI | `test_new_endpoints::TestUserApproval` (6 tests) | ✅ |
+| **(new)** | Notification **delivery lifecycle** (simulated provider: scheduled→sent/failed, retry, audit) | `notification_provider.py`; `app.py:/api/notifications/<id>/dispatch`; `models.py::ScheduledNotification` delivery fields | `test_new_endpoints::TestNotificationDispatch` (5 tests) | ✅ |
 
 ---
 
@@ -61,6 +64,7 @@
 - **Core FR/NFR (FR-01→08, NFR-01/04/06):** designed, implemented, **automated-tested** ✅
 - **Sprint-3 advanced endpoints:** automated-tested ✅
 - **Features 10/12/13/14/15/19 + US-002:** now automated-tested ✅
-- **Remaining (⚠️):** US-011 PDF export = frontend, needs UAT evidence. NFR-02/03/05 wording to confirm against report. NFR-03 (usability/WCAG) needs SUS test (A5).
+- **Fairness governance, staff approval, notification delivery:** automated-tested ✅ (added June 2026)
+- **Remaining (⚠️):** US-011 PDF export = frontend, needs UAT evidence. NFR-02 (performance) needs a documented latency benchmark — no formal numbers captured yet (the `/health` endpoint reports uptime but is not a load benchmark). NFR-03 (usability/WCAG) needs a SUS study (A5) — WCAG 2.2 design measures (contrast, dark mode, keyboard) are in place but unaudited. NFR-05 (portability) evidence is present (Docker + CI/GHCR); only the report wording needs confirming.
 
 **Distinction tip:** in the report prose, state *"every Must requirement is traced to an automated test; Should/Could items to UAT"* and cite this table. That sentence + table is what moves the 40% bucket from 70 to 85.
