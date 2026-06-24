@@ -19,6 +19,16 @@ class CareAttendPredictor:
             self.model = self.explanation_model
             self.model_source = "base"
 
+        # Human-readable name of the algorithm that actually scores. The base
+        # estimator drives both inference and SHAP; calibration only rescales its
+        # probabilities, so the algorithm name is taken from explanation_model.
+        algo = type(self.explanation_model).__name__
+        readable = {
+            "LogisticRegression": "Logistic Regression",
+            "RandomForestClassifier": "Random Forest",
+        }.get(algo, algo)
+        self.model_name = readable + (" (calibrated)" if self.model_source == "calibrated" else "")
+
         self.scaler = joblib.load(f"{model_dir}/scaler.joblib")
         self.background_data = np.load(f"{model_dir}/X_train_sample.npy")
         # The operating threshold must match the model that actually scores.
@@ -66,6 +76,7 @@ class CareAttendPredictor:
             "risk_tier": self._risk_tier(probability, self.threshold),
             "shap_values": shap_values,
             "model_source": self.model_source,
+            "model_used": self.model_name,
             "threshold": round(float(self.threshold), 4),
         }
 
@@ -98,8 +109,9 @@ class CareAttendPredictor:
         indexed = [(FEATURE_NAMES[i], float(values[i])) for i in range(len(FEATURE_NAMES))]
         indexed.sort(key=lambda x: abs(x[1]), reverse=True)
 
+        # Top-3 contributing factors only (FR-03 / US-004 acceptance criterion).
         result = []
-        for feat_name, val in indexed[:5]:
+        for feat_name, val in indexed[:3]:
             result.append(
                 {
                     "feature": feat_name,

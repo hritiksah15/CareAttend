@@ -891,7 +891,7 @@ function renderShapChart(shapValues) {
     const canvas = document.getElementById('shap-chart');
     if (shapChart) shapChart.destroy();
 
-    const top = shapValues.slice(0, 5);
+    const top = shapValues.slice(0, 3);  // top-3 only (FR-03 / US-004 AC)
     const labels = top.map(s => s.label);
     const values = top.map(s => s.value);
     const bgColors = values.map(v => v > 0 ? 'rgba(218,41,28,0.75)' : 'rgba(0,127,59,0.75)');
