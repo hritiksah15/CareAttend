@@ -438,6 +438,60 @@ class TestAuditLog:
         assert any(log["action"] == "carer_proxy_created" for log in logs)
 
 
+class TestUserApproval:
+    def test_pending_requires_admin(self, client):
+        staff = login(client, username="clerk", role="staff")
+        assert client.get("/api/admin/pending-users", headers=auth(staff)).status_code == 403
+
+    def test_pending_lists_only_unapproved(self, client):
+        _register(client, username="newbie", role="user")  # stays role 'user'
+        admin = login(client, username="boss", role="admin")
+        res = client.get("/api/admin/pending-users", headers=auth(admin))
+        assert res.status_code == 200
+        usernames = [u["username"] for u in json.loads(res.data)["pending"]]
+        assert "newbie" in usernames
+        assert "boss" not in usernames  # admin not pending
+
+    def test_approve_elevates_to_staff(self, client, app):
+        _register(client, username="newbie", role="user")
+        admin = login(client, username="boss", role="admin")
+        with app.app_context():
+            uid = User.query.filter_by(username="newbie").first().id
+        res = client.post(f"/api/admin/users/{uid}/approve", headers=auth(admin), json={})
+        assert res.status_code == 200
+        body = json.loads(res.data)
+        assert body["user"]["role"] == "staff"
+        assert body["user"]["approved"] is True
+        # No longer in the pending queue.
+        pending = client.get("/api/admin/pending-users", headers=auth(admin))
+        assert "newbie" not in [u["username"] for u in json.loads(pending.data)["pending"]]
+
+    def test_approve_writes_audit_entry(self, client, app):
+        _register(client, username="newbie", role="user")
+        admin = login(client, username="boss", role="admin")
+        with app.app_context():
+            uid = User.query.filter_by(username="newbie").first().id
+        client.post(f"/api/admin/users/{uid}/approve", headers=auth(admin), json={})
+        logs = json.loads(client.get("/api/audit-log", headers=auth(admin)).data)["logs"]
+        assert any(log["action"] == "user_approved" for log in logs)
+
+    def test_approve_rejects_already_approved(self, client, app):
+        login(client, username="clerk", role="staff")  # already staff
+        admin = login(client, username="boss", role="admin")
+        with app.app_context():
+            uid = User.query.filter_by(username="clerk").first().id
+        res = client.post(f"/api/admin/users/{uid}/approve", headers=auth(admin), json={})
+        assert res.status_code == 400
+
+    def test_approve_rejects_bad_role(self, client, app):
+        _register(client, username="newbie", role="user")
+        admin = login(client, username="boss", role="admin")
+        with app.app_context():
+            uid = User.query.filter_by(username="newbie").first().id
+        res = client.post(f"/api/admin/users/{uid}/approve", headers=auth(admin), json={"role": "user"})
+        assert res.status_code == 400
+
+
 # ── Forgot / Reset Password ──
 
 
@@ -583,6 +637,73 @@ class TestNotifications:
         data = json.loads(res.data)
         assert data["total"] == 1
         assert data["notifications"][0]["patient_id"] == "NHS001"
+
+
+class TestNotificationDispatch:
+    def _schedule(self, client, token, patient_id="NHS001"):
+        res = client.post(
+            "/api/notifications/schedule",
+            headers=auth(token),
+            json={"patient_id": patient_id, "risk_tier": "High", "appointment_date": "2026-07-01"},
+        )
+        return json.loads(res.data)["notification"]["id"]
+
+    def test_dispatch_marks_sent(self, client, app):
+        token = login(client)
+        nid = self._schedule(client, token)
+        res = client.post(f"/api/notifications/{nid}/dispatch", headers=auth(token), json={"channel": "sms"})
+        assert res.status_code == 200
+        n = json.loads(res.data)["notification"]
+        assert n["delivery_status"] == "sent"
+        assert n["status"] == "sent"
+        assert n["delivery_attempts"] == 1
+        assert n["provider_ref"]
+        with app.app_context():
+            assert AuditLog.query.filter_by(action="notification_dispatched").count() == 1
+
+    def test_dispatch_failure_is_retryable(self, client, app):
+        token = login(client)
+        nid = self._schedule(client, token)
+        # First attempt forced to fail.
+        res = client.post(
+            f"/api/notifications/{nid}/dispatch",
+            headers=auth(token),
+            json={"channel": "sms", "simulate_failure": True},
+        )
+        assert res.status_code == 502
+        n = json.loads(res.data)["notification"]
+        assert n["delivery_status"] == "failed"
+        assert n["failure_reason"]
+        assert n["delivery_attempts"] == 1
+        # Retry succeeds; attempts increments.
+        res2 = client.post(f"/api/notifications/{nid}/dispatch", headers=auth(token), json={"channel": "sms"})
+        assert res2.status_code == 200
+        n2 = json.loads(res2.data)["notification"]
+        assert n2["delivery_status"] == "sent"
+        assert n2["delivery_attempts"] == 2
+        assert n2["failure_reason"] is None
+        with app.app_context():
+            assert AuditLog.query.filter_by(action="notification_dispatch_failed").count() == 1
+
+    def test_dispatch_rejects_bad_channel(self, client):
+        token = login(client)
+        nid = self._schedule(client, token)
+        res = client.post(f"/api/notifications/{nid}/dispatch", headers=auth(token), json={"channel": "carrier-pigeon"})
+        assert res.status_code == 400
+
+    def test_dispatch_rejects_double_send(self, client):
+        token = login(client)
+        nid = self._schedule(client, token)
+        client.post(f"/api/notifications/{nid}/dispatch", headers=auth(token), json={"channel": "sms"})
+        res = client.post(f"/api/notifications/{nid}/dispatch", headers=auth(token), json={"channel": "sms"})
+        assert res.status_code == 400
+
+    def test_dispatch_scoped_to_owner(self, client):
+        token_a = login(client, username="staffa")
+        token_b = login(client, username="staffb")
+        nid = self._schedule(client, token_a)
+        res = client.post(f"/api/notifications/{nid}/dispatch", headers=auth(token_b), json={"channel": "sms"})
+        assert res.status_code == 404
 
 
 # ── Appointment Worklist / Clinic List ──

@@ -51,6 +51,7 @@ from auth import (
 from ml.predictor import CareAttendPredictor
 from ml.bias_monitor import BiasMonitor
 from ml.interventions import generate_interventions
+from notification_provider import provider as notification_provider, VALID_CHANNELS
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
 
@@ -395,6 +396,16 @@ def batch_predict():
 @role_required("admin")
 def bias_audit():
     results = bias_monitor.run_audit()
+    governance = results.get("governance", {})
+    if governance.get("verdict") == "ACTION_REQUIRED":
+        db.session.add(
+            _audit(
+                request.current_user["userId"],
+                "bias_governance_breach",
+                f"{governance.get('breach_count', 0)} fairness breach(es) flagged for review",
+            )
+        )
+        db.session.commit()
     return jsonify(results)
 
 
@@ -1137,6 +1148,66 @@ def list_notifications():
     )
 
 
+@app.route("/api/notifications/<notification_id>/dispatch", methods=["POST"])
+@token_required
+@role_required("staff", "admin")
+def dispatch_notification(notification_id):
+    """Dispatch a scheduled reminder via the (simulated) delivery provider.
+
+    Transitions delivery_status pending|failed -> sent|failed and records the
+    attempt. No real message is sent — see notification_provider.py.
+    """
+    data = request.get_json(silent=True) or {}
+    channel = data.get("channel", "sms")
+    if channel not in VALID_CHANNELS:
+        return jsonify({"error": f"channel must be one of: {', '.join(sorted(VALID_CHANNELS))}"}), 400
+
+    notification = ScheduledNotification.query.filter_by(
+        id=notification_id,
+        user_id=request.current_user["userId"],
+    ).first()
+    if not notification:
+        return jsonify({"error": "Notification not found"}), 404
+    if notification.delivery_status == "sent":
+        return jsonify({"error": "Notification already delivered"}), 400
+
+    result = notification_provider.send(
+        patient_id=notification.patient_id,
+        channel=channel,
+        force_failure=bool(data.get("simulate_failure")),
+    )
+
+    notification.delivery_channel = channel
+    notification.delivery_attempts = (notification.delivery_attempts or 0) + 1
+    notification.last_attempt_at = time.time()
+    if result.success:
+        notification.delivery_status = "sent"
+        notification.provider_ref = result.provider_ref
+        notification.failure_reason = None
+        if notification.status == "scheduled":
+            notification.status = "sent"
+        audit_detail = (
+            f"{channel} to {notification.patient_id} via {notification_provider.name} (ref {result.provider_ref})"
+        )
+        audit_action = "notification_dispatched"
+    else:
+        notification.delivery_status = "failed"
+        notification.failure_reason = result.failure_reason
+        audit_detail = f"{channel} to {notification.patient_id} failed: {result.failure_reason}"
+        audit_action = "notification_dispatch_failed"
+
+    db.session.add(_audit(request.current_user["userId"], audit_action, audit_detail))
+    db.session.commit()
+
+    status_code = 200 if result.success else 502
+    return jsonify(
+        {
+            "message": "Notification delivered" if result.success else "Delivery failed (retryable)",
+            "notification": notification.to_dict(),
+        }
+    ), status_code
+
+
 # ── Operational Action Tracking ──
 
 
@@ -1627,6 +1698,42 @@ def admin_set_role(user_id):
     return jsonify({"message": "Role updated", "user": target.to_dict()})
 
 
+@app.route("/api/admin/pending-users", methods=["GET"])
+@token_required
+@role_required("admin")
+def admin_pending_users():
+    """Onboarding queue: self-registered accounts (role 'user') awaiting
+    approval. Approving one elevates it to an operational role."""
+    pending = User.query.filter_by(role="user").order_by(User.created_at.asc()).all()
+    return jsonify({"pending": [u.to_dict() for u in pending], "total": len(pending)})
+
+
+@app.route("/api/admin/users/<user_id>/approve", methods=["POST"])
+@token_required
+@role_required("admin")
+def admin_approve_user(user_id):
+    """Approve a pending registration, granting an operational role.
+
+    Approval target defaults to 'staff'; an admin may grant 'admin'. Approving
+    is idempotent-safe: a user already at staff/admin is reported as such.
+    """
+    data = request.get_json() or {}
+    grant_role = data.get("role", "staff")
+    if grant_role not in ("staff", "admin"):
+        return jsonify({"error": "Approval role must be 'staff' or 'admin'"}), 400
+
+    target = db.session.get(User, user_id)
+    if not target:
+        return jsonify({"error": "User not found"}), 404
+    if target.role != "user":
+        return jsonify({"error": f"User already approved (role: {target.role})"}), 400
+
+    target.role = grant_role
+    db.session.add(_audit(request.current_user["userId"], "user_approved", f"{target.username}: user -> {grant_role}"))
+    db.session.commit()
+    return jsonify({"message": f"User approved as {grant_role}", "user": target.to_dict()})
+
+
 @app.route("/api/admin/users/<user_id>", methods=["DELETE"])
 @token_required
 @role_required("admin")
@@ -1809,6 +1916,41 @@ def ensure_database():
             print("Database ready (schema ensured).")
         except Exception as exc:  # pragma: no cover
             print(f"WARNING: could not initialise database: {exc}")
+
+
+@app.cli.command("create-admin")
+def create_admin_command():
+    """Seed/promote an admin account OUT-OF-BAND (never via the public route).
+
+    Public /auth/register can only create unprivileged 'user' accounts; the
+    first admin must be created here. Credentials come from the environment so
+    they are never hard-coded:
+        CAREATTEND_ADMIN_USER, CAREATTEND_ADMIN_EMAIL, CAREATTEND_ADMIN_PASSWORD
+    Run: `flask --app app create-admin`. Idempotent — promotes if user exists.
+    """
+    username = os.environ.get("CAREATTEND_ADMIN_USER")
+    email = os.environ.get("CAREATTEND_ADMIN_EMAIL")
+    password = os.environ.get("CAREATTEND_ADMIN_PASSWORD")
+    if not (username and email and password):
+        print("Set CAREATTEND_ADMIN_USER, CAREATTEND_ADMIN_EMAIL and CAREATTEND_ADMIN_PASSWORD first.")
+        return
+
+    db.create_all()
+    existing = User.query.filter((User.username == username) | (User.email == email)).first()
+    if existing:
+        existing.role = "admin"
+        db.session.commit()
+        print(f"Promoted existing account '{existing.username}' to admin.")
+        return
+
+    _, error = register_user(username, email, password, "admin")
+    if error:
+        # Note: 'error' is a static validation message (e.g. the password rule),
+        # never the credential itself — but keep it out of the printed line so
+        # no value derived from the password call reaches stdout.
+        print("Could not create admin — check the username/email/password meet the rules.")
+        return
+    print(f"Admin account '{username}' created.")
 
 
 if __name__ == "__main__":

@@ -28,7 +28,13 @@ already-disadvantaged groups.
 - **DNA risk prediction** — calibrated probability + risk tier per patient.
 - **Explainability** — per-prediction **SHAP** feature contributions and a plain-English summary.
 - **Probability calibration** — isotonic/Platt-calibrated outputs (reliability reported).
-- **Bias monitoring** — fairness audit across age, gender, deprivation (IMD), and disability.
+- **Bias monitoring + governance gate** — fairness audit across age, gender, deprivation (IMD)
+  with an aggregate PASS / ACTION_REQUIRED verdict and human-oversight actions (monitoring only;
+  no protected-attribute thresholds).
+- **Operational loop** — appointment clinic list → outreach actions → notification delivery
+  (simulated provider, full send/retry lifecycle) → operational-outcomes dashboard.
+- **Staff onboarding approval** — self-registrations land unprivileged; an admin approves to grant
+  the staff role (admin seeded out-of-band via `flask create-admin`).
 - **Intervention engine** — ranked, factor-driven nudges (SMS, call, transport, reminders).
 - **Multilingual patient nudges** — generated reminder messaging.
 - **Slot optimisation** — overbooking / expected-waste / recovery metrics.

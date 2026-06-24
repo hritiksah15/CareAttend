@@ -67,3 +67,49 @@ class TestBiasAudit:
         for key in ["age_group", "gender", "imd_band"]:
             assert results[key]["demographic_parity_diff"] >= 0
             assert results[key]["equalised_odds_diff"] >= 0
+
+
+class TestGovernanceGate:
+    def test_governance_block_present(self, monitor):
+        gov = monitor.run_audit()["governance"]
+        assert gov["verdict"] in ("PASS", "ACTION_REQUIRED")
+        assert "breaches" in gov and "recommended_actions" in gov
+        assert gov["breach_count"] == len(gov["breaches"])
+
+    def test_verdict_matches_breaches(self, monitor):
+        gov = monitor.run_audit()["governance"]
+        if gov["breach_count"] == 0:
+            assert gov["verdict"] == "PASS"
+        else:
+            assert gov["verdict"] == "ACTION_REQUIRED"
+
+    def test_breach_consistency_with_group_status(self, monitor):
+        from ml.bias_monitor import FAIRNESS_TOLERANCE
+
+        results = monitor.run_audit()
+        # Every breach must correspond to a metric actually over tolerance.
+        for b in results["governance"]["breaches"]:
+            assert b["value"] > FAIRNESS_TOLERANCE
+            assert b["metric"] in ("demographic_parity", "equalised_odds")
+
+    def test_flag_breach_when_tolerance_exceeded(self, monitor):
+        # Synthetic audit dict with a forced disparity -> must flag ACTION_REQUIRED.
+        fake = {
+            "age_group": {"demographic_parity_diff": 0.30, "equalised_odds_diff": 0.05},
+            "gender": {"demographic_parity_diff": 0.02, "equalised_odds_diff": 0.02},
+            "imd_band": {"demographic_parity_diff": 0.01, "equalised_odds_diff": 0.01},
+        }
+        gov = monitor._governance_summary(fake)
+        assert gov["verdict"] == "ACTION_REQUIRED"
+        assert gov["breach_count"] == 1
+        assert gov["breaches"][0]["attribute"] == "Age group"
+
+    def test_pass_when_all_within_tolerance(self, monitor):
+        fake = {
+            "age_group": {"demographic_parity_diff": 0.05, "equalised_odds_diff": 0.05},
+            "gender": {"demographic_parity_diff": 0.02, "equalised_odds_diff": 0.02},
+            "imd_band": {"demographic_parity_diff": 0.01, "equalised_odds_diff": 0.01},
+        }
+        gov = monitor._governance_summary(fake)
+        assert gov["verdict"] == "PASS"
+        assert gov["breach_count"] == 0

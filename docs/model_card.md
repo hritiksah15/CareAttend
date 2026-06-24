@@ -61,7 +61,9 @@ Probabilities are post-hoc calibrated (`ml/calibration.py`); calibrators fit on 
 
 ## 6. Fairness
 - Audited for **demographic parity** and **equalised odds** across age, gender, IMD (`ml/bias_monitor.py`, Caton & Haas 2024 framework), pass/fail at 0.10.
-- **Detection only** in v1.0 — no mitigation yet. Roadmap: `fairlearn` reweighing + per-group thresholds.
+- **Governance gate** (`_governance_summary`): the audit now returns an aggregate verdict (`PASS` / `ACTION_REQUIRED`), the breaching attribute/metric pairs, and recommended human-oversight actions; a breach is logged to the audit trail. This **operationalises monitoring** — it flags disparities for review, it does not alter the model.
+- **Deliberately no per-group decision thresholds.** Setting a different cutoff by gender/age/IMD would use a *protected attribute* to decide who receives care — arguably direct discrimination under the Equality Act 2010. Mitigation here is governance + (future) training-time reweighing, **not** group-specific cutoffs.
+- **Model-level mitigation** (`fairlearn`-style reweighing, then full recalibration + threshold re-derivation + re-audit) remains roadmap, as it re-opens every downstream artefact.
 
 ## 7. Ethical considerations & risks
 - **Deprivation proxy risk:** IMD is predictive but socially sensitive; the bias audit exists to catch unfair penalisation of deprived groups (cf. Obermeyer et al. 2019).
