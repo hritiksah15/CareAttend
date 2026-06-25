@@ -97,18 +97,18 @@ class ResultScreen extends StatelessWidget {
                       SizedBox(
                         width: 180,
                         height: 180,
-                        child: CustomPaint(
-                          painter: _GaugePainter(
-                              percentage: percentage, tier: tier),
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text('${percentage.toStringAsFixed(0)}%',
-                                    style: const TextStyle(
-                                        fontSize: 36,
-                                        fontWeight: FontWeight.w700)),
-                              ],
+                        // Animate both the arc sweep and the % counter from 0 so
+                        // the score reads as a deliberate, polished reveal.
+                        child: TweenAnimationBuilder<double>(
+                          tween: Tween(begin: 0, end: percentage),
+                          duration: const Duration(milliseconds: 900),
+                          curve: Curves.easeOutCubic,
+                          builder: (context, value, _) => CustomPaint(
+                            painter: _GaugePainter(percentage: value, tier: tier),
+                            child: Center(
+                              child: Text('${value.toStringAsFixed(0)}%',
+                                  style: const TextStyle(
+                                      fontSize: 36, fontWeight: FontWeight.w700)),
                             ),
                           ),
                         ),
