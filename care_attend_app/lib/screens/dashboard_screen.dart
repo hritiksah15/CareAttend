@@ -94,10 +94,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
       widgets.addAll([
         Row(children: [
           _statCard('Total', '$total', NHSTheme.blue),
+          const SizedBox(width: 10),
           _statCard('High', '${d['high_risk'] ?? 0}', NHSTheme.riskHigh),
         ]),
+        const SizedBox(height: 10),
         Row(children: [
           _statCard('Medium', '${d['medium_risk'] ?? 0}', NHSTheme.riskMedium),
+          const SizedBox(width: 10),
           _statCard('Low', '${d['low_risk'] ?? 0}', NHSTheme.riskLow),
         ]),
         const SizedBox(height: 8),

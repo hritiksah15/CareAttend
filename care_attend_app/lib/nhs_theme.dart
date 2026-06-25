@@ -1,190 +1,143 @@
 import 'package:flutter/material.dart';
+import 'theme/design_tokens.dart';
+import 'theme/app_typography.dart';
 
+/// CareAttend theme. Colour constants preserved for backward compatibility with
+/// existing screens; the [theme]/[darkTheme] getters are rebuilt on the design
+/// tokens ([AppSpace]/[AppRadius]/[AppColors]) and real typography ([AppType]).
 class NHSTheme {
-  static const Color blue = Color(0xFF003087);
-  static const Color darkBlue = Color(0xFF002060);
-  static const Color lightBlue = Color(0xFF41B6E6);
+  static const Color blue = AppColors.brand;
+  static const Color darkBlue = AppColors.brandDark;
+  static const Color lightBlue = AppColors.brandAccent;
   static const Color white = Color(0xFFFFFFFF);
-  static const Color paleGrey = Color(0xFFF0F4F5);
-  static const Color grey = Color(0xFFAEB7BD);
-  static const Color darkGrey = Color(0xFF425563);
-  static const Color black = Color(0xFF231F20);
+  static const Color paleGrey = AppColors.paleGrey;
+  static const Color grey = AppColors.grey;
+  static const Color darkGrey = AppColors.darkGrey;
+  static const Color black = AppColors.ink;
 
-  static const Color riskLow = Color(0xFF007F3B);
-  static const Color riskMedium = Color(0xFFFFB81C);
-  static const Color riskHigh = Color(0xFFDA291C);
-  static const Color riskLowBg = Color(0xFFE8F5E9);
-  static const Color riskMediumBg = Color(0xFFFFF8E1);
-  static const Color riskHighBg = Color(0xFFFFEBEE);
+  static const Color riskLow = AppColors.riskLow;
+  static const Color riskMedium = AppColors.riskMedium;
+  static const Color riskHigh = AppColors.riskHigh;
+  static const Color riskLowBg = AppColors.riskLowBg;
+  static const Color riskMediumBg = AppColors.riskMediumBg;
+  static const Color riskHighBg = AppColors.riskHighBg;
 
-  static ThemeData get theme => ThemeData(
-        useMaterial3: true,
-        primaryColor: blue,
-        scaffoldBackgroundColor: paleGrey,
-        fontFamily: 'Arial',
-        colorScheme: const ColorScheme.light(
-          primary: blue,
-          secondary: lightBlue,
-          error: riskHigh,
-          surface: white,
-        ),
-        // Material 3 bottom navigation — the app's signature chrome,
-        // visually distinct from the website's top tab bar.
-        navigationBarTheme: NavigationBarThemeData(
-          backgroundColor: white,
-          indicatorColor: lightBlue.withValues(alpha: 0.22),
-          elevation: 3,
-          height: 68,
-          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-          iconTheme: WidgetStateProperty.resolveWith((states) {
-            final selected = states.contains(WidgetState.selected);
-            return IconThemeData(
-              size: 26,
-              color: selected ? blue : darkGrey,
-            );
-          }),
-          labelTextStyle: WidgetStateProperty.resolveWith((states) {
-            final selected = states.contains(WidgetState.selected);
-            return TextStyle(
-              fontFamily: 'Arial',
-              fontSize: 12,
-              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-              color: selected ? blue : darkGrey,
-            );
-          }),
-        ),
-        cardTheme: CardThemeData(
-          color: white,
-          elevation: 1.5,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: blue,
-          foregroundColor: white,
-          elevation: 2,
-          centerTitle: true,
-          titleTextStyle: TextStyle(
-            fontFamily: 'Arial',
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: white,
-          ),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: blue,
-            foregroundColor: white,
-            minimumSize: const Size(double.infinity, 48),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(6),
-            ),
-            textStyle: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: white,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(6),
-            borderSide: const BorderSide(color: grey, width: 1.5),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(6),
-            borderSide: const BorderSide(color: blue, width: 2),
-          ),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        ),
-      );
+  static const Color darkBg = AppColors.darkBg;
+  static const Color darkSurface = AppColors.darkSurface;
 
-  // Dark mode — mirrors the website's high-contrast slate palette.
-  static const Color darkBg = Color(0xFF1A1A2E);
-  static const Color darkSurface = Color(0xFF16213E);
+  static ThemeData get theme => _build(Brightness.light);
+  static ThemeData get darkTheme => _build(Brightness.dark);
 
-  static ThemeData get darkTheme => ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.dark,
-        primaryColor: lightBlue,
-        scaffoldBackgroundColor: darkBg,
-        fontFamily: 'Arial',
-        colorScheme: const ColorScheme.dark(
-          primary: lightBlue,
-          secondary: lightBlue,
-          surface: darkSurface,
-          error: riskHigh,
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: darkSurface,
-          foregroundColor: white,
-          elevation: 2,
-          centerTitle: true,
-          titleTextStyle: TextStyle(
-            fontFamily: 'Arial',
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: white,
-          ),
-        ),
-        navigationBarTheme: NavigationBarThemeData(
-          backgroundColor: darkSurface,
-          indicatorColor: lightBlue.withValues(alpha: 0.30),
-          elevation: 3,
-          height: 68,
-          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        ),
-        cardTheme: CardThemeData(
-          color: darkSurface,
-          elevation: 1.5,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: lightBlue,
-            foregroundColor: black,
-            minimumSize: const Size(double.infinity, 48),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(6),
-            ),
-            textStyle: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ),
-      );
+  static ThemeData _build(Brightness brightness) {
+    final dark = brightness == Brightness.dark;
+    final scheme = dark
+        ? const ColorScheme.dark(
+            primary: lightBlue,
+            secondary: lightBlue,
+            surface: AppColors.darkSurface,
+            error: riskHigh,
+            onPrimary: AppColors.ink,
+          )
+        : const ColorScheme.light(
+            primary: blue,
+            secondary: lightBlue,
+            surface: white,
+            error: riskHigh,
+            onSurface: AppColors.ink,
+          );
 
-  static Color riskColor(String tier) {
-    switch (tier.toLowerCase()) {
-      case 'high':
-        return riskHigh;
-      case 'medium':
-        return riskMedium;
-      default:
-        return riskLow;
-    }
+    final textTheme = AppType.textTheme(brightness);
+
+    return ThemeData(
+      useMaterial3: true,
+      brightness: brightness,
+      colorScheme: scheme,
+      scaffoldBackgroundColor: dark ? AppColors.darkBg : AppColors.paleGrey,
+      textTheme: textTheme,
+      splashFactory: InkSparkle.splashFactory,
+      appBarTheme: AppBarTheme(
+        backgroundColor: dark ? AppColors.darkSurface : blue,
+        foregroundColor: white,
+        elevation: 0,
+        scrolledUnderElevation: 2,
+        centerTitle: true,
+        titleTextStyle: textTheme.titleLarge?.copyWith(color: white, fontSize: 20),
+      ),
+      cardTheme: CardThemeData(
+        color: dark ? AppColors.darkSurface : white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.lg)),
+        margin: const EdgeInsets.symmetric(vertical: 6),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: dark ? AppColors.darkSurface : white,
+        indicatorColor: lightBlue.withValues(alpha: dark ? 0.30 : 0.20),
+        elevation: 3,
+        height: 70,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          final sel = states.contains(WidgetState.selected);
+          return IconThemeData(size: 26, color: sel ? (dark ? lightBlue : blue) : grey);
+        }),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          final sel = states.contains(WidgetState.selected);
+          return textTheme.labelMedium?.copyWith(
+            fontSize: 12,
+            color: sel ? (dark ? lightBlue : blue) : darkGrey,
+          );
+        }),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: dark ? lightBlue : blue,
+          foregroundColor: dark ? AppColors.ink : white,
+          minimumSize: const Size(double.infinity, 52),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+          textStyle: textTheme.labelLarge?.copyWith(fontSize: 16, letterSpacing: 0.3),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(0, 48),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: dark ? AppColors.darkSurfaceAlt : white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderSide: const BorderSide(color: grey, width: 1.5),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderSide: const BorderSide(color: grey, width: 1.5),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderSide: BorderSide(color: dark ? lightBlue : blue, width: 2),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: dark ? AppColors.darkSurfaceAlt : AppColors.paleGrey,
+        labelStyle: textTheme.bodySmall,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.lg)),
+        side: BorderSide.none,
+      ),
+      dialogTheme: DialogThemeData(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.lg)),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+      ),
+      dividerTheme: const DividerThemeData(space: 1, thickness: 1),
+    );
   }
 
-  static Color riskBgColor(String tier) {
-    switch (tier.toLowerCase()) {
-      case 'high':
-        return riskHighBg;
-      case 'medium':
-        return riskMediumBg;
-      default:
-        return riskLowBg;
-    }
-  }
+  static Color riskColor(String tier) => AppColors.riskColor(tier);
+  static Color riskBgColor(String tier) => AppColors.riskBg(tier);
 
   static String ageGroup(int age) {
     if (age < 18) return 'Under 18';
