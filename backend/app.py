@@ -344,7 +344,15 @@ def batch_predict():
         # utf-8-sig strips a UTF-8 BOM that Excel/Numbers prepend, which would
         # otherwise corrupt the first header (e.g. "﻿Age") and fail every row.
         content = file.read().decode("utf-8-sig")
-        reader = csv.DictReader(io.StringIO(content))
+        # Excel on some locales exports semicolon- or tab-delimited CSV. Sniff the
+        # delimiter from the header line so a non-comma file does not collapse the
+        # whole row into one column (which made every row fail with KeyError 'Age').
+        sample = content[:2048]
+        try:
+            delimiter = csv.Sniffer().sniff(sample, delimiters=",;\t|").delimiter
+        except csv.Error:
+            delimiter = ","
+        reader = csv.DictReader(io.StringIO(content), delimiter=delimiter)
         rows = list(reader)
     except Exception:
         return jsonify({"error": "Invalid CSV format"}), 400
@@ -353,6 +361,28 @@ def batch_predict():
         return jsonify({"error": "Maximum 100 records per batch"}), 400
     if len(rows) == 0:
         return jsonify({"error": "CSV file is empty"}), 400
+
+    # Normalise headers/values: strip surrounding whitespace (and stray BOM) so a
+    # header like " Age" or a value like " 72 " is accepted. Skip fully blank rows.
+    required_cols = {"Age", "Gender", "AppointmentLeadTimeDays", "SMSReceived", "PriorDNACount", "IMDDecile"}
+    cleaned = []
+    for row in rows:
+        norm = {(k or "").strip().lstrip("﻿"): (v or "").strip() for k, v in row.items() if k is not None}
+        if any(norm.values()):
+            cleaned.append(norm)
+    rows = cleaned
+
+    # Fail fast with a clear message if the header itself is wrong, rather than
+    # emitting an opaque "Invalid data format: 'Age'" on every single row.
+    if rows:
+        missing_cols = required_cols - set(rows[0].keys())
+        if missing_cols:
+            return jsonify(
+                {
+                    "error": f"CSV missing required column(s): {', '.join(sorted(missing_cols))}. "
+                    f"Found columns: {', '.join(rows[0].keys())}"
+                }
+            ), 400
 
     results = []
     for i, row in enumerate(rows):
@@ -1781,8 +1811,10 @@ def _validate_patient(data):
             "Disability": int(data.get("Disability", 0)),
             "IMDDecile": int(data["IMDDecile"]),
         }
-    except (ValueError, TypeError, KeyError) as e:
-        return None, f"Invalid data format: {e}"
+    except KeyError as e:
+        return None, f"Missing required field: {e}"
+    except (ValueError, TypeError) as e:
+        return None, f"Invalid data format ({e})"
 
     if not (0 <= patient["Age"] <= 120):
         return None, "Age must be between 0 and 120"

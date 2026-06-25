@@ -358,6 +358,46 @@ class TestRBAC:
         assert "Invalid data format" not in body
         assert "risk_tier" in body  # header row of a successful result
 
+    def _post_csv(self, client, token, text):
+        import io
+
+        return client.post(
+            "/api/batch",
+            headers=auth(token),
+            data={"file": (io.BytesIO(text.encode("utf-8")), "b.csv")},
+            content_type="multipart/form-data",
+        )
+
+    def test_batch_handles_semicolon_delimiter(self, client):
+        # Excel on some locales exports semicolon-delimited CSV; the delimiter
+        # must be sniffed or every row collapses into one column (KeyError 'Age').
+        token = login(client, username="semi1", role="staff")
+        res = self._post_csv(
+            client,
+            token,
+            "Age;Gender;AppointmentLeadTimeDays;SMSReceived;PriorDNACount;IMDDecile\n72;0;14;1;3;2\n",
+        )
+        assert res.status_code == 200
+        body = res.data.decode()
+        assert "Invalid data format" not in body and "Missing required field" not in body
+        assert "risk_tier" in body
+
+    def test_batch_strips_header_and_value_whitespace(self, client):
+        token = login(client, username="ws1", role="staff")
+        res = self._post_csv(
+            client,
+            token,
+            " Age , Gender ,AppointmentLeadTimeDays,SMSReceived,PriorDNACount,IMDDecile\n 72 ,0,14,1,3,2\n",
+        )
+        assert res.status_code == 200
+        assert "risk_tier" in res.data.decode()
+
+    def test_batch_wrong_columns_gives_clear_error(self, client):
+        token = login(client, username="wc1", role="staff")
+        res = self._post_csv(client, token, "Name,Age2,Foo\nBob,72,x\n")
+        assert res.status_code == 400
+        assert "missing required column" in res.get_json()["error"].lower()
+
     def test_staff_denied_bias(self, client):
         token = login(client, username="s1", role="staff")
         assert client.get("/api/bias-audit", headers=auth(token)).status_code == 403
