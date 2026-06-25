@@ -192,7 +192,9 @@ class _ClinicScreenState extends State<ClinicScreen> {
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
-        padding: const EdgeInsets.all(12),
+        // Extra bottom padding so the last card's action buttons (Reminder/Call)
+        // clear the floating chatbot button in the bottom-right corner.
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 88),
         children: [
           const Text('Clinic List',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),

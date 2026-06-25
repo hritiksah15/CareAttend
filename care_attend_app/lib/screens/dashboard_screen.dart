@@ -61,7 +61,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const Text('Practice Dashboard',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
-          Text('Session-scoped overview of assessments made this session.',
+          Text('Practice-wide overview of assessments and outcomes.',
               style: TextStyle(color: NHSTheme.darkGrey)),
           const SizedBox(height: 16),
           if (_loading) const Center(child: Padding(
@@ -137,8 +137,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: ListTile(
               leading: CircleAvatar(
                 backgroundColor: NHSTheme.riskColor(r['risk_tier'] ?? 'Low'),
-                child: Text('${r['age']}',
-                    style: const TextStyle(color: Colors.white, fontSize: 13)),
+                // Age is intentionally not persisted (NFR-01), so show the risk
+                // tier initial rather than the literal string "Not stored".
+                child: Text(
+                    (r['risk_tier'] ?? '?').toString().isNotEmpty
+                        ? (r['risk_tier'] as String)[0].toUpperCase()
+                        : '?',
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700)),
               ),
               title: Text('${r['risk_tier']} risk · ${r['age_group']}'),
               trailing: Text(
