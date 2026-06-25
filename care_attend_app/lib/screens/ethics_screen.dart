@@ -50,33 +50,17 @@ class _EthicsScreenState extends State<EthicsScreen> {
           ),
           if (_cv != null) ...[
             const SizedBox(height: 12),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: DataTable(
-                headingRowColor: WidgetStateProperty.all(NHSTheme.paleGrey),
-                columns: const [
-                  DataColumn(label: Text('Model')),
-                  DataColumn(label: Text('Mean F1')),
-                  DataColumn(label: Text('95% CI')),
-                  DataColumn(label: Text('Recall')),
-                  DataColumn(label: Text('ROC-AUC')),
-                ],
-                rows: [
-                  for (final e in ((_cv!['models'] as Map?) ?? {}).entries)
-                    DataRow(cells: [
-                      DataCell(Text('${e.key}')),
-                      DataCell(Text(
-                          '${(e.value['mean_f1'] as num).toStringAsFixed(4)}')),
-                      DataCell(Text(
-                          '[${e.value['ci_95_f1']['lower']}, ${e.value['ci_95_f1']['upper']}]')),
-                      DataCell(Text(
-                          '${(e.value['mean_recall'] as num).toStringAsFixed(4)}')),
-                      DataCell(Text(
-                          '${(e.value['mean_roc_auc'] as num).toStringAsFixed(4)}')),
-                    ]),
-                ],
+            // Per-model cards rather than a wide table that overflowed the phone
+            // and hid the 95% CI / Recall / ROC-AUC columns off-screen.
+            for (final e in ((_cv!['models'] as Map?) ?? {}).entries)
+              _cvModelCard(
+                e.key.toString(),
+                (e.value['mean_f1'] as num).toDouble(),
+                e.value['ci_95_f1']['lower'],
+                e.value['ci_95_f1']['upper'],
+                (e.value['mean_recall'] as num).toDouble(),
+                (e.value['mean_roc_auc'] as num).toDouble(),
               ),
-            ),
             if ((_cv!['significance_tests'] as List?)?.isNotEmpty ?? false) ...[
               const SizedBox(height: 12),
               const Text('McNemar significance',
@@ -118,6 +102,41 @@ class _EthicsScreenState extends State<EthicsScreen> {
     if (status.toLowerCase().startsWith('addressed')) return NHSTheme.riskLow;
     if (status.toLowerCase().startsWith('partial')) return NHSTheme.riskMedium;
     return NHSTheme.grey;
+  }
+
+  Widget _cvModelCard(String name, double f1, dynamic ciLo, dynamic ciHi,
+      double recall, double rocAuc) {
+    Widget metric(String label, String value) => Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(label,
+                style: const TextStyle(fontSize: 11, color: NHSTheme.darkGrey)),
+            Text(value,
+                style:
+                    const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+          ]),
+        );
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(name,
+              style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: NHSTheme.blue)),
+          const SizedBox(height: 10),
+          Row(children: [
+            metric('Mean F1', f1.toStringAsFixed(4)),
+            metric('Recall', recall.toStringAsFixed(4)),
+            metric('ROC-AUC', rocAuc.toStringAsFixed(4)),
+          ]),
+          const SizedBox(height: 8),
+          Text('95% CI (F1): [$ciLo, $ciHi]',
+              style: const TextStyle(fontSize: 12, color: NHSTheme.darkGrey)),
+        ]),
+      ),
+    );
   }
 
   @override
