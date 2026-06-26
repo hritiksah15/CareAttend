@@ -674,4 +674,177 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get clinicStRescheduled => 'Przełożono';
+
+  @override
+  String get profileLogoutClear => 'Wyloguj się i wyczyść sesję';
+
+  @override
+  String get profileUsername => 'Nazwa użytkownika';
+
+  @override
+  String get profileRole => 'Rola';
+
+  @override
+  String get profileMemberSince => 'Członek od';
+
+  @override
+  String get profilePasswordChanged => 'Hasło zmieniono';
+
+  @override
+  String get profileNever => 'Nigdy';
+
+  @override
+  String get profileEdit => 'Edytuj profil';
+
+  @override
+  String get profileDisplayName => 'Wyświetlana nazwa';
+
+  @override
+  String get profileJobTitle => 'Stanowisko';
+
+  @override
+  String get profileDepartment => 'Dział';
+
+  @override
+  String get profilePronouns => 'Zaimki (np. ona/jej)';
+
+  @override
+  String get profilePhone => 'Telefon';
+
+  @override
+  String get profileBio => 'Biografia';
+
+  @override
+  String get profileSaving => 'Zapisywanie…';
+
+  @override
+  String get profileSaveBtn => 'Zapisz profil';
+
+  @override
+  String get profileChangePassword => 'Zmień hasło';
+
+  @override
+  String get profileCurrentPw => 'Obecne hasło';
+
+  @override
+  String get profileNewPw => 'Nowe hasło';
+
+  @override
+  String get profileConfirmPw => 'Potwierdź nowe hasło';
+
+  @override
+  String get profileUpdatePw => 'Aktualizuj hasło';
+
+  @override
+  String get profile2faTitle => 'Uwierzytelnianie dwuskładnikowe';
+
+  @override
+  String get profile2faEnabledBadge => 'WŁĄCZONE';
+
+  @override
+  String get profile2faDisabledBadge => 'WYŁĄCZONE';
+
+  @override
+  String get profile2faDesc =>
+      'Dodaj jednorazowy kod czasowy z aplikacji uwierzytelniającej (Google Authenticator, Authy).';
+
+  @override
+  String get profile2faPwDisable => 'Hasło do wyłączenia';
+
+  @override
+  String get profile2faDisableBtn => 'Wyłącz 2FA';
+
+  @override
+  String get profile2faWait => 'Proszę czekać…';
+
+  @override
+  String get profile2faEnableBtn => 'Włącz 2FA';
+
+  @override
+  String get profile2faStep1 =>
+      '1. Dodaj ten sekret do aplikacji uwierzytelniającej:';
+
+  @override
+  String get profile2faStep2 => '2. Wprowadź 6-cyfrowy kod, aby zweryfikować:';
+
+  @override
+  String get profile2faVerify => 'Zweryfikuj i włącz';
+
+  @override
+  String get profilePrivacy => 'Prywatność i ochrona danych';
+
+  @override
+  String get profilePrivGdprT => 'Zgodność z art. 5 ust. 1 lit. c) RODO';
+
+  @override
+  String get profilePrivGdprB =>
+      'Minimalizacja danych — zbierane tylko niezbędne pola.';
+
+  @override
+  String get profilePrivSessionT => 'Przetwarzanie w ramach sesji';
+
+  @override
+  String get profilePrivSessionB =>
+      'Brak przechowywania danych pacjentów. Czyszczone przy wylogowaniu.';
+
+  @override
+  String get profilePrivEncT => 'Szyfrowane uwierzytelnianie';
+
+  @override
+  String get profilePrivEncB =>
+      'Hasła haszowane bcrypt; sesje wygasają przy bezczynności.';
+
+  @override
+  String get profilePrivShareT => 'Brak udostępniania danych stronom trzecim';
+
+  @override
+  String get profilePrivShareB =>
+      'Całe przetwarzanie lokalne. Brak zewnętrznej analityki lub śledzenia.';
+
+  @override
+  String get profileViewPhoto => 'Zobacz zdjęcie';
+
+  @override
+  String get profileChangePhoto => 'Zmień zdjęcie';
+
+  @override
+  String get profileAddPhoto => 'Dodaj zdjęcie';
+
+  @override
+  String get profileRemovePhoto => 'Usuń zdjęcie';
+
+  @override
+  String get profilePhotoRemoved => 'Zdjęcie usunięte.';
+
+  @override
+  String get profileUnsupportedImage => 'Nieobsługiwany format obrazu.';
+
+  @override
+  String get profilePhotoUpdated => 'Zdjęcie zaktualizowane.';
+
+  @override
+  String get profileSaved => 'Profil zapisany.';
+
+  @override
+  String get profilePwDifferent =>
+      'Nowe hasło musi różnić się od obecnego hasła';
+
+  @override
+  String get profilePwMismatch => 'Hasła nie pasują do siebie';
+
+  @override
+  String get profilePwChanged => 'Hasło zmienione pomyślnie';
+
+  @override
+  String get profile2faEnterCode =>
+      'Wprowadź 6-cyfrowy kod z aplikacji uwierzytelniającej.';
+
+  @override
+  String get profile2faEnabled => 'Uwierzytelnianie dwuskładnikowe włączone.';
+
+  @override
+  String get profile2faEnterPw => 'Wprowadź hasło, aby wyłączyć 2FA.';
+
+  @override
+  String get profile2faDisabled => 'Uwierzytelnianie dwuskładnikowe wyłączone.';
 }

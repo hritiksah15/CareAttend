@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
+import '../l10n/app_localizations.dart';
 import '../nhs_theme.dart';
 import '../services/api_service.dart';
 import '../utils/validators.dart';
@@ -92,6 +93,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // Tap the avatar -> choose to view, change, or remove the photo.
   void _avatarOptions() {
+    final t = AppLocalizations.of(context);
     final hasPhoto = _avatarProvider != null;
     showModalBottomSheet(
       context: context,
@@ -102,7 +104,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             if (hasPhoto)
               ListTile(
                 leading: const Icon(Icons.visibility, color: NHSTheme.blue),
-                title: const Text('View photo'),
+                title: Text(t.profileViewPhoto),
                 onTap: () {
                   Navigator.pop(context);
                   _viewAvatar();
@@ -110,7 +112,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ListTile(
               leading: const Icon(Icons.photo_camera, color: NHSTheme.blue),
-              title: Text(hasPhoto ? 'Change photo' : 'Add photo'),
+              title: Text(hasPhoto ? t.profileChangePhoto : t.profileAddPhoto),
               onTap: () {
                 Navigator.pop(context);
                 _pickAvatar();
@@ -120,7 +122,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ListTile(
                 leading: const Icon(Icons.delete_outline,
                     color: NHSTheme.riskHigh),
-                title: const Text('Remove photo'),
+                title: Text(t.profileRemovePhoto),
                 onTap: () {
                   Navigator.pop(context);
                   _removeAvatar();
@@ -149,6 +151,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _removeAvatar() async {
+    final t = AppLocalizations.of(context);
     try {
       final updated = await ApiService.updateProfile({'avatar': ''});
       ApiService.avatar = null;
@@ -156,13 +159,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _profile = updated;
         _avatarProvider = null;
       });
-      _snack('Photo removed.');
+      _snack(t.profilePhotoRemoved);
     } catch (e) {
       _snack(e.toString());
     }
   }
 
   Future<void> _pickAvatar() async {
+    final t = AppLocalizations.of(context);
     try {
       final picker = ImagePicker();
       final file = await picker.pickImage(source: ImageSource.gallery);
@@ -172,7 +176,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       // any source image becomes a small 256px square JPEG (keeps payload tiny).
       final decoded = img.decodeImage(raw);
       if (decoded == null) {
-        _snack('Unsupported image format.');
+        _snack(t.profileUnsupportedImage);
         return;
       }
       final square = img.copyResizeCropSquare(decoded, size: 512);
@@ -184,13 +188,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _profile = updated;
         _avatarProvider = _decodeAvatar(updated['avatar'] as String?);
       });
-      _snack('Photo updated.');
+      _snack(t.profilePhotoUpdated);
     } catch (e) {
       _snack(e.toString());
     }
   }
 
   Future<void> _saveProfile() async {
+    final t = AppLocalizations.of(context);
     setState(() => _savingProfile = true);
     try {
       final updated = await ApiService.updateProfile({
@@ -202,7 +207,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         'bio': _bio.text.trim(),
       });
       setState(() => _profile = updated);
-      _snack('Profile saved.');
+      _snack(t.profileSaved);
     } catch (e) {
       _snack(e.toString());
     } finally {
@@ -211,17 +216,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _changePassword() async {
+    final t = AppLocalizations.of(context);
     final pwErr = passwordError(_newPw.text);
     if (pwErr != null) {
       _snack(pwErr);
       return;
     }
     if (_newPw.text == _current.text) {
-      _snack('New password must be different from the current password');
+      _snack(t.profilePwDifferent);
       return;
     }
     if (_newPw.text != _confirm.text) {
-      _snack('Passwords do not match');
+      _snack(t.profilePwMismatch);
       return;
     }
     setState(() => _saving = true);
@@ -233,7 +239,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _current.clear();
       _newPw.clear();
       _confirm.clear();
-      _snack('Password changed successfully');
+      _snack(t.profilePwChanged);
     } catch (e) {
       _snack(e.toString());
     } finally {
@@ -264,11 +270,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return ListView(
       padding: const EdgeInsets.all(12),
       children: [
-        const Text('Personal Account',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
+        Text(t.personalAccount,
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
         const SizedBox(height: 12),
         if (_loading)
           const Center(
@@ -303,7 +310,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             minimumSize: const Size.fromHeight(48),
           ),
           icon: const Icon(Icons.logout),
-          label: const Text('Log Out & Clear Session'),
+          label: Text(t.profileLogoutClear),
         ),
         const SizedBox(height: 16),
       ],
@@ -327,6 +334,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _accountInfoCard() {
+    final t = AppLocalizations.of(context);
     final p = _profile!;
     Widget row(IconData ic, String label, String value) => ListTile(
           dense: true,
@@ -337,15 +345,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
     return Card(
       child: Column(children: [
-        row(Icons.person_outline, 'Username', '${p['username'] ?? '—'}'),
+        row(Icons.person_outline, t.profileUsername, '${p['username'] ?? '—'}'),
         const Divider(height: 1),
-        row(Icons.badge_outlined, 'Role', '${p['role'] ?? '—'}'.toUpperCase()),
+        row(Icons.badge_outlined, t.profileRole, '${p['role'] ?? '—'}'.toUpperCase()),
         const Divider(height: 1),
-        row(Icons.event_outlined, 'Member since', _fmtDate(p['createdAt'])),
+        row(Icons.event_outlined, t.profileMemberSince, _fmtDate(p['createdAt'])),
         const Divider(height: 1),
-        row(Icons.lock_clock_outlined, 'Password changed',
+        row(Icons.lock_clock_outlined, t.profilePasswordChanged,
             p['lastPasswordChange'] == null
-                ? 'Never'
+                ? t.profileNever
                 : _fmtDate(p['lastPasswordChange'])),
       ]),
     );
@@ -439,24 +447,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _editCard() {
+    final t = AppLocalizations.of(context);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Edit Profile',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+          Text(t.profileEdit,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
           const SizedBox(height: 12),
-          _field(_displayName, 'Display name', 100),
-          _field(_jobTitle, 'Job title', 100),
-          _field(_department, 'Department', 100),
-          _field(_pronouns, 'Pronouns (e.g. she/her)', 30),
-          _field(_phone, 'Phone', 30, keyboard: TextInputType.phone),
-          _field(_bio, 'Bio', 300, maxLines: 3),
+          _field(_displayName, t.profileDisplayName, 100),
+          _field(_jobTitle, t.profileJobTitle, 100),
+          _field(_department, t.profileDepartment, 100),
+          _field(_pronouns, t.profilePronouns, 30),
+          _field(_phone, t.profilePhone, 30, keyboard: TextInputType.phone),
+          _field(_bio, t.profileBio, 300, maxLines: 3),
           const SizedBox(height: 12),
           ElevatedButton.icon(
             onPressed: _savingProfile ? null : _saveProfile,
             icon: const Icon(Icons.save),
-            label: Text(_savingProfile ? 'Saving…' : 'Save Profile'),
+            label: Text(_savingProfile ? t.profileSaving : t.profileSaveBtn),
           ),
         ]),
       ),
@@ -482,28 +491,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _passwordCard() {
+    final t = AppLocalizations.of(context);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Change Password',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+          Text(t.profileChangePassword,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
           const SizedBox(height: 12),
-          PasswordField(controller: _current, label: 'Current password'),
+          PasswordField(controller: _current, label: t.profileCurrentPw),
           const SizedBox(height: 10),
-          PasswordField(controller: _newPw, label: 'New password'),
+          PasswordField(controller: _newPw, label: t.profileNewPw),
           const Padding(
             padding: EdgeInsets.only(top: 4),
             child: Text(passwordHint,
                 style: TextStyle(fontSize: 11, color: NHSTheme.darkGrey)),
           ),
           const SizedBox(height: 10),
-          PasswordField(controller: _confirm, label: 'Confirm new password'),
+          PasswordField(controller: _confirm, label: t.profileConfirmPw),
           const SizedBox(height: 14),
           ElevatedButton.icon(
             onPressed: _saving ? null : _changePassword,
             icon: const Icon(Icons.lock_reset),
-            label: Text(_saving ? 'Saving…' : 'Update password'),
+            label: Text(_saving ? t.profileSaving : t.profileUpdatePw),
           ),
         ]),
       ),
@@ -525,8 +535,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _enable2FA() async {
+    final t = AppLocalizations.of(context);
     if (_twoFaCode.text.trim().length < 6) {
-      _snack('Enter the 6-digit code from your authenticator app.');
+      _snack(t.profile2faEnterCode);
       return;
     }
     setState(() => _twoFaBusy = true);
@@ -534,7 +545,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       await ApiService.enable2FA(_twoFaCode.text.trim());
       _twoFaSecret = null;
       _twoFaCode.clear();
-      _snack('Two-factor authentication enabled.');
+      _snack(t.profile2faEnabled);
       await _load();
     } catch (e) {
       _snack(e.toString());
@@ -544,15 +555,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _disable2FA() async {
+    final t = AppLocalizations.of(context);
     if (_twoFaPw.text.isEmpty) {
-      _snack('Enter your password to disable 2FA.');
+      _snack(t.profile2faEnterPw);
       return;
     }
     setState(() => _twoFaBusy = true);
     try {
       await ApiService.disable2FA(_twoFaPw.text);
       _twoFaPw.clear();
-      _snack('Two-factor authentication disabled.');
+      _snack(t.profile2faDisabled);
       await _load();
     } catch (e) {
       _snack(e.toString());
@@ -562,13 +574,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _twoFactorCard() {
+    final t = AppLocalizations.of(context);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            const Text('Two-Factor Authentication',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+            Text(t.profile2faTitle,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
             const Spacer(),
             Container(
               padding:
@@ -577,7 +590,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: _totpEnabled ? NHSTheme.riskLowBg : NHSTheme.riskHighBg,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Text(_totpEnabled ? 'ENABLED' : 'DISABLED',
+              child: Text(
+                  _totpEnabled
+                      ? t.profile2faEnabledBadge
+                      : t.profile2faDisabledBadge,
                   style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
@@ -587,29 +603,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ]),
           const SizedBox(height: 8),
-          const Text(
-              'Add a time-based one-time code from an authenticator app '
-              '(Google Authenticator, Authy).',
-              style: TextStyle(color: NHSTheme.darkGrey, fontSize: 13)),
+          Text(t.profile2faDesc,
+              style: const TextStyle(color: NHSTheme.darkGrey, fontSize: 13)),
           const SizedBox(height: 12),
           if (_totpEnabled) ...[
-            PasswordField(controller: _twoFaPw, label: 'Password to disable'),
+            PasswordField(controller: _twoFaPw, label: t.profile2faPwDisable),
             const SizedBox(height: 10),
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(backgroundColor: NHSTheme.riskHigh),
               onPressed: _twoFaBusy ? null : _disable2FA,
               icon: const Icon(Icons.lock_open),
-              label: const Text('Disable 2FA'),
+              label: Text(t.profile2faDisableBtn),
             ),
           ] else if (_twoFaSecret == null) ...[
             ElevatedButton.icon(
               onPressed: _twoFaBusy ? null : _start2FA,
               icon: const Icon(Icons.shield_outlined),
-              label: Text(_twoFaBusy ? 'Please wait…' : 'Enable 2FA'),
+              label: Text(_twoFaBusy ? t.profile2faWait : t.profile2faEnableBtn),
             ),
           ] else ...[
-            const Text('1. Add this secret to your authenticator app:',
-                style: TextStyle(fontSize: 13)),
+            Text(t.profile2faStep1, style: const TextStyle(fontSize: 13)),
             const SizedBox(height: 6),
             SelectableText(_twoFaSecret!,
                 style: const TextStyle(
@@ -617,8 +630,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     fontWeight: FontWeight.w700,
                     fontSize: 15)),
             const SizedBox(height: 12),
-            const Text('2. Enter the 6-digit code to verify:',
-                style: TextStyle(fontSize: 13)),
+            Text(t.profile2faStep2, style: const TextStyle(fontSize: 13)),
             const SizedBox(height: 6),
             TextField(
               controller: _twoFaCode,
@@ -631,7 +643,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ElevatedButton.icon(
               onPressed: _twoFaBusy ? null : _enable2FA,
               icon: const Icon(Icons.check),
-              label: const Text('Verify & enable'),
+              label: Text(t.profile2faVerify),
             ),
           ],
         ]),
@@ -660,21 +672,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ]),
         );
+    final t = AppLocalizations.of(context);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Privacy & Data Protection',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+          Text(t.profilePrivacy,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
           const SizedBox(height: 12),
-          item('GDPR Article 5(1)(c) compliant',
-              'Data minimisation — only essential fields collected.'),
-          item('Session-scoped processing',
-              'No patient data stored. Cleared on logout.'),
-          item('Encrypted authentication',
-              'Passwords hashed with bcrypt; sessions expire on inactivity.'),
-          item('No third-party data sharing',
-              'All processing local. No external analytics or tracking.'),
+          item(t.profilePrivGdprT, t.profilePrivGdprB),
+          item(t.profilePrivSessionT, t.profilePrivSessionB),
+          item(t.profilePrivEncT, t.profilePrivEncB),
+          item(t.profilePrivShareT, t.profilePrivShareB),
         ]),
       ),
     );

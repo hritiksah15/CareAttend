@@ -678,4 +678,176 @@ class AppLocalizationsCy extends AppLocalizations {
 
   @override
   String get clinicStRescheduled => 'Wedi\'i aildrefnu';
+
+  @override
+  String get profileLogoutClear => 'Allgofnodi a Chlirio\'r Sesiwn';
+
+  @override
+  String get profileUsername => 'Enw defnyddiwr';
+
+  @override
+  String get profileRole => 'Rôl';
+
+  @override
+  String get profileMemberSince => 'Aelod ers';
+
+  @override
+  String get profilePasswordChanged => 'Cyfrinair wedi\'i newid';
+
+  @override
+  String get profileNever => 'Byth';
+
+  @override
+  String get profileEdit => 'Golygu Proffil';
+
+  @override
+  String get profileDisplayName => 'Enw arddangos';
+
+  @override
+  String get profileJobTitle => 'Teitl swydd';
+
+  @override
+  String get profileDepartment => 'Adran';
+
+  @override
+  String get profilePronouns => 'Rhagenwau (e.e. hi/hi)';
+
+  @override
+  String get profilePhone => 'Ffôn';
+
+  @override
+  String get profileBio => 'Bywgraffiad';
+
+  @override
+  String get profileSaving => 'Yn cadw…';
+
+  @override
+  String get profileSaveBtn => 'Cadw Proffil';
+
+  @override
+  String get profileChangePassword => 'Newid Cyfrinair';
+
+  @override
+  String get profileCurrentPw => 'Cyfrinair presennol';
+
+  @override
+  String get profileNewPw => 'Cyfrinair newydd';
+
+  @override
+  String get profileConfirmPw => 'Cadarnhau cyfrinair newydd';
+
+  @override
+  String get profileUpdatePw => 'Diweddaru cyfrinair';
+
+  @override
+  String get profile2faTitle => 'Dilysu Dau Ffactor';
+
+  @override
+  String get profile2faEnabledBadge => 'WEDI\'I ALLUOGI';
+
+  @override
+  String get profile2faDisabledBadge => 'WEDI\'I ANALLUOGI';
+
+  @override
+  String get profile2faDesc =>
+      'Ychwanegwch god un-amser sy\'n seiliedig ar amser o ap dilysu (Google Authenticator, Authy).';
+
+  @override
+  String get profile2faPwDisable => 'Cyfrinair i analluogi';
+
+  @override
+  String get profile2faDisableBtn => 'Analluogi 2FA';
+
+  @override
+  String get profile2faWait => 'Arhoswch…';
+
+  @override
+  String get profile2faEnableBtn => 'Galluogi 2FA';
+
+  @override
+  String get profile2faStep1 =>
+      '1. Ychwanegwch y gyfrinach hon at eich ap dilysu:';
+
+  @override
+  String get profile2faStep2 => '2. Rhowch y cod 6 digid i wirio:';
+
+  @override
+  String get profile2faVerify => 'Gwirio a galluogi';
+
+  @override
+  String get profilePrivacy => 'Preifatrwydd a Diogelu Data';
+
+  @override
+  String get profilePrivGdprT => 'Yn cydymffurfio ag Erthygl 5(1)(c) GDPR';
+
+  @override
+  String get profilePrivGdprB =>
+      'Lleihau data — dim ond meysydd hanfodol a gesglir.';
+
+  @override
+  String get profilePrivSessionT => 'Prosesu yn ôl sesiwn';
+
+  @override
+  String get profilePrivSessionB =>
+      'Dim data cleifion wedi\'i storio. Wedi\'i glirio ar allgofnodi.';
+
+  @override
+  String get profilePrivEncT => 'Dilysu wedi\'i amgryptio';
+
+  @override
+  String get profilePrivEncB =>
+      'Cyfrineiriau wedi\'u stwnsio â bcrypt; sesiynau\'n dod i ben ar segurdod.';
+
+  @override
+  String get profilePrivShareT => 'Dim rhannu data trydydd parti';
+
+  @override
+  String get profilePrivShareB =>
+      'Pob prosesu yn lleol. Dim dadansoddeg na thracio allanol.';
+
+  @override
+  String get profileViewPhoto => 'Gweld llun';
+
+  @override
+  String get profileChangePhoto => 'Newid llun';
+
+  @override
+  String get profileAddPhoto => 'Ychwanegu llun';
+
+  @override
+  String get profileRemovePhoto => 'Tynnu llun';
+
+  @override
+  String get profilePhotoRemoved => 'Llun wedi\'i dynnu.';
+
+  @override
+  String get profileUnsupportedImage => 'Fformat delwedd heb ei gefnogi.';
+
+  @override
+  String get profilePhotoUpdated => 'Llun wedi\'i ddiweddaru.';
+
+  @override
+  String get profileSaved => 'Proffil wedi\'i gadw.';
+
+  @override
+  String get profilePwDifferent =>
+      'Rhaid i\'r cyfrinair newydd fod yn wahanol i\'r cyfrinair presennol';
+
+  @override
+  String get profilePwMismatch => 'Nid yw\'r cyfrineiriau\'n cyfateb';
+
+  @override
+  String get profilePwChanged => 'Cyfrinair wedi\'i newid yn llwyddiannus';
+
+  @override
+  String get profile2faEnterCode => 'Rhowch y cod 6 digid o\'ch ap dilysu.';
+
+  @override
+  String get profile2faEnabled => 'Dilysu dau ffactor wedi\'i alluogi.';
+
+  @override
+  String get profile2faEnterPw => 'Rhowch eich cyfrinair i analluogi 2FA.';
+
+  @override
+  String get profile2faDisabled => 'Dilysu dau ffactor wedi\'i analluogi.';
 }

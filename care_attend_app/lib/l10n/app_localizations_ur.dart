@@ -673,4 +673,177 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get clinicStRescheduled => 'دوبارہ طے شدہ';
+
+  @override
+  String get profileLogoutClear => 'لاگ آؤٹ اور سیشن صاف کریں';
+
+  @override
+  String get profileUsername => 'صارف نام';
+
+  @override
+  String get profileRole => 'کردار';
+
+  @override
+  String get profileMemberSince => 'رکنیت کا آغاز';
+
+  @override
+  String get profilePasswordChanged => 'پاس ورڈ تبدیل ہوا';
+
+  @override
+  String get profileNever => 'کبھی نہیں';
+
+  @override
+  String get profileEdit => 'پروفائل میں ترمیم';
+
+  @override
+  String get profileDisplayName => 'ظاہر کرنے کا نام';
+
+  @override
+  String get profileJobTitle => 'عہدہ';
+
+  @override
+  String get profileDepartment => 'شعبہ';
+
+  @override
+  String get profilePronouns => 'ضمائر (مثلاً وہ/اس)';
+
+  @override
+  String get profilePhone => 'فون';
+
+  @override
+  String get profileBio => 'تعارف';
+
+  @override
+  String get profileSaving => 'محفوظ ہو رہا ہے…';
+
+  @override
+  String get profileSaveBtn => 'پروفائل محفوظ کریں';
+
+  @override
+  String get profileChangePassword => 'پاس ورڈ تبدیل کریں';
+
+  @override
+  String get profileCurrentPw => 'موجودہ پاس ورڈ';
+
+  @override
+  String get profileNewPw => 'نیا پاس ورڈ';
+
+  @override
+  String get profileConfirmPw => 'نئے پاس ورڈ کی تصدیق کریں';
+
+  @override
+  String get profileUpdatePw => 'پاس ورڈ اپ ڈیٹ کریں';
+
+  @override
+  String get profile2faTitle => 'دو عنصری توثیق';
+
+  @override
+  String get profile2faEnabledBadge => 'فعال';
+
+  @override
+  String get profile2faDisabledBadge => 'غیر فعال';
+
+  @override
+  String get profile2faDesc =>
+      'تصدیقی ایپ (Google Authenticator، Authy) سے وقت پر مبنی ایک بار کا کوڈ شامل کریں۔';
+
+  @override
+  String get profile2faPwDisable => 'غیر فعال کرنے کے لیے پاس ورڈ';
+
+  @override
+  String get profile2faDisableBtn => '2FA غیر فعال کریں';
+
+  @override
+  String get profile2faWait => 'براہ کرم انتظار کریں…';
+
+  @override
+  String get profile2faEnableBtn => '2FA فعال کریں';
+
+  @override
+  String get profile2faStep1 => '1۔ یہ خفیہ کوڈ اپنی تصدیقی ایپ میں شامل کریں:';
+
+  @override
+  String get profile2faStep2 => '2۔ تصدیق کے لیے 6 ہندسوں کا کوڈ درج کریں:';
+
+  @override
+  String get profile2faVerify => 'تصدیق کریں اور فعال کریں';
+
+  @override
+  String get profilePrivacy => 'رازداری اور ڈیٹا کا تحفظ';
+
+  @override
+  String get profilePrivGdprT => 'GDPR آرٹیکل 5(1)(c) کے مطابق';
+
+  @override
+  String get profilePrivGdprB =>
+      'ڈیٹا کی کم سے کم مقدار — صرف ضروری فیلڈز جمع کیے جاتے ہیں۔';
+
+  @override
+  String get profilePrivSessionT => 'سیشن کے دائرہ کار میں پروسیسنگ';
+
+  @override
+  String get profilePrivSessionB =>
+      'مریض کا کوئی ڈیٹا محفوظ نہیں۔ لاگ آؤٹ پر صاف۔';
+
+  @override
+  String get profilePrivEncT => 'خفیہ کردہ توثیق';
+
+  @override
+  String get profilePrivEncB =>
+      'پاس ورڈز bcrypt سے ہیش کیے گئے؛ سیشن غیر فعالیت پر ختم ہو جاتے ہیں۔';
+
+  @override
+  String get profilePrivShareT => 'کوئی فریق ثالث ڈیٹا شیئرنگ نہیں';
+
+  @override
+  String get profilePrivShareB =>
+      'تمام پروسیسنگ مقامی۔ کوئی بیرونی تجزیات یا ٹریکنگ نہیں۔';
+
+  @override
+  String get profileViewPhoto => 'تصویر دیکھیں';
+
+  @override
+  String get profileChangePhoto => 'تصویر تبدیل کریں';
+
+  @override
+  String get profileAddPhoto => 'تصویر شامل کریں';
+
+  @override
+  String get profileRemovePhoto => 'تصویر ہٹائیں';
+
+  @override
+  String get profilePhotoRemoved => 'تصویر ہٹا دی گئی۔';
+
+  @override
+  String get profileUnsupportedImage => 'غیر تعاون یافتہ تصویری فارمیٹ۔';
+
+  @override
+  String get profilePhotoUpdated => 'تصویر اپ ڈیٹ ہو گئی۔';
+
+  @override
+  String get profileSaved => 'پروفائل محفوظ ہو گیا۔';
+
+  @override
+  String get profilePwDifferent =>
+      'نیا پاس ورڈ موجودہ پاس ورڈ سے مختلف ہونا چاہیے';
+
+  @override
+  String get profilePwMismatch => 'پاس ورڈ مماثل نہیں ہیں';
+
+  @override
+  String get profilePwChanged => 'پاس ورڈ کامیابی سے تبدیل ہو گیا';
+
+  @override
+  String get profile2faEnterCode =>
+      'اپنی تصدیقی ایپ سے 6 ہندسوں کا کوڈ درج کریں۔';
+
+  @override
+  String get profile2faEnabled => 'دو عنصری توثیق فعال ہو گئی۔';
+
+  @override
+  String get profile2faEnterPw =>
+      '2FA غیر فعال کرنے کے لیے اپنا پاس ورڈ درج کریں۔';
+
+  @override
+  String get profile2faDisabled => 'دو عنصری توثیق غیر فعال ہو گئی۔';
 }
