@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../nhs_theme.dart';
 import '../services/api_service.dart';
 import '../utils/validators.dart';
@@ -22,9 +23,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   String? _error;
 
   Future<void> _sendCode() async {
+    final t = AppLocalizations.of(context);
     final email = _email.text.trim();
     if (email.isEmpty) {
-      setState(() => _error = 'Enter your email address.');
+      setState(() => _error = t.fpEnterEmail);
       return;
     }
     setState(() {
@@ -37,8 +39,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       setState(() {
         _sent = true;
         _info = res['dev_code'] != null
-            ? 'Email not configured — your test code is ${res['dev_code']}'
-            : 'If that email is registered, a 6-digit code has been sent.';
+            ? t.fpDevCode('${res['dev_code']}')
+            : t.fpCodeSent;
         if (res['dev_code'] != null) _code.text = '${res['dev_code']}';
       });
     } catch (e) {
@@ -49,8 +51,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   Future<void> _reset() async {
+    final t = AppLocalizations.of(context);
     if (_code.text.trim().isEmpty) {
-      setState(() => _error = 'Enter the reset code.');
+      setState(() => _error = t.fpEnterCode);
       return;
     }
     final pwErr = passwordError(_newPw.text);
@@ -70,7 +73,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password reset! Please log in.')),
+        SnackBar(content: Text(t.fpResetDone)),
       );
       Navigator.pop(context);
     } catch (e) {
@@ -90,35 +93,36 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Reset Password')),
+      appBar: AppBar(title: Text(t.fpTitle)),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Text('We will email you a 6-digit code to reset your password.',
-              style: TextStyle(color: NHSTheme.darkGrey)),
+          Text(t.fpSubtitle,
+              style: const TextStyle(color: NHSTheme.darkGrey)),
           const SizedBox(height: 20),
           TextField(
             controller: _email,
             keyboardType: TextInputType.emailAddress,
             enabled: !_sent,
-            decoration: const InputDecoration(labelText: 'Email address'),
+            decoration: InputDecoration(labelText: t.emailAddress),
           ),
           const SizedBox(height: 12),
           if (!_sent)
             ElevatedButton(
               onPressed: _busy ? null : _sendCode,
-              child: Text(_busy ? 'Sending…' : 'Send reset code'),
+              child: Text(_busy ? t.fpSending : t.fpSendCode),
             ),
           if (_sent) ...[
             TextField(
               controller: _code,
               keyboardType: TextInputType.number,
               maxLength: 6,
-              decoration: const InputDecoration(labelText: '6-digit code'),
+              decoration: InputDecoration(labelText: t.fpCodeField),
             ),
             const SizedBox(height: 8),
-            PasswordField(controller: _newPw, label: 'New password'),
+            PasswordField(controller: _newPw, label: t.profileNewPw),
             const Padding(
               padding: EdgeInsets.only(top: 4),
               child: Text(passwordHint,
@@ -127,11 +131,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             const SizedBox(height: 14),
             ElevatedButton(
               onPressed: _busy ? null : _reset,
-              child: Text(_busy ? 'Resetting…' : 'Reset password'),
+              child: Text(_busy ? t.fpResetting : t.fpResetBtn),
             ),
             TextButton(
               onPressed: _busy ? null : _sendCode,
-              child: const Text('Resend code'),
+              child: Text(t.fpResend),
             ),
           ],
           const SizedBox(height: 12),

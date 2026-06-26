@@ -850,4 +850,47 @@ class AppLocalizationsCy extends AppLocalizations {
 
   @override
   String get profile2faDisabled => 'Dilysu dau ffactor wedi\'i analluogi.';
+
+  @override
+  String get fpTitle => 'Ailosod Cyfrinair';
+
+  @override
+  String get fpSubtitle =>
+      'Byddwn yn e-bostio cod 6 digid atoch i ailosod eich cyfrinair.';
+
+  @override
+  String get fpSending => 'Yn anfon…';
+
+  @override
+  String get fpSendCode => 'Anfon cod ailosod';
+
+  @override
+  String get fpCodeField => 'Cod 6 digid';
+
+  @override
+  String get fpResetting => 'Yn ailosod…';
+
+  @override
+  String get fpResetBtn => 'Ailosod cyfrinair';
+
+  @override
+  String get fpResend => 'Ailanfon cod';
+
+  @override
+  String get fpEnterEmail => 'Rhowch eich cyfeiriad e-bost.';
+
+  @override
+  String get fpEnterCode => 'Rhowch y cod ailosod.';
+
+  @override
+  String get fpResetDone => 'Cyfrinair wedi\'i ailosod! Mewngofnodwch.';
+
+  @override
+  String get fpCodeSent =>
+      'Os yw\'r e-bost hwnnw wedi\'i gofrestru, mae cod 6 digid wedi\'i anfon.';
+
+  @override
+  String fpDevCode(String code) {
+    return 'E-bost heb ei ffurfweddu — eich cod prawf yw $code';
+  }
 }

@@ -1685,6 +1685,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Two-factor authentication disabled.'**
   String get profile2faDisabled;
+
+  /// No description provided for @fpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Password'**
+  String get fpTitle;
+
+  /// No description provided for @fpSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We will email you a 6-digit code to reset your password.'**
+  String get fpSubtitle;
+
+  /// No description provided for @fpSending.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending…'**
+  String get fpSending;
+
+  /// No description provided for @fpSendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Send reset code'**
+  String get fpSendCode;
+
+  /// No description provided for @fpCodeField.
+  ///
+  /// In en, this message translates to:
+  /// **'6-digit code'**
+  String get fpCodeField;
+
+  /// No description provided for @fpResetting.
+  ///
+  /// In en, this message translates to:
+  /// **'Resetting…'**
+  String get fpResetting;
+
+  /// No description provided for @fpResetBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset password'**
+  String get fpResetBtn;
+
+  /// No description provided for @fpResend.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend code'**
+  String get fpResend;
+
+  /// No description provided for @fpEnterEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email address.'**
+  String get fpEnterEmail;
+
+  /// No description provided for @fpEnterCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the reset code.'**
+  String get fpEnterCode;
+
+  /// No description provided for @fpResetDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Password reset! Please log in.'**
+  String get fpResetDone;
+
+  /// No description provided for @fpCodeSent.
+  ///
+  /// In en, this message translates to:
+  /// **'If that email is registered, a 6-digit code has been sent.'**
+  String get fpCodeSent;
+
+  /// No description provided for @fpDevCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Email not configured — your test code is {code}'**
+  String fpDevCode(String code);
 }
 
 class _AppLocalizationsDelegate

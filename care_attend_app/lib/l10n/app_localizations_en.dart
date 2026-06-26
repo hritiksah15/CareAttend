@@ -847,4 +847,47 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profile2faDisabled => 'Two-factor authentication disabled.';
+
+  @override
+  String get fpTitle => 'Reset Password';
+
+  @override
+  String get fpSubtitle =>
+      'We will email you a 6-digit code to reset your password.';
+
+  @override
+  String get fpSending => 'Sending…';
+
+  @override
+  String get fpSendCode => 'Send reset code';
+
+  @override
+  String get fpCodeField => '6-digit code';
+
+  @override
+  String get fpResetting => 'Resetting…';
+
+  @override
+  String get fpResetBtn => 'Reset password';
+
+  @override
+  String get fpResend => 'Resend code';
+
+  @override
+  String get fpEnterEmail => 'Enter your email address.';
+
+  @override
+  String get fpEnterCode => 'Enter the reset code.';
+
+  @override
+  String get fpResetDone => 'Password reset! Please log in.';
+
+  @override
+  String get fpCodeSent =>
+      'If that email is registered, a 6-digit code has been sent.';
+
+  @override
+  String fpDevCode(String code) {
+    return 'Email not configured — your test code is $code';
+  }
 }
