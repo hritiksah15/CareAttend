@@ -390,4 +390,105 @@ class AppLocalizationsCy extends AppLocalizations {
 
   @override
   String get nudgeGenerate => 'Cynhyrchu neges';
+
+  @override
+  String get adminTitle => 'Rheoli Defnyddwyr';
+
+  @override
+  String get adminSubtitle =>
+      'Gweinyddwyr yn unig. Mae cofrestriadau newydd yn dechrau fel defnyddwyr darllen yn unig — dyrchafwch gydweithwyr dibynadwy yma.';
+
+  @override
+  String get adminRoleUpdated => 'Rôl wedi\'i diweddaru.';
+
+  @override
+  String get adminDeleteTitle => 'Dileu defnyddiwr';
+
+  @override
+  String adminDeleteConfirm(String username) {
+    return 'Dileu \"$username\"? Ni ellir dadwneud hyn.';
+  }
+
+  @override
+  String get adminCancel => 'Canslo';
+
+  @override
+  String get adminDelete => 'Dileu';
+
+  @override
+  String get adminDeleted => 'Wedi\'i ddileu.';
+
+  @override
+  String get adminRolePerms => 'Caniatâd Rôl';
+
+  @override
+  String get adminFeature => 'Nodwedd';
+
+  @override
+  String get adminRoleUser => 'Defnyddiwr';
+
+  @override
+  String get adminRoleStaff => 'Staff';
+
+  @override
+  String get adminRoleAdmin => 'Gweinyddwr';
+
+  @override
+  String get adminPermAssessment => 'Asesiad + Canlyniadau';
+
+  @override
+  String get adminPermDashboard => 'Dangosfwrdd, Slotiau, Anogiad';
+
+  @override
+  String get adminPermBias => 'Rhagfarn, Moeseg, Gwybodaeth model';
+
+  @override
+  String get adminPermAudit => 'Cofnod archwilio, Rheoli defnyddwyr';
+
+  @override
+  String get adminRoleLabel => 'Rôl:';
+
+  @override
+  String get slotsTitle => 'Optimeiddio Slot';
+
+  @override
+  String get slotsSubtitle =>
+      'Amcangyfrif risg DNA ar gyfer slot ac a ellir ei orlenwi.';
+
+  @override
+  String get slotsSlotMins => 'Munudau slot';
+
+  @override
+  String get slotsAnalysing => 'Yn dadansoddi…';
+
+  @override
+  String get slotsAnalyse => 'Dadansoddi slot';
+
+  @override
+  String get slotsOverbookable => 'Gorlenwadwy';
+
+  @override
+  String get slotsExpectedWaste => 'Gwastraff disgwyliedig';
+
+  @override
+  String get slotsRecoveryPotential => 'Potensial adfer';
+
+  @override
+  String slotsRiskLine(String prob, String tier) {
+    return '$prob% risg DNA · $tier';
+  }
+
+  @override
+  String get slotsCanOverbookLabel => 'Gellir gorlenwi:';
+
+  @override
+  String get commonYes => 'Iawn';
+
+  @override
+  String get commonNo => 'Na';
+
+  @override
+  String slotsWastedMinutes(String min) {
+    return 'Munudau gwastraff disgwyliedig: $min';
+  }
 }

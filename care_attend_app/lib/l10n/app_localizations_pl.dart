@@ -387,4 +387,105 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get nudgeGenerate => 'Wygeneruj wiadomość';
+
+  @override
+  String get adminTitle => 'Zarządzanie użytkownikami';
+
+  @override
+  String get adminSubtitle =>
+      'Tylko administrator. Nowe rejestracje zaczynają jako użytkownicy tylko do odczytu — awansuj zaufanych współpracowników tutaj.';
+
+  @override
+  String get adminRoleUpdated => 'Rola zaktualizowana.';
+
+  @override
+  String get adminDeleteTitle => 'Usuń użytkownika';
+
+  @override
+  String adminDeleteConfirm(String username) {
+    return 'Usunąć \"$username\"? Tej operacji nie można cofnąć.';
+  }
+
+  @override
+  String get adminCancel => 'Anuluj';
+
+  @override
+  String get adminDelete => 'Usuń';
+
+  @override
+  String get adminDeleted => 'Usunięto.';
+
+  @override
+  String get adminRolePerms => 'Uprawnienia ról';
+
+  @override
+  String get adminFeature => 'Funkcja';
+
+  @override
+  String get adminRoleUser => 'Użytkownik';
+
+  @override
+  String get adminRoleStaff => 'Personel';
+
+  @override
+  String get adminRoleAdmin => 'Administrator';
+
+  @override
+  String get adminPermAssessment => 'Ocena + Wyniki';
+
+  @override
+  String get adminPermDashboard => 'Panel, Sloty, Przypomnienia';
+
+  @override
+  String get adminPermBias => 'Stronniczość, Etyka, Informacje o modelu';
+
+  @override
+  String get adminPermAudit => 'Dziennik audytu, Zarządzanie użytkownikami';
+
+  @override
+  String get adminRoleLabel => 'Rola:';
+
+  @override
+  String get slotsTitle => 'Optymalizacja slotów';
+
+  @override
+  String get slotsSubtitle =>
+      'Oszacuj ryzyko nieobecności dla slotu i czy można go nadrezerwować.';
+
+  @override
+  String get slotsSlotMins => 'Minuty slotu';
+
+  @override
+  String get slotsAnalysing => 'Analizowanie…';
+
+  @override
+  String get slotsAnalyse => 'Analizuj slot';
+
+  @override
+  String get slotsOverbookable => 'Możliwe do nadrezerwowania';
+
+  @override
+  String get slotsExpectedWaste => 'Oczekiwana strata';
+
+  @override
+  String get slotsRecoveryPotential => 'Potencjał odzyskania';
+
+  @override
+  String slotsRiskLine(String prob, String tier) {
+    return '$prob% ryzyko nieobecności · $tier';
+  }
+
+  @override
+  String get slotsCanOverbookLabel => 'Można nadrezerwować:';
+
+  @override
+  String get commonYes => 'Tak';
+
+  @override
+  String get commonNo => 'Nie';
+
+  @override
+  String slotsWastedMinutes(String min) {
+    return 'Oczekiwane zmarnowane minuty: $min';
+  }
 }

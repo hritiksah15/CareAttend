@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../nhs_theme.dart';
 import '../services/api_service.dart';
 
@@ -50,39 +51,40 @@ class _SlotsScreenState extends State<SlotsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return ListView(
       padding: const EdgeInsets.all(12),
       children: [
-        const Text('Slot Optimisation',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
+        Text(t.slotsTitle,
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
         const SizedBox(height: 4),
-        Text('Estimate DNA risk for a slot and whether it can be overbooked.',
-            style: TextStyle(color: NHSTheme.darkGrey)),
+        Text(t.slotsSubtitle,
+            style: const TextStyle(color: NHSTheme.darkGrey)),
         const SizedBox(height: 16),
         Card(child: Padding(
           padding: const EdgeInsets.all(14),
           child: Column(children: [
             Row(children: [
-              _num(_age, 'Age'),
+              _num(_age, t.nudgeAge),
               const SizedBox(width: 10),
-              _num(_lead, 'Lead days'),
+              _num(_lead, t.nudgeLeadDays),
             ]),
             const SizedBox(height: 10),
             Row(children: [
-              _num(_prior, 'Prior DNAs'),
+              _num(_prior, t.nudgePriorDnas),
               const SizedBox(width: 10),
-              _num(_imd, 'IMD (1-10)'),
+              _num(_imd, t.nudgeImd),
             ]),
             const SizedBox(height: 10),
             Row(children: [
-              _num(_slot, 'Slot mins'),
+              _num(_slot, t.slotsSlotMins),
               const SizedBox(width: 10),
               Expanded(child: DropdownButtonFormField<int>(
                 initialValue: _gender,
-                decoration: const InputDecoration(labelText: 'Gender'),
-                items: const [
-                  DropdownMenuItem(value: 0, child: Text('Female')),
-                  DropdownMenuItem(value: 1, child: Text('Male')),
+                decoration: InputDecoration(labelText: t.gender),
+                items: [
+                  DropdownMenuItem(value: 0, child: Text(t.female)),
+                  DropdownMenuItem(value: 1, child: Text(t.male)),
                 ],
                 onChanged: (v) => setState(() => _gender = v ?? 0),
               )),
@@ -90,7 +92,7 @@ class _SlotsScreenState extends State<SlotsScreen> {
             const SizedBox(height: 6),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('SMS reminder sent'),
+              title: Text(t.nudgeSmsSent),
               value: _sms == 1,
               onChanged: (v) => setState(() => _sms = v ? 1 : 0),
             ),
@@ -98,7 +100,7 @@ class _SlotsScreenState extends State<SlotsScreen> {
             ElevatedButton.icon(
               onPressed: _loading ? null : _run,
               icon: const Icon(Icons.event_available),
-              label: Text(_loading ? 'Analysing…' : 'Analyse slot'),
+              label: Text(_loading ? t.slotsAnalysing : t.slotsAnalyse),
             ),
           ]),
         )),
@@ -135,6 +137,7 @@ class _SlotsScreenState extends State<SlotsScreen> {
       );
 
   List<Widget> _buildResult() {
+    final t = AppLocalizations.of(context);
     final slots = (_result!['slots'] as List?) ?? [];
     if (slots.isEmpty) return [];
     final summary = _result!['summary'] as Map<String, dynamic>?;
@@ -150,11 +153,11 @@ class _SlotsScreenState extends State<SlotsScreen> {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Row(children: [
-            _metric('${summary['overbookable']}', 'Overbookable'),
+            _metric('${summary['overbookable']}', t.slotsOverbookable),
             _metric('${summary['total_expected_waste_minutes']} min',
-                'Expected waste'),
+                t.slotsExpectedWaste),
             _metric('${summary['potential_recovery_percent']}%',
-                'Recovery potential'),
+                t.slotsRecoveryPotential),
           ]),
         ),
       Card(
@@ -165,15 +168,16 @@ class _SlotsScreenState extends State<SlotsScreen> {
             Row(children: [
               Icon(Icons.warning_amber, color: NHSTheme.riskColor(tier)),
               const SizedBox(width: 8),
-              Text('$prob% DNA risk · $tier',
+              Text(t.slotsRiskLine(prob, tier),
                   style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
                       color: NHSTheme.riskColor(tier))),
             ]),
             const SizedBox(height: 10),
-            Text('Can overbook: ${s['can_overbook'] == true ? 'Yes' : 'No'}'),
-            Text('Expected wasted minutes: ${s['expected_waste_minutes']}'),
+            Text('${t.slotsCanOverbookLabel} '
+                '${s['can_overbook'] == true ? t.commonYes : t.commonNo}'),
+            Text(t.slotsWastedMinutes('${s['expected_waste_minutes']}')),
             const SizedBox(height: 10),
             Text('${s['recommendation']}',
                 style: const TextStyle(fontWeight: FontWeight.w600)),

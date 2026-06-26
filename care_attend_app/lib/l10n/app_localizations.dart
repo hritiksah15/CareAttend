@@ -821,6 +821,192 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Generate message'**
   String get nudgeGenerate;
+
+  /// No description provided for @adminTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'User Management'**
+  String get adminTitle;
+
+  /// No description provided for @adminSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin only. New sign-ups start as read-only users — promote trusted colleagues here.'**
+  String get adminSubtitle;
+
+  /// No description provided for @adminRoleUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Role updated.'**
+  String get adminRoleUpdated;
+
+  /// No description provided for @adminDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete user'**
+  String get adminDeleteTitle;
+
+  /// No description provided for @adminDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{username}\"? This cannot be undone.'**
+  String adminDeleteConfirm(String username);
+
+  /// No description provided for @adminCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get adminCancel;
+
+  /// No description provided for @adminDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get adminDelete;
+
+  /// No description provided for @adminDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted.'**
+  String get adminDeleted;
+
+  /// No description provided for @adminRolePerms.
+  ///
+  /// In en, this message translates to:
+  /// **'Role Permissions'**
+  String get adminRolePerms;
+
+  /// No description provided for @adminFeature.
+  ///
+  /// In en, this message translates to:
+  /// **'Feature'**
+  String get adminFeature;
+
+  /// No description provided for @adminRoleUser.
+  ///
+  /// In en, this message translates to:
+  /// **'User'**
+  String get adminRoleUser;
+
+  /// No description provided for @adminRoleStaff.
+  ///
+  /// In en, this message translates to:
+  /// **'Staff'**
+  String get adminRoleStaff;
+
+  /// No description provided for @adminRoleAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin'**
+  String get adminRoleAdmin;
+
+  /// No description provided for @adminPermAssessment.
+  ///
+  /// In en, this message translates to:
+  /// **'Assessment + Results'**
+  String get adminPermAssessment;
+
+  /// No description provided for @adminPermDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Dashboard, Slots, Nudge'**
+  String get adminPermDashboard;
+
+  /// No description provided for @adminPermBias.
+  ///
+  /// In en, this message translates to:
+  /// **'Bias, Ethics, Model info'**
+  String get adminPermBias;
+
+  /// No description provided for @adminPermAudit.
+  ///
+  /// In en, this message translates to:
+  /// **'Audit log, User management'**
+  String get adminPermAudit;
+
+  /// No description provided for @adminRoleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Role:'**
+  String get adminRoleLabel;
+
+  /// No description provided for @slotsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Slot Optimisation'**
+  String get slotsTitle;
+
+  /// No description provided for @slotsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimate DNA risk for a slot and whether it can be overbooked.'**
+  String get slotsSubtitle;
+
+  /// No description provided for @slotsSlotMins.
+  ///
+  /// In en, this message translates to:
+  /// **'Slot mins'**
+  String get slotsSlotMins;
+
+  /// No description provided for @slotsAnalysing.
+  ///
+  /// In en, this message translates to:
+  /// **'Analysing…'**
+  String get slotsAnalysing;
+
+  /// No description provided for @slotsAnalyse.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyse slot'**
+  String get slotsAnalyse;
+
+  /// No description provided for @slotsOverbookable.
+  ///
+  /// In en, this message translates to:
+  /// **'Overbookable'**
+  String get slotsOverbookable;
+
+  /// No description provided for @slotsExpectedWaste.
+  ///
+  /// In en, this message translates to:
+  /// **'Expected waste'**
+  String get slotsExpectedWaste;
+
+  /// No description provided for @slotsRecoveryPotential.
+  ///
+  /// In en, this message translates to:
+  /// **'Recovery potential'**
+  String get slotsRecoveryPotential;
+
+  /// No description provided for @slotsRiskLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{prob}% DNA risk · {tier}'**
+  String slotsRiskLine(String prob, String tier);
+
+  /// No description provided for @slotsCanOverbookLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Can overbook:'**
+  String get slotsCanOverbookLabel;
+
+  /// No description provided for @commonYes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get commonYes;
+
+  /// No description provided for @commonNo.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get commonNo;
+
+  /// No description provided for @slotsWastedMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Expected wasted minutes: {min}'**
+  String slotsWastedMinutes(String min);
 }
 
 class _AppLocalizationsDelegate
