@@ -177,4 +177,13 @@ class AppLocalizationsCy extends AppLocalizations {
 
   @override
   String get language => 'Iaith';
+
+  @override
+  String get rememberMe => 'Cofiwch fi';
+
+  @override
+  String get forgotPassword => 'Anghofio cyfrinair?';
+
+  @override
+  String get orText => 'NEU';
 }

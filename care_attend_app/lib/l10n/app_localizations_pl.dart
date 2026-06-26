@@ -176,4 +176,13 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get language => 'Język';
+
+  @override
+  String get rememberMe => 'Zapamiętaj mnie';
+
+  @override
+  String get forgotPassword => 'Nie pamiętasz hasła?';
+
+  @override
+  String get orText => 'LUB';
 }

@@ -55,5 +55,8 @@
   "navAdmin": "Zarządzanie użytkownikami",
   "personalAccount": "Konto osobiste",
   "logout": "Wyloguj",
-  "language": "Język"
+  "language": "Język",
+  "rememberMe": "Zapamiętaj mnie",
+  "forgotPassword": "Nie pamiętasz hasła?",
+  "orText": "LUB"
 }

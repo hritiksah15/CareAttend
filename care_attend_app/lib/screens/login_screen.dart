@@ -243,9 +243,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       value: _remember,
                       onChanged: (v) => setState(() => _remember = v ?? false),
                     ),
-                    const Flexible(
-                      child: Text('Remember me',
-                          style: TextStyle(fontSize: 13)),
+                    Flexible(
+                      child: Text(t.rememberMe,
+                          style: const TextStyle(fontSize: 13)),
                     ),
                   ],
                 ),
@@ -256,7 +256,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 context,
                 MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
               ),
-              child: const Text('Forgot password?'),
+              child: Text(t.forgotPassword),
             ),
           ],
         ),
@@ -394,9 +394,8 @@ class _LoginScreenState extends State<LoginScreen> {
           const Expanded(child: Divider(color: NHSTheme.grey)),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text('OR',
-                style: TextStyle(
-                    fontSize: 13, color: Colors.grey.shade500)),
+            child: Text(AppLocalizations.of(context).orText,
+                style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
           ),
           const Expanded(child: Divider(color: NHSTheme.grey)),
         ],

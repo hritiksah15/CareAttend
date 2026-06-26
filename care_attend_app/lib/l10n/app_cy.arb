@@ -55,5 +55,8 @@
   "navAdmin": "Rheoli Defnyddwyr",
   "personalAccount": "Cyfrif Personol",
   "logout": "Allgofnodi",
-  "language": "Iaith"
+  "language": "Iaith",
+  "rememberMe": "Cofiwch fi",
+  "forgotPassword": "Anghofio cyfrinair?",
+  "orText": "NEU"
 }

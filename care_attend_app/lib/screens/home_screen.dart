@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../main.dart' show themeModeNotifier;
 import '../nhs_theme.dart';
+import '../l10n/app_localizations.dart';
 import '../services/api_service.dart';
 import 'login_screen.dart';
 import 'patient_form_screen.dart';
@@ -73,6 +74,36 @@ class _HomeScreenState extends State<HomeScreen> {
   List<_NavItem> get _visibleItems => _all
       .where((it) => it.roles == null || it.roles!.contains(ApiService.role))
       .toList();
+
+  /// Localized label for a nav item, keyed by its stack index.
+  String _navLabel(AppLocalizations t, _NavItem it) {
+    switch (it.index) {
+      case 0:
+        return t.patientAssessment;
+      case 1:
+        return t.navResults;
+      case 2:
+        return t.navDashboard;
+      case 10:
+        return t.navClinic;
+      case 9:
+        return t.batchUpload;
+      case 4:
+        return t.navSlots;
+      case 5:
+        return t.navNudge;
+      case 3:
+        return t.biasMonitor;
+      case 6:
+        return t.navEthics;
+      case 8:
+        return t.navAdmin;
+      case 7:
+        return t.personalAccount;
+      default:
+        return it.label;
+    }
+  }
 
   // Up to four destinations in the bottom bar; the rest go under "More".
   static const _maxCore = 4;
@@ -229,7 +260,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
-          title: const Text('Care Attend'),
+          title: Text(AppLocalizations.of(context).appTitle),
           actions: [
             IconButton(
               icon: const Icon(Icons.help_outline, size: 20),
@@ -301,6 +332,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildBottomBar() {
+    final t = AppLocalizations.of(context);
     final visible = _visibleItems;
     final core = visible.take(_maxCore).toList();
     final hasMore = visible.length > core.length;
@@ -319,15 +351,16 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       destinations: [
         for (final it in core)
-          NavigationDestination(icon: Icon(it.icon), label: it.label),
+          NavigationDestination(icon: Icon(it.icon), label: _navLabel(t, it)),
         if (hasMore)
-          const NavigationDestination(
-              icon: Icon(Icons.more_horiz), label: 'More'),
+          NavigationDestination(
+              icon: const Icon(Icons.more_horiz), label: t.navMore),
       ],
     );
   }
 
   Widget _buildDrawer() {
+    final t = AppLocalizations.of(context);
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -340,8 +373,8 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 const Icon(Icons.favorite, color: Colors.white, size: 32),
                 const SizedBox(height: 8),
-                const Text('Care Attend',
-                    style: TextStyle(
+                Text(t.appTitle,
+                    style: const TextStyle(
                         color: Colors.white,
                         fontSize: 20,
                         fontWeight: FontWeight.w700)),
@@ -356,7 +389,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: _currentIndex == item.index
                       ? NHSTheme.blue
                       : NHSTheme.darkGrey),
-              title: Text(item.label),
+              title: Text(_navLabel(t, item)),
               selected: _currentIndex == item.index,
               onTap: () {
                 _go(item.index);
@@ -366,7 +399,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const Divider(),
           ListTile(
             leading: const Icon(Icons.logout, color: NHSTheme.riskHigh),
-            title: const Text('Log Out'),
+            title: Text(t.logout),
             onTap: () {
               Navigator.pop(context);
               _handleLogout();

@@ -175,4 +175,13 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get language => 'زبان';
+
+  @override
+  String get rememberMe => 'مجھے یاد رکھیں';
+
+  @override
+  String get forgotPassword => 'پاس ورڈ بھول گئے؟';
+
+  @override
+  String get orText => 'یا';
 }
