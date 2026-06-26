@@ -487,4 +487,83 @@ class AppLocalizationsUr extends AppLocalizations {
   String slotsWastedMinutes(String min) {
     return 'متوقع ضائع منٹ: $min';
   }
+
+  @override
+  String get biasMonitorTitle => 'اخلاقی تعصب کی نگرانی کا ڈیش بورڈ';
+
+  @override
+  String get biasSubtitle =>
+      'محفوظ خصوصیات کے گروپوں میں انصاف کے میٹرکس۔ حد: 0.10۔';
+
+  @override
+  String get biasTabAge => 'عمر';
+
+  @override
+  String get biasTabImd => 'IMD';
+
+  @override
+  String get biasAuditFailed => 'آڈٹ ناکام ہو گیا۔ سرور کنکشن چیک کریں۔';
+
+  @override
+  String get biasExportAudit => 'آڈٹ برآمد کریں';
+
+  @override
+  String get biasOverallPerf => 'ماڈل کی مجموعی کارکردگی';
+
+  @override
+  String get biasF1 => 'F1 سکور';
+
+  @override
+  String get biasPrecision => 'درستگی';
+
+  @override
+  String get biasSamples => 'نمونے';
+
+  @override
+  String get biasAgeGroup => 'عمر کا گروپ';
+
+  @override
+  String get biasImdBand => 'IMD بینڈ';
+
+  @override
+  String get biasDpDiff => 'ڈیموگرافک پیریٹی فرق';
+
+  @override
+  String get biasPass => 'پاس';
+
+  @override
+  String get biasFail => 'ناکام';
+
+  @override
+  String get biasBarPass => 'پاس';
+
+  @override
+  String get biasBarWarn => 'انتباہ';
+
+  @override
+  String get biasBarFail => 'ناکام';
+
+  @override
+  String get biasNameAge => 'عمر';
+
+  @override
+  String get biasNameGender => 'جنس';
+
+  @override
+  String get biasNameImd => 'IMD';
+
+  @override
+  String get biasFailDp => 'ڈیموگرافک پیریٹی';
+
+  @override
+  String get biasFailEo => 'مساوی امکانات';
+
+  @override
+  String get biasSummaryPass =>
+      'ماڈل تمام محفوظ خصوصیات کے گروپوں میں قابل قبول انصاف دکھاتا ہے۔ تمام میٹرکس 0.10 کی حد کے اندر ہیں۔';
+
+  @override
+  String biasSummaryFail(String failures) {
+    return 'ماڈل زیادہ تر عمر کے گروپوں میں قابل قبول انصاف دکھاتا ہے۔ درج ذیل 0.10 کی حد سے تجاوز کرتے ہیں: $failures۔ یہ الگورتھمک تعصب کے بجائے حقیقی طبی خطرے کی عکاسی کر سکتا ہے۔';
+  }
 }

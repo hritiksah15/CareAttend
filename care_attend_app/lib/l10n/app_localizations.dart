@@ -1007,6 +1007,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Expected wasted minutes: {min}'**
   String slotsWastedMinutes(String min);
+
+  /// No description provided for @biasMonitorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ethical Bias Monitoring Dashboard'**
+  String get biasMonitorTitle;
+
+  /// No description provided for @biasSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Fairness metrics across protected characteristic groups. Threshold: 0.10.'**
+  String get biasSubtitle;
+
+  /// No description provided for @biasTabAge.
+  ///
+  /// In en, this message translates to:
+  /// **'Age'**
+  String get biasTabAge;
+
+  /// No description provided for @biasTabImd.
+  ///
+  /// In en, this message translates to:
+  /// **'IMD'**
+  String get biasTabImd;
+
+  /// No description provided for @biasAuditFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Audit failed. Check server connection.'**
+  String get biasAuditFailed;
+
+  /// No description provided for @biasExportAudit.
+  ///
+  /// In en, this message translates to:
+  /// **'Export audit'**
+  String get biasExportAudit;
+
+  /// No description provided for @biasOverallPerf.
+  ///
+  /// In en, this message translates to:
+  /// **'Overall Model Performance'**
+  String get biasOverallPerf;
+
+  /// No description provided for @biasF1.
+  ///
+  /// In en, this message translates to:
+  /// **'F1-Score'**
+  String get biasF1;
+
+  /// No description provided for @biasPrecision.
+  ///
+  /// In en, this message translates to:
+  /// **'Precision'**
+  String get biasPrecision;
+
+  /// No description provided for @biasSamples.
+  ///
+  /// In en, this message translates to:
+  /// **'Samples'**
+  String get biasSamples;
+
+  /// No description provided for @biasAgeGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Age Group'**
+  String get biasAgeGroup;
+
+  /// No description provided for @biasImdBand.
+  ///
+  /// In en, this message translates to:
+  /// **'IMD Band'**
+  String get biasImdBand;
+
+  /// No description provided for @biasDpDiff.
+  ///
+  /// In en, this message translates to:
+  /// **'DEMOGRAPHIC PARITY DIFFERENCE'**
+  String get biasDpDiff;
+
+  /// No description provided for @biasPass.
+  ///
+  /// In en, this message translates to:
+  /// **'Pass'**
+  String get biasPass;
+
+  /// No description provided for @biasFail.
+  ///
+  /// In en, this message translates to:
+  /// **'Fail'**
+  String get biasFail;
+
+  /// No description provided for @biasBarPass.
+  ///
+  /// In en, this message translates to:
+  /// **'PASS'**
+  String get biasBarPass;
+
+  /// No description provided for @biasBarWarn.
+  ///
+  /// In en, this message translates to:
+  /// **'WARN'**
+  String get biasBarWarn;
+
+  /// No description provided for @biasBarFail.
+  ///
+  /// In en, this message translates to:
+  /// **'FAIL'**
+  String get biasBarFail;
+
+  /// No description provided for @biasNameAge.
+  ///
+  /// In en, this message translates to:
+  /// **'age'**
+  String get biasNameAge;
+
+  /// No description provided for @biasNameGender.
+  ///
+  /// In en, this message translates to:
+  /// **'gender'**
+  String get biasNameGender;
+
+  /// No description provided for @biasNameImd.
+  ///
+  /// In en, this message translates to:
+  /// **'IMD'**
+  String get biasNameImd;
+
+  /// No description provided for @biasFailDp.
+  ///
+  /// In en, this message translates to:
+  /// **'demographic parity'**
+  String get biasFailDp;
+
+  /// No description provided for @biasFailEo.
+  ///
+  /// In en, this message translates to:
+  /// **'equalised odds'**
+  String get biasFailEo;
+
+  /// No description provided for @biasSummaryPass.
+  ///
+  /// In en, this message translates to:
+  /// **'Model shows acceptable fairness across all protected attribute groups. All metrics within the 0.10 threshold.'**
+  String get biasSummaryPass;
+
+  /// No description provided for @biasSummaryFail.
+  ///
+  /// In en, this message translates to:
+  /// **'Model shows acceptable fairness across most age groups. The following exceed the 0.10 threshold: {failures}. This may reflect genuine clinical risk rather than algorithmic bias.'**
+  String biasSummaryFail(String failures);
 }
 
 class _AppLocalizationsDelegate

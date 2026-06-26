@@ -490,4 +490,83 @@ class AppLocalizationsEn extends AppLocalizations {
   String slotsWastedMinutes(String min) {
     return 'Expected wasted minutes: $min';
   }
+
+  @override
+  String get biasMonitorTitle => 'Ethical Bias Monitoring Dashboard';
+
+  @override
+  String get biasSubtitle =>
+      'Fairness metrics across protected characteristic groups. Threshold: 0.10.';
+
+  @override
+  String get biasTabAge => 'Age';
+
+  @override
+  String get biasTabImd => 'IMD';
+
+  @override
+  String get biasAuditFailed => 'Audit failed. Check server connection.';
+
+  @override
+  String get biasExportAudit => 'Export audit';
+
+  @override
+  String get biasOverallPerf => 'Overall Model Performance';
+
+  @override
+  String get biasF1 => 'F1-Score';
+
+  @override
+  String get biasPrecision => 'Precision';
+
+  @override
+  String get biasSamples => 'Samples';
+
+  @override
+  String get biasAgeGroup => 'Age Group';
+
+  @override
+  String get biasImdBand => 'IMD Band';
+
+  @override
+  String get biasDpDiff => 'DEMOGRAPHIC PARITY DIFFERENCE';
+
+  @override
+  String get biasPass => 'Pass';
+
+  @override
+  String get biasFail => 'Fail';
+
+  @override
+  String get biasBarPass => 'PASS';
+
+  @override
+  String get biasBarWarn => 'WARN';
+
+  @override
+  String get biasBarFail => 'FAIL';
+
+  @override
+  String get biasNameAge => 'age';
+
+  @override
+  String get biasNameGender => 'gender';
+
+  @override
+  String get biasNameImd => 'IMD';
+
+  @override
+  String get biasFailDp => 'demographic parity';
+
+  @override
+  String get biasFailEo => 'equalised odds';
+
+  @override
+  String get biasSummaryPass =>
+      'Model shows acceptable fairness across all protected attribute groups. All metrics within the 0.10 threshold.';
+
+  @override
+  String biasSummaryFail(String failures) {
+    return 'Model shows acceptable fairness across most age groups. The following exceed the 0.10 threshold: $failures. This may reflect genuine clinical risk rather than algorithmic bias.';
+  }
 }
