@@ -276,5 +276,19 @@
   "profile2faEnterCode": "Enter the 6-digit code from your authenticator app.",
   "profile2faEnabled": "Two-factor authentication enabled.",
   "profile2faEnterPw": "Enter your password to disable 2FA.",
-  "profile2faDisabled": "Two-factor authentication disabled."
+  "profile2faDisabled": "Two-factor authentication disabled.",
+  "fpTitle": "Reset Password",
+  "fpSubtitle": "We will email you a 6-digit code to reset your password.",
+  "fpSending": "Sending…",
+  "fpSendCode": "Send reset code",
+  "fpCodeField": "6-digit code",
+  "fpResetting": "Resetting…",
+  "fpResetBtn": "Reset password",
+  "fpResend": "Resend code",
+  "fpEnterEmail": "Enter your email address.",
+  "fpEnterCode": "Enter the reset code.",
+  "fpResetDone": "Password reset! Please log in.",
+  "fpCodeSent": "If that email is registered, a 6-digit code has been sent.",
+  "fpDevCode": "Email not configured — your test code is {code}",
+  "@fpDevCode": { "placeholders": { "code": { "type": "String" } } }
 }

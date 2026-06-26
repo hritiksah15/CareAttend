@@ -274,5 +274,19 @@
   "profile2faEnterCode": "Rhowch y cod 6 digid o'ch ap dilysu.",
   "profile2faEnabled": "Dilysu dau ffactor wedi'i alluogi.",
   "profile2faEnterPw": "Rhowch eich cyfrinair i analluogi 2FA.",
-  "profile2faDisabled": "Dilysu dau ffactor wedi'i analluogi."
+  "profile2faDisabled": "Dilysu dau ffactor wedi'i analluogi.",
+  "fpTitle": "Ailosod Cyfrinair",
+  "fpSubtitle": "Byddwn yn e-bostio cod 6 digid atoch i ailosod eich cyfrinair.",
+  "fpSending": "Yn anfon…",
+  "fpSendCode": "Anfon cod ailosod",
+  "fpCodeField": "Cod 6 digid",
+  "fpResetting": "Yn ailosod…",
+  "fpResetBtn": "Ailosod cyfrinair",
+  "fpResend": "Ailanfon cod",
+  "fpEnterEmail": "Rhowch eich cyfeiriad e-bost.",
+  "fpEnterCode": "Rhowch y cod ailosod.",
+  "fpResetDone": "Cyfrinair wedi'i ailosod! Mewngofnodwch.",
+  "fpCodeSent": "Os yw'r e-bost hwnnw wedi'i gofrestru, mae cod 6 digid wedi'i anfon.",
+  "fpDevCode": "E-bost heb ei ffurfweddu — eich cod prawf yw {code}",
+  "@fpDevCode": { "placeholders": { "code": { "type": "String" } } }
 }

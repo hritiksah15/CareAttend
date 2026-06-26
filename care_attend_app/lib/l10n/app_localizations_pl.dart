@@ -847,4 +847,47 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get profile2faDisabled => 'Uwierzytelnianie dwuskładnikowe wyłączone.';
+
+  @override
+  String get fpTitle => 'Zresetuj hasło';
+
+  @override
+  String get fpSubtitle =>
+      'Wyślemy Ci e-mailem 6-cyfrowy kod do zresetowania hasła.';
+
+  @override
+  String get fpSending => 'Wysyłanie…';
+
+  @override
+  String get fpSendCode => 'Wyślij kod resetujący';
+
+  @override
+  String get fpCodeField => 'Kod 6-cyfrowy';
+
+  @override
+  String get fpResetting => 'Resetowanie…';
+
+  @override
+  String get fpResetBtn => 'Zresetuj hasło';
+
+  @override
+  String get fpResend => 'Wyślij kod ponownie';
+
+  @override
+  String get fpEnterEmail => 'Wprowadź swój adres e-mail.';
+
+  @override
+  String get fpEnterCode => 'Wprowadź kod resetujący.';
+
+  @override
+  String get fpResetDone => 'Hasło zresetowane! Zaloguj się.';
+
+  @override
+  String get fpCodeSent =>
+      'Jeśli ten e-mail jest zarejestrowany, wysłano 6-cyfrowy kod.';
+
+  @override
+  String fpDevCode(String code) {
+    return 'E-mail nieskonfigurowany — Twój kod testowy to $code';
+  }
 }

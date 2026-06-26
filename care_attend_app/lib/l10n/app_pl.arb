@@ -274,5 +274,19 @@
   "profile2faEnterCode": "Wprowadź 6-cyfrowy kod z aplikacji uwierzytelniającej.",
   "profile2faEnabled": "Uwierzytelnianie dwuskładnikowe włączone.",
   "profile2faEnterPw": "Wprowadź hasło, aby wyłączyć 2FA.",
-  "profile2faDisabled": "Uwierzytelnianie dwuskładnikowe wyłączone."
+  "profile2faDisabled": "Uwierzytelnianie dwuskładnikowe wyłączone.",
+  "fpTitle": "Zresetuj hasło",
+  "fpSubtitle": "Wyślemy Ci e-mailem 6-cyfrowy kod do zresetowania hasła.",
+  "fpSending": "Wysyłanie…",
+  "fpSendCode": "Wyślij kod resetujący",
+  "fpCodeField": "Kod 6-cyfrowy",
+  "fpResetting": "Resetowanie…",
+  "fpResetBtn": "Zresetuj hasło",
+  "fpResend": "Wyślij kod ponownie",
+  "fpEnterEmail": "Wprowadź swój adres e-mail.",
+  "fpEnterCode": "Wprowadź kod resetujący.",
+  "fpResetDone": "Hasło zresetowane! Zaloguj się.",
+  "fpCodeSent": "Jeśli ten e-mail jest zarejestrowany, wysłano 6-cyfrowy kod.",
+  "fpDevCode": "E-mail nieskonfigurowany — Twój kod testowy to {code}",
+  "@fpDevCode": { "placeholders": { "code": { "type": "String" } } }
 }

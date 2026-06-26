@@ -846,4 +846,48 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get profile2faDisabled => 'دو عنصری توثیق غیر فعال ہو گئی۔';
+
+  @override
+  String get fpTitle => 'پاس ورڈ دوبارہ ترتیب دیں';
+
+  @override
+  String get fpSubtitle =>
+      'ہم آپ کو آپ کا پاس ورڈ دوبارہ ترتیب دینے کے لیے 6 ہندسوں کا کوڈ ای میل کریں گے۔';
+
+  @override
+  String get fpSending => 'بھیجا جا رہا ہے…';
+
+  @override
+  String get fpSendCode => 'ری سیٹ کوڈ بھیجیں';
+
+  @override
+  String get fpCodeField => '6 ہندسوں کا کوڈ';
+
+  @override
+  String get fpResetting => 'دوبارہ ترتیب دی جا رہی ہے…';
+
+  @override
+  String get fpResetBtn => 'پاس ورڈ دوبارہ ترتیب دیں';
+
+  @override
+  String get fpResend => 'کوڈ دوبارہ بھیجیں';
+
+  @override
+  String get fpEnterEmail => 'اپنا ای میل ایڈریس درج کریں۔';
+
+  @override
+  String get fpEnterCode => 'ری سیٹ کوڈ درج کریں۔';
+
+  @override
+  String get fpResetDone =>
+      'پاس ورڈ دوبارہ ترتیب دیا گیا! براہ کرم لاگ ان کریں۔';
+
+  @override
+  String get fpCodeSent =>
+      'اگر وہ ای میل رجسٹرڈ ہے تو 6 ہندسوں کا کوڈ بھیج دیا گیا ہے۔';
+
+  @override
+  String fpDevCode(String code) {
+    return 'ای میل کنفیگر نہیں — آپ کا ٹیسٹ کوڈ $code ہے';
+  }
 }
