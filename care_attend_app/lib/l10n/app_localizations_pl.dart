@@ -316,4 +316,75 @@ class AppLocalizationsPl extends AppLocalizations {
   String batchTopFactor(String factor) {
     return 'Główny czynnik: $factor';
   }
+
+  @override
+  String get ethicsFramework => 'Ramy etyczne';
+
+  @override
+  String get ethicsSubtitle =>
+      'Mapowanie sześciu zasad NHS England (2024) z dowodami.';
+
+  @override
+  String get ethicsCvTitle => 'Walidacja krzyżowa (5-krotna)';
+
+  @override
+  String get ethicsCvDesc =>
+      'Przedziały ufności 95% bootstrap i testy istotności McNemara.';
+
+  @override
+  String get ethicsCvRunning => 'Uruchamianie…';
+
+  @override
+  String get ethicsCvRun => 'Uruchom walidację krzyżową';
+
+  @override
+  String get ethicsMcnemar => 'Istotność McNemara';
+
+  @override
+  String get ethicsSignificant => '(istotne)';
+
+  @override
+  String get ethicsMeanF1 => 'Średnie F1';
+
+  @override
+  String get ethicsRecall => 'Czułość';
+
+  @override
+  String get ethicsRocAuc => 'ROC-AUC';
+
+  @override
+  String ethicsCi(String lo, String hi) {
+    return '95% CI (F1): [$lo, $hi]';
+  }
+
+  @override
+  String get nudgeTitle => 'Przypomnienie pacjenta';
+
+  @override
+  String get nudgeSubtitle =>
+      'Wygeneruj spersonalizowaną, niestygmatyzującą wiadomość kontaktową.';
+
+  @override
+  String get nudgeName => 'Imię pacjenta (opcjonalnie)';
+
+  @override
+  String get nudgeAge => 'Wiek';
+
+  @override
+  String get nudgeImd => 'IMD (1-10)';
+
+  @override
+  String get nudgeLeadDays => 'Dni oczekiwania';
+
+  @override
+  String get nudgePriorDnas => 'Poprzednie nieobecności';
+
+  @override
+  String get nudgeSmsSent => 'Wysłano przypomnienie SMS';
+
+  @override
+  String get nudgeGenerating => 'Generowanie…';
+
+  @override
+  String get nudgeGenerate => 'Wygeneruj wiadomość';
 }

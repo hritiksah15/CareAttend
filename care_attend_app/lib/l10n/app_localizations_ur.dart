@@ -316,4 +316,74 @@ class AppLocalizationsUr extends AppLocalizations {
   String batchTopFactor(String factor) {
     return 'اہم عنصر: $factor';
   }
+
+  @override
+  String get ethicsFramework => 'اخلاقی فریم ورک';
+
+  @override
+  String get ethicsSubtitle =>
+      'NHS England (2024) چھ اصولوں کی نقشہ سازی شواہد کے ساتھ۔';
+
+  @override
+  String get ethicsCvTitle => 'کراس ویلیڈیشن (5-فولڈ)';
+
+  @override
+  String get ethicsCvDesc => 'بوٹ سٹریپ 95% CI اور McNemar اہمیت کے ٹیسٹ۔';
+
+  @override
+  String get ethicsCvRunning => 'چل رہا ہے…';
+
+  @override
+  String get ethicsCvRun => 'کراس ویلیڈیشن چلائیں';
+
+  @override
+  String get ethicsMcnemar => 'McNemar اہمیت';
+
+  @override
+  String get ethicsSignificant => '(اہم)';
+
+  @override
+  String get ethicsMeanF1 => 'اوسط F1';
+
+  @override
+  String get ethicsRecall => 'ریکال';
+
+  @override
+  String get ethicsRocAuc => 'ROC-AUC';
+
+  @override
+  String ethicsCi(String lo, String hi) {
+    return '95% CI (F1): [$lo، $hi]';
+  }
+
+  @override
+  String get nudgeTitle => 'مریض کی یاد دہانی';
+
+  @override
+  String get nudgeSubtitle =>
+      'ذاتی نوعیت کا، غیر داغ دار رابطہ پیغام تیار کریں۔';
+
+  @override
+  String get nudgeName => 'مریض کا نام (اختیاری)';
+
+  @override
+  String get nudgeAge => 'عمر';
+
+  @override
+  String get nudgeImd => 'IMD (1-10)';
+
+  @override
+  String get nudgeLeadDays => 'لیڈ دن';
+
+  @override
+  String get nudgePriorDnas => 'پہلے کی DNAs';
+
+  @override
+  String get nudgeSmsSent => 'SMS یاد دہانی بھیجی گئی';
+
+  @override
+  String get nudgeGenerating => 'تیار ہو رہا ہے…';
+
+  @override
+  String get nudgeGenerate => 'پیغام تیار کریں';
 }

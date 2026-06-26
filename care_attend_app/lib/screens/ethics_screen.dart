@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../nhs_theme.dart';
 import '../services/api_service.dart';
 
@@ -33,20 +34,21 @@ class _EthicsScreenState extends State<EthicsScreen> {
   }
 
   Widget _cvCard() {
+    final t = AppLocalizations.of(context);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Cross-Validation (5-Fold)',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+          Text(t.ethicsCvTitle,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
-          const Text('Bootstrap 95% CIs and McNemar significance tests.',
-              style: TextStyle(color: NHSTheme.darkGrey, fontSize: 13)),
+          Text(t.ethicsCvDesc,
+              style: const TextStyle(color: NHSTheme.darkGrey, fontSize: 13)),
           const SizedBox(height: 10),
           ElevatedButton.icon(
             onPressed: _cvBusy ? null : _runCv,
             icon: const Icon(Icons.analytics_outlined),
-            label: Text(_cvBusy ? 'Running…' : 'Run Cross-Validation'),
+            label: Text(_cvBusy ? t.ethicsCvRunning : t.ethicsCvRun),
           ),
           if (_cv != null) ...[
             const SizedBox(height: 12),
@@ -63,12 +65,12 @@ class _EthicsScreenState extends State<EthicsScreen> {
               ),
             if ((_cv!['significance_tests'] as List?)?.isNotEmpty ?? false) ...[
               const SizedBox(height: 12),
-              const Text('McNemar significance',
-                  style: TextStyle(fontWeight: FontWeight.w700)),
+              Text(AppLocalizations.of(context).ethicsMcnemar,
+                  style: const TextStyle(fontWeight: FontWeight.w700)),
               const SizedBox(height: 6),
-              ...((_cv!['significance_tests'] as List).map((t) => Text(
-                  '${t['model_a']} vs ${t['model_b']}: p=${(t['mcnemar_p_value'] as num).toStringAsFixed(6)} '
-                  '${t['significant_at_005'] == true ? '(significant)' : ''}',
+              ...((_cv!['significance_tests'] as List).map((s) => Text(
+                  '${s['model_a']} vs ${s['model_b']}: p=${(s['mcnemar_p_value'] as num).toStringAsFixed(6)} '
+                  '${s['significant_at_005'] == true ? AppLocalizations.of(context).ethicsSignificant : ''}',
                   style: const TextStyle(fontSize: 13)))),
             ],
           ],
@@ -106,6 +108,7 @@ class _EthicsScreenState extends State<EthicsScreen> {
 
   Widget _cvModelCard(String name, double f1, dynamic ciLo, dynamic ciHi,
       double recall, double rocAuc) {
+    final t = AppLocalizations.of(context);
     Widget metric(String label, String value) => Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(label,
@@ -127,12 +130,12 @@ class _EthicsScreenState extends State<EthicsScreen> {
                   color: NHSTheme.blue)),
           const SizedBox(height: 10),
           Row(children: [
-            metric('Mean F1', f1.toStringAsFixed(4)),
-            metric('Recall', recall.toStringAsFixed(4)),
-            metric('ROC-AUC', rocAuc.toStringAsFixed(4)),
+            metric(t.ethicsMeanF1, f1.toStringAsFixed(4)),
+            metric(t.ethicsRecall, recall.toStringAsFixed(4)),
+            metric(t.ethicsRocAuc, rocAuc.toStringAsFixed(4)),
           ]),
           const SizedBox(height: 8),
-          Text('95% CI (F1): [$ciLo, $ciHi]',
+          Text(t.ethicsCi('$ciLo', '$ciHi'),
               style: const TextStyle(fontSize: 12, color: NHSTheme.darkGrey)),
         ]),
       ),
@@ -141,16 +144,17 @@ class _EthicsScreenState extends State<EthicsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
         padding: const EdgeInsets.all(12),
         children: [
-          const Text('Ethics Framework',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
+          Text(t.ethicsFramework,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
-          Text('NHS England (2024) six-principle mapping with evidence.',
-              style: TextStyle(color: NHSTheme.darkGrey)),
+          Text(t.ethicsSubtitle,
+              style: const TextStyle(color: NHSTheme.darkGrey)),
           const SizedBox(height: 16),
           _cvCard(),
           const SizedBox(height: 8),

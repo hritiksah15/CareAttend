@@ -319,4 +319,75 @@ class AppLocalizationsCy extends AppLocalizations {
   String batchTopFactor(String factor) {
     return 'Prif ffactor: $factor';
   }
+
+  @override
+  String get ethicsFramework => 'Fframwaith Moeseg';
+
+  @override
+  String get ethicsSubtitle =>
+      'Mapio chwe egwyddor NHS England (2024) gyda thystiolaeth.';
+
+  @override
+  String get ethicsCvTitle => 'Croes-Ddilysu (5-Plyg)';
+
+  @override
+  String get ethicsCvDesc =>
+      'Cyfyngau hyder 95% bootstrap a phrofion arwyddocâd McNemar.';
+
+  @override
+  String get ethicsCvRunning => 'Yn rhedeg…';
+
+  @override
+  String get ethicsCvRun => 'Rhedeg Croes-Ddilysu';
+
+  @override
+  String get ethicsMcnemar => 'Arwyddocâd McNemar';
+
+  @override
+  String get ethicsSignificant => '(arwyddocaol)';
+
+  @override
+  String get ethicsMeanF1 => 'F1 Cymedrig';
+
+  @override
+  String get ethicsRecall => 'Dwyn i gof';
+
+  @override
+  String get ethicsRocAuc => 'ROC-AUC';
+
+  @override
+  String ethicsCi(String lo, String hi) {
+    return '95% CI (F1): [$lo, $hi]';
+  }
+
+  @override
+  String get nudgeTitle => 'Anogiad Claf';
+
+  @override
+  String get nudgeSubtitle =>
+      'Cynhyrchu neges allgymorth bersonol, anstigmateiddio.';
+
+  @override
+  String get nudgeName => 'Enw\'r claf (dewisol)';
+
+  @override
+  String get nudgeAge => 'Oedran';
+
+  @override
+  String get nudgeImd => 'IMD (1-10)';
+
+  @override
+  String get nudgeLeadDays => 'Dyddiau arwain';
+
+  @override
+  String get nudgePriorDnas => 'DNAau blaenorol';
+
+  @override
+  String get nudgeSmsSent => 'Nodyn SMS wedi\'i anfon';
+
+  @override
+  String get nudgeGenerating => 'Yn cynhyrchu…';
+
+  @override
+  String get nudgeGenerate => 'Cynhyrchu neges';
 }
