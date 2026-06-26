@@ -1,0 +1,477 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart' as intl;
+
+import 'app_localizations_cy.dart';
+import 'app_localizations_en.dart';
+import 'app_localizations_pl.dart';
+import 'app_localizations_ur.dart';
+
+// ignore_for_file: type=lint
+
+/// Callers can lookup localized strings with an instance of AppLocalizations
+/// returned by `AppLocalizations.of(context)`.
+///
+/// Applications need to include `AppLocalizations.delegate()` in their app's
+/// `localizationDelegates` list, and the locales they support in the app's
+/// `supportedLocales` list. For example:
+///
+/// ```dart
+/// import 'l10n/app_localizations.dart';
+///
+/// return MaterialApp(
+///   localizationsDelegates: AppLocalizations.localizationsDelegates,
+///   supportedLocales: AppLocalizations.supportedLocales,
+///   home: MyApplicationHome(),
+/// );
+/// ```
+///
+/// ## Update pubspec.yaml
+///
+/// Please make sure to update your pubspec.yaml to include the following
+/// packages:
+///
+/// ```yaml
+/// dependencies:
+///   # Internationalization support.
+///   flutter_localizations:
+///     sdk: flutter
+///   intl: any # Use the pinned version from flutter_localizations
+///
+///   # Rest of dependencies
+/// ```
+///
+/// ## iOS Applications
+///
+/// iOS applications define key application metadata, including supported
+/// locales, in an Info.plist file that is built into the application bundle.
+/// To configure the locales supported by your app, you’ll need to edit this
+/// file.
+///
+/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
+/// Then, in the Project Navigator, open the Info.plist file under the Runner
+/// project’s Runner folder.
+///
+/// Next, select the Information Property List item, select Add Item from the
+/// Editor menu, then select Localizations from the pop-up menu.
+///
+/// Select and expand the newly-created Localizations item then, for each
+/// locale your application supports, add a new item and select the locale
+/// you wish to add from the pop-up menu in the Value field. This list should
+/// be consistent with the languages listed in the AppLocalizations.supportedLocales
+/// property.
+abstract class AppLocalizations {
+  AppLocalizations(String locale)
+      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+
+  final String localeName;
+
+  static AppLocalizations of(BuildContext context) {
+    return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
+  }
+
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
+
+  /// A list of this localizations delegate along with the default localizations
+  /// delegates.
+  ///
+  /// Returns a list of localizations delegates containing this delegate along with
+  /// GlobalMaterialLocalizations.delegate, GlobalCupertinoLocalizations.delegate,
+  /// and GlobalWidgetsLocalizations.delegate.
+  ///
+  /// Additional delegates can be added by appending to this list in
+  /// MaterialApp. This list does not have to be used at all if a custom list
+  /// of delegates is preferred or required.
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
+
+  /// A list of this localizations delegate's supported locales.
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('cy'),
+    Locale('en'),
+    Locale('pl'),
+    Locale('ur')
+  ];
+
+  /// No description provided for @appTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Care Attend'**
+  String get appTitle;
+
+  /// No description provided for @appSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'NHS Predictive Risk Assessment'**
+  String get appSubtitle;
+
+  /// No description provided for @welcomeBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome Back'**
+  String get welcomeBack;
+
+  /// No description provided for @signInDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to access your practice dashboard'**
+  String get signInDesc;
+
+  /// No description provided for @emailAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Email or Username'**
+  String get emailAddress;
+
+  /// No description provided for @password.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get password;
+
+  /// No description provided for @login.
+  ///
+  /// In en, this message translates to:
+  /// **'LOG IN'**
+  String get login;
+
+  /// No description provided for @createAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'CREATE NEW ACCOUNT'**
+  String get createAccount;
+
+  /// No description provided for @backToLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'BACK TO LOGIN'**
+  String get backToLogin;
+
+  /// No description provided for @dataProtection.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Protection Notice'**
+  String get dataProtection;
+
+  /// No description provided for @noDataStored.
+  ///
+  /// In en, this message translates to:
+  /// **'No patient data is stored on this device.'**
+  String get noDataStored;
+
+  /// No description provided for @sessionCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'All session data is cleared on close.'**
+  String get sessionCleared;
+
+  /// No description provided for @gdprCompliant.
+  ///
+  /// In en, this message translates to:
+  /// **'GDPR Article 5(1)(c) compliant.'**
+  String get gdprCompliant;
+
+  /// No description provided for @patientAssessment.
+  ///
+  /// In en, this message translates to:
+  /// **'Patient Assessment'**
+  String get patientAssessment;
+
+  /// No description provided for @riskDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Risk Dashboard'**
+  String get riskDashboard;
+
+  /// No description provided for @batchUpload.
+  ///
+  /// In en, this message translates to:
+  /// **'Batch Upload'**
+  String get batchUpload;
+
+  /// No description provided for @biasMonitor.
+  ///
+  /// In en, this message translates to:
+  /// **'Bias Monitor'**
+  String get biasMonitor;
+
+  /// No description provided for @demographics.
+  ///
+  /// In en, this message translates to:
+  /// **'DEMOGRAPHICS'**
+  String get demographics;
+
+  /// No description provided for @appointmentDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'APPOINTMENT DETAILS'**
+  String get appointmentDetails;
+
+  /// No description provided for @clinicalFlags.
+  ///
+  /// In en, this message translates to:
+  /// **'CLINICAL FLAGS'**
+  String get clinicalFlags;
+
+  /// No description provided for @socialContext.
+  ///
+  /// In en, this message translates to:
+  /// **'SOCIAL CONTEXT'**
+  String get socialContext;
+
+  /// No description provided for @assessRisk.
+  ///
+  /// In en, this message translates to:
+  /// **'ASSESS RISK'**
+  String get assessRisk;
+
+  /// No description provided for @age.
+  ///
+  /// In en, this message translates to:
+  /// **'Age (0-120)'**
+  String get age;
+
+  /// No description provided for @gender.
+  ///
+  /// In en, this message translates to:
+  /// **'Gender'**
+  String get gender;
+
+  /// No description provided for @leadTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Lead Time (days)'**
+  String get leadTime;
+
+  /// No description provided for @priorDNA.
+  ///
+  /// In en, this message translates to:
+  /// **'Prior DNA Count'**
+  String get priorDNA;
+
+  /// No description provided for @smsReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'SMS Reminder Received'**
+  String get smsReceived;
+
+  /// No description provided for @hypertension.
+  ///
+  /// In en, this message translates to:
+  /// **'Hypertension'**
+  String get hypertension;
+
+  /// No description provided for @diabetes.
+  ///
+  /// In en, this message translates to:
+  /// **'Diabetes'**
+  String get diabetes;
+
+  /// No description provided for @alcoholism.
+  ///
+  /// In en, this message translates to:
+  /// **'Alcohol Dependency'**
+  String get alcoholism;
+
+  /// No description provided for @disability.
+  ///
+  /// In en, this message translates to:
+  /// **'Registered Disability'**
+  String get disability;
+
+  /// No description provided for @imdDecile.
+  ///
+  /// In en, this message translates to:
+  /// **'IMD Decile (1-10)'**
+  String get imdDecile;
+
+  /// No description provided for @riskLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'DNA Risk Level'**
+  String get riskLevel;
+
+  /// No description provided for @whyThisScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Why This Score? (SHAP)'**
+  String get whyThisScore;
+
+  /// No description provided for @increasesRisk.
+  ///
+  /// In en, this message translates to:
+  /// **'Increases Risk'**
+  String get increasesRisk;
+
+  /// No description provided for @reducesRisk.
+  ///
+  /// In en, this message translates to:
+  /// **'Reduces Risk'**
+  String get reducesRisk;
+
+  /// No description provided for @interventions.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended Interventions'**
+  String get interventions;
+
+  /// No description provided for @newAssessment.
+  ///
+  /// In en, this message translates to:
+  /// **'New Assessment'**
+  String get newAssessment;
+
+  /// No description provided for @biasDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Bias Dashboard'**
+  String get biasDashboard;
+
+  /// No description provided for @exportPDF.
+  ///
+  /// In en, this message translates to:
+  /// **'EXPORT PDF AUDIT REPORT'**
+  String get exportPDF;
+
+  /// No description provided for @runAudit.
+  ///
+  /// In en, this message translates to:
+  /// **'Run Bias Audit'**
+  String get runAudit;
+
+  /// No description provided for @riskHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Risk History (Session)'**
+  String get riskHistory;
+
+  /// No description provided for @highRisk.
+  ///
+  /// In en, this message translates to:
+  /// **'HIGH RISK'**
+  String get highRisk;
+
+  /// No description provided for @mediumRisk.
+  ///
+  /// In en, this message translates to:
+  /// **'MEDIUM RISK'**
+  String get mediumRisk;
+
+  /// No description provided for @lowRisk.
+  ///
+  /// In en, this message translates to:
+  /// **'LOW RISK'**
+  String get lowRisk;
+
+  /// No description provided for @navResults.
+  ///
+  /// In en, this message translates to:
+  /// **'Results'**
+  String get navResults;
+
+  /// No description provided for @navDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Dashboard'**
+  String get navDashboard;
+
+  /// No description provided for @navClinic.
+  ///
+  /// In en, this message translates to:
+  /// **'Clinic List'**
+  String get navClinic;
+
+  /// No description provided for @navMore.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get navMore;
+
+  /// No description provided for @navEthics.
+  ///
+  /// In en, this message translates to:
+  /// **'Ethics'**
+  String get navEthics;
+
+  /// No description provided for @navSlots.
+  ///
+  /// In en, this message translates to:
+  /// **'Slot Optimisation'**
+  String get navSlots;
+
+  /// No description provided for @navNudge.
+  ///
+  /// In en, this message translates to:
+  /// **'Patient Nudge'**
+  String get navNudge;
+
+  /// No description provided for @navAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'User Management'**
+  String get navAdmin;
+
+  /// No description provided for @personalAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Account'**
+  String get personalAccount;
+
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Out'**
+  String get logout;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+}
+
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
+  const _AppLocalizationsDelegate();
+
+  @override
+  Future<AppLocalizations> load(Locale locale) {
+    return SynchronousFuture<AppLocalizations>(lookupAppLocalizations(locale));
+  }
+
+  @override
+  bool isSupported(Locale locale) =>
+      <String>['cy', 'en', 'pl', 'ur'].contains(locale.languageCode);
+
+  @override
+  bool shouldReload(_AppLocalizationsDelegate old) => false;
+}
+
+AppLocalizations lookupAppLocalizations(Locale locale) {
+  // Lookup logic when only language code is specified.
+  switch (locale.languageCode) {
+    case 'cy':
+      return AppLocalizationsCy();
+    case 'en':
+      return AppLocalizationsEn();
+    case 'pl':
+      return AppLocalizationsPl();
+    case 'ur':
+      return AppLocalizationsUr();
+  }
+
+  throw FlutterError(
+      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
+}

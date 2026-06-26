@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../nhs_theme.dart';
+import '../l10n/app_localizations.dart';
 import '../services/api_service.dart';
 import '../utils/validators.dart';
 import '../widgets/password_field.dart';
+import '../widgets/language_button.dart';
 import 'home_screen.dart';
 import 'forgot_password_screen.dart';
 
@@ -105,6 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
@@ -112,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
             // NHS Blue Hero Header
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(24, 60, 24, 40),
+              padding: const EdgeInsets.fromLTRB(24, 48, 24, 40),
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   colors: [NHSTheme.blue, NHSTheme.darkBlue],
@@ -122,6 +125,10 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               child: Column(
                 children: [
+                  const Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: LanguageButton(color: Colors.white),
+                  ),
                   Container(
                     width: 56,
                     height: 56,
@@ -139,15 +146,16 @@ class _LoginScreenState extends State<LoginScreen> {
                               color: Colors.white)),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  const Text('Care Attend',
-                      style: TextStyle(
+                  const SizedBox(height: 12),
+                  Text(t.appTitle,
+                      style: const TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                           letterSpacing: -0.5)),
                   const SizedBox(height: 4),
-                  Text('NHS Predictive Risk Assessment',
+                  Text(t.appSubtitle,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                           fontSize: 16,
                           color: Colors.white.withValues(alpha: 0.8))),
@@ -172,23 +180,27 @@ class _LoginScreenState extends State<LoginScreen> {
                   border: Border.all(color: const Color(0xFFC8E6C9)),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Column(
+                child: Column(
                   children: [
-                    Text('Data Protection Notice',
-                        style: TextStyle(
+                    Text(t.dataProtection,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
                             color: NHSTheme.riskLow)),
-                    SizedBox(height: 6),
-                    Text('No patient data is stored on this device.',
-                        style:
-                            TextStyle(fontSize: 13, color: NHSTheme.darkGrey)),
-                    Text('All session data is cleared on close.',
-                        style:
-                            TextStyle(fontSize: 13, color: NHSTheme.darkGrey)),
-                    Text('GDPR Article 5(1)(c) compliant.',
-                        style:
-                            TextStyle(fontSize: 13, color: NHSTheme.darkGrey)),
+                    const SizedBox(height: 6),
+                    Text(t.noDataStored,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                            fontSize: 13, color: NHSTheme.darkGrey)),
+                    Text(t.sessionCleared,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                            fontSize: 13, color: NHSTheme.darkGrey)),
+                    Text(t.gdprCompliant,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                            fontSize: 13, color: NHSTheme.darkGrey)),
                   ],
                 ),
               ),
@@ -200,23 +212,25 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildLoginForm() {
+    final t = AppLocalizations.of(context);
     return Column(
       children: [
-        const Text('Welcome Back',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
+        Text(t.welcomeBack,
+            style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 4),
-        const Text('Sign in to access your practice dashboard',
-            style: TextStyle(fontSize: 14, color: NHSTheme.darkGrey)),
+        Text(t.signInDesc,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 14, color: NHSTheme.darkGrey)),
         const SizedBox(height: 24),
         TextField(
           controller: _loginUsername,
-          decoration: const InputDecoration(
-            labelText: 'Email or Username',
-            hintText: 'staff@nhspractice.nhs.uk or asha.patel',
+          decoration: InputDecoration(
+            labelText: t.emailAddress,
+            hintText: 'staff@nhspractice.nhs.uk',
           ),
         ),
         const SizedBox(height: 16),
-        PasswordField(controller: _loginPassword, label: 'Password'),
+        PasswordField(controller: _loginPassword, label: t.password),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -257,7 +271,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: 20,
                   child:
                       CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-              : const Text('LOG IN'),
+              : Text(t.login),
         ),
         const SizedBox(height: 20),
         _buildDivider(),
@@ -273,8 +287,8 @@ class _LoginScreenState extends State<LoginScreen> {
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           ),
-          child: const Text('CREATE NEW ACCOUNT',
-              style: TextStyle(
+          child: Text(t.createAccount,
+              style: const TextStyle(
                   fontWeight: FontWeight.w700, letterSpacing: 0.5)),
         ),
       ],
@@ -345,8 +359,8 @@ class _LoginScreenState extends State<LoginScreen> {
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           ),
-          child: const Text('BACK TO LOGIN',
-              style: TextStyle(
+          child: Text(AppLocalizations.of(context).backToLogin,
+              style: const TextStyle(
                   fontWeight: FontWeight.w700, letterSpacing: 0.5)),
         ),
       ],
