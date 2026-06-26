@@ -1355,6 +1355,336 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Rescheduled'**
   String get clinicStRescheduled;
+
+  /// No description provided for @profileLogoutClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Out & Clear Session'**
+  String get profileLogoutClear;
+
+  /// No description provided for @profileUsername.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get profileUsername;
+
+  /// No description provided for @profileRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Role'**
+  String get profileRole;
+
+  /// No description provided for @profileMemberSince.
+  ///
+  /// In en, this message translates to:
+  /// **'Member since'**
+  String get profileMemberSince;
+
+  /// No description provided for @profilePasswordChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Password changed'**
+  String get profilePasswordChanged;
+
+  /// No description provided for @profileNever.
+  ///
+  /// In en, this message translates to:
+  /// **'Never'**
+  String get profileNever;
+
+  /// No description provided for @profileEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get profileEdit;
+
+  /// No description provided for @profileDisplayName.
+  ///
+  /// In en, this message translates to:
+  /// **'Display name'**
+  String get profileDisplayName;
+
+  /// No description provided for @profileJobTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Job title'**
+  String get profileJobTitle;
+
+  /// No description provided for @profileDepartment.
+  ///
+  /// In en, this message translates to:
+  /// **'Department'**
+  String get profileDepartment;
+
+  /// No description provided for @profilePronouns.
+  ///
+  /// In en, this message translates to:
+  /// **'Pronouns (e.g. she/her)'**
+  String get profilePronouns;
+
+  /// No description provided for @profilePhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get profilePhone;
+
+  /// No description provided for @profileBio.
+  ///
+  /// In en, this message translates to:
+  /// **'Bio'**
+  String get profileBio;
+
+  /// No description provided for @profileSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving…'**
+  String get profileSaving;
+
+  /// No description provided for @profileSaveBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Profile'**
+  String get profileSaveBtn;
+
+  /// No description provided for @profileChangePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Password'**
+  String get profileChangePassword;
+
+  /// No description provided for @profileCurrentPw.
+  ///
+  /// In en, this message translates to:
+  /// **'Current password'**
+  String get profileCurrentPw;
+
+  /// No description provided for @profileNewPw.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get profileNewPw;
+
+  /// No description provided for @profileConfirmPw.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm new password'**
+  String get profileConfirmPw;
+
+  /// No description provided for @profileUpdatePw.
+  ///
+  /// In en, this message translates to:
+  /// **'Update password'**
+  String get profileUpdatePw;
+
+  /// No description provided for @profile2faTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Two-Factor Authentication'**
+  String get profile2faTitle;
+
+  /// No description provided for @profile2faEnabledBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'ENABLED'**
+  String get profile2faEnabledBadge;
+
+  /// No description provided for @profile2faDisabledBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'DISABLED'**
+  String get profile2faDisabledBadge;
+
+  /// No description provided for @profile2faDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a time-based one-time code from an authenticator app (Google Authenticator, Authy).'**
+  String get profile2faDesc;
+
+  /// No description provided for @profile2faPwDisable.
+  ///
+  /// In en, this message translates to:
+  /// **'Password to disable'**
+  String get profile2faPwDisable;
+
+  /// No description provided for @profile2faDisableBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Disable 2FA'**
+  String get profile2faDisableBtn;
+
+  /// No description provided for @profile2faWait.
+  ///
+  /// In en, this message translates to:
+  /// **'Please wait…'**
+  String get profile2faWait;
+
+  /// No description provided for @profile2faEnableBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable 2FA'**
+  String get profile2faEnableBtn;
+
+  /// No description provided for @profile2faStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'1. Add this secret to your authenticator app:'**
+  String get profile2faStep1;
+
+  /// No description provided for @profile2faStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'2. Enter the 6-digit code to verify:'**
+  String get profile2faStep2;
+
+  /// No description provided for @profile2faVerify.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify & enable'**
+  String get profile2faVerify;
+
+  /// No description provided for @profilePrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy & Data Protection'**
+  String get profilePrivacy;
+
+  /// No description provided for @profilePrivGdprT.
+  ///
+  /// In en, this message translates to:
+  /// **'GDPR Article 5(1)(c) compliant'**
+  String get profilePrivGdprT;
+
+  /// No description provided for @profilePrivGdprB.
+  ///
+  /// In en, this message translates to:
+  /// **'Data minimisation — only essential fields collected.'**
+  String get profilePrivGdprB;
+
+  /// No description provided for @profilePrivSessionT.
+  ///
+  /// In en, this message translates to:
+  /// **'Session-scoped processing'**
+  String get profilePrivSessionT;
+
+  /// No description provided for @profilePrivSessionB.
+  ///
+  /// In en, this message translates to:
+  /// **'No patient data stored. Cleared on logout.'**
+  String get profilePrivSessionB;
+
+  /// No description provided for @profilePrivEncT.
+  ///
+  /// In en, this message translates to:
+  /// **'Encrypted authentication'**
+  String get profilePrivEncT;
+
+  /// No description provided for @profilePrivEncB.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords hashed with bcrypt; sessions expire on inactivity.'**
+  String get profilePrivEncB;
+
+  /// No description provided for @profilePrivShareT.
+  ///
+  /// In en, this message translates to:
+  /// **'No third-party data sharing'**
+  String get profilePrivShareT;
+
+  /// No description provided for @profilePrivShareB.
+  ///
+  /// In en, this message translates to:
+  /// **'All processing local. No external analytics or tracking.'**
+  String get profilePrivShareB;
+
+  /// No description provided for @profileViewPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'View photo'**
+  String get profileViewPhoto;
+
+  /// No description provided for @profileChangePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Change photo'**
+  String get profileChangePhoto;
+
+  /// No description provided for @profileAddPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photo'**
+  String get profileAddPhoto;
+
+  /// No description provided for @profileRemovePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove photo'**
+  String get profileRemovePhoto;
+
+  /// No description provided for @profilePhotoRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo removed.'**
+  String get profilePhotoRemoved;
+
+  /// No description provided for @profileUnsupportedImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsupported image format.'**
+  String get profileUnsupportedImage;
+
+  /// No description provided for @profilePhotoUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo updated.'**
+  String get profilePhotoUpdated;
+
+  /// No description provided for @profileSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile saved.'**
+  String get profileSaved;
+
+  /// No description provided for @profilePwDifferent.
+  ///
+  /// In en, this message translates to:
+  /// **'New password must be different from the current password'**
+  String get profilePwDifferent;
+
+  /// No description provided for @profilePwMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match'**
+  String get profilePwMismatch;
+
+  /// No description provided for @profilePwChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Password changed successfully'**
+  String get profilePwChanged;
+
+  /// No description provided for @profile2faEnterCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the 6-digit code from your authenticator app.'**
+  String get profile2faEnterCode;
+
+  /// No description provided for @profile2faEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Two-factor authentication enabled.'**
+  String get profile2faEnabled;
+
+  /// No description provided for @profile2faEnterPw.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your password to disable 2FA.'**
+  String get profile2faEnterPw;
+
+  /// No description provided for @profile2faDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Two-factor authentication disabled.'**
+  String get profile2faDisabled;
 }
 
 class _AppLocalizationsDelegate

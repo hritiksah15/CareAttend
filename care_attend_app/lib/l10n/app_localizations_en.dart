@@ -675,4 +675,176 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get clinicStRescheduled => 'Rescheduled';
+
+  @override
+  String get profileLogoutClear => 'Log Out & Clear Session';
+
+  @override
+  String get profileUsername => 'Username';
+
+  @override
+  String get profileRole => 'Role';
+
+  @override
+  String get profileMemberSince => 'Member since';
+
+  @override
+  String get profilePasswordChanged => 'Password changed';
+
+  @override
+  String get profileNever => 'Never';
+
+  @override
+  String get profileEdit => 'Edit Profile';
+
+  @override
+  String get profileDisplayName => 'Display name';
+
+  @override
+  String get profileJobTitle => 'Job title';
+
+  @override
+  String get profileDepartment => 'Department';
+
+  @override
+  String get profilePronouns => 'Pronouns (e.g. she/her)';
+
+  @override
+  String get profilePhone => 'Phone';
+
+  @override
+  String get profileBio => 'Bio';
+
+  @override
+  String get profileSaving => 'Saving…';
+
+  @override
+  String get profileSaveBtn => 'Save Profile';
+
+  @override
+  String get profileChangePassword => 'Change Password';
+
+  @override
+  String get profileCurrentPw => 'Current password';
+
+  @override
+  String get profileNewPw => 'New password';
+
+  @override
+  String get profileConfirmPw => 'Confirm new password';
+
+  @override
+  String get profileUpdatePw => 'Update password';
+
+  @override
+  String get profile2faTitle => 'Two-Factor Authentication';
+
+  @override
+  String get profile2faEnabledBadge => 'ENABLED';
+
+  @override
+  String get profile2faDisabledBadge => 'DISABLED';
+
+  @override
+  String get profile2faDesc =>
+      'Add a time-based one-time code from an authenticator app (Google Authenticator, Authy).';
+
+  @override
+  String get profile2faPwDisable => 'Password to disable';
+
+  @override
+  String get profile2faDisableBtn => 'Disable 2FA';
+
+  @override
+  String get profile2faWait => 'Please wait…';
+
+  @override
+  String get profile2faEnableBtn => 'Enable 2FA';
+
+  @override
+  String get profile2faStep1 => '1. Add this secret to your authenticator app:';
+
+  @override
+  String get profile2faStep2 => '2. Enter the 6-digit code to verify:';
+
+  @override
+  String get profile2faVerify => 'Verify & enable';
+
+  @override
+  String get profilePrivacy => 'Privacy & Data Protection';
+
+  @override
+  String get profilePrivGdprT => 'GDPR Article 5(1)(c) compliant';
+
+  @override
+  String get profilePrivGdprB =>
+      'Data minimisation — only essential fields collected.';
+
+  @override
+  String get profilePrivSessionT => 'Session-scoped processing';
+
+  @override
+  String get profilePrivSessionB =>
+      'No patient data stored. Cleared on logout.';
+
+  @override
+  String get profilePrivEncT => 'Encrypted authentication';
+
+  @override
+  String get profilePrivEncB =>
+      'Passwords hashed with bcrypt; sessions expire on inactivity.';
+
+  @override
+  String get profilePrivShareT => 'No third-party data sharing';
+
+  @override
+  String get profilePrivShareB =>
+      'All processing local. No external analytics or tracking.';
+
+  @override
+  String get profileViewPhoto => 'View photo';
+
+  @override
+  String get profileChangePhoto => 'Change photo';
+
+  @override
+  String get profileAddPhoto => 'Add photo';
+
+  @override
+  String get profileRemovePhoto => 'Remove photo';
+
+  @override
+  String get profilePhotoRemoved => 'Photo removed.';
+
+  @override
+  String get profileUnsupportedImage => 'Unsupported image format.';
+
+  @override
+  String get profilePhotoUpdated => 'Photo updated.';
+
+  @override
+  String get profileSaved => 'Profile saved.';
+
+  @override
+  String get profilePwDifferent =>
+      'New password must be different from the current password';
+
+  @override
+  String get profilePwMismatch => 'Passwords do not match';
+
+  @override
+  String get profilePwChanged => 'Password changed successfully';
+
+  @override
+  String get profile2faEnterCode =>
+      'Enter the 6-digit code from your authenticator app.';
+
+  @override
+  String get profile2faEnabled => 'Two-factor authentication enabled.';
+
+  @override
+  String get profile2faEnterPw => 'Enter your password to disable 2FA.';
+
+  @override
+  String get profile2faDisabled => 'Two-factor authentication disabled.';
 }
