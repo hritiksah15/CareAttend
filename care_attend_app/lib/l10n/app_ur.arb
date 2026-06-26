@@ -55,5 +55,8 @@
   "navAdmin": "صارف کا انتظام",
   "personalAccount": "ذاتی اکاؤنٹ",
   "logout": "لاگ آؤٹ",
-  "language": "زبان"
+  "language": "زبان",
+  "rememberMe": "مجھے یاد رکھیں",
+  "forgotPassword": "پاس ورڈ بھول گئے؟",
+  "orText": "یا"
 }

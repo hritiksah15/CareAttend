@@ -55,5 +55,8 @@
   "navAdmin": "User Management",
   "personalAccount": "Personal Account",
   "logout": "Log Out",
-  "language": "Language"
+  "language": "Language",
+  "rememberMe": "Remember me",
+  "forgotPassword": "Forgot password?",
+  "orText": "OR"
 }
