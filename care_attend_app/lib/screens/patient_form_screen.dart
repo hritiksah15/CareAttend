@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../nhs_theme.dart';
+import '../l10n/app_localizations.dart';
 import '../services/api_service.dart';
 
 class PatientFormScreen extends StatefulWidget {
@@ -209,6 +210,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Form(
@@ -220,16 +222,15 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Patient Risk Assessment',
-                      style: TextStyle(
+                  Text(t.patientAssessment,
+                      style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                           color: NHSTheme.blue)),
                   const SizedBox(height: 4),
-                  const Text(
-                      'Enter patient details to generate a DNA risk prediction with explainable AI outputs.',
-                      style:
-                          TextStyle(fontSize: 14, color: NHSTheme.darkGrey)),
+                  Text(t.assessmentIntro,
+                      style: const TextStyle(
+                          fontSize: 14, color: NHSTheme.darkGrey)),
                   const SizedBox(height: 16),
 
                   // EHR AUTO-FILL
@@ -261,7 +262,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                                 width: 18,
                                 child: CircularProgressIndicator(
                                     color: Colors.white, strokeWidth: 2))
-                            : const Text('Auto-fill'),
+                            : Text(t.autofill),
                       ),
                     ]),
                   ),
@@ -271,13 +272,13 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                     child: TextButton.icon(
                       onPressed: _carerProxyDialog,
                       icon: const Icon(Icons.people_outline, size: 18),
-                      label: const Text('Carer / Family Proxy'),
+                      label: Text(t.carerProxy),
                     ),
                   ),
                   const SizedBox(height: 20),
 
                   // DEMOGRAPHICS
-                  _sectionLabel('DEMOGRAPHICS'),
+                  _sectionLabel(t.demographics),
                   const SizedBox(height: 12),
                   Row(
                     children: [
@@ -286,7 +287,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                           controller: _ageCtrl,
                           keyboardType: TextInputType.number,
                           decoration:
-                              const InputDecoration(labelText: 'Age (0-120) *'),
+                              InputDecoration(labelText: '${t.age} *'),
                           validator: (v) {
                             final n = int.tryParse(v ?? '');
                             if (n == null || n < 0 || n > 120)
@@ -301,10 +302,10 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                         child: DropdownButtonFormField<int>(
                           value: _gender == -1 ? null : _gender,
                           decoration:
-                              const InputDecoration(labelText: 'Gender *'),
-                          items: const [
-                            DropdownMenuItem(value: 0, child: Text('Female')),
-                            DropdownMenuItem(value: 1, child: Text('Male')),
+                              InputDecoration(labelText: '${t.gender} *'),
+                          items: [
+                            DropdownMenuItem(value: 0, child: Text(t.female)),
+                            DropdownMenuItem(value: 1, child: Text(t.male)),
                           ],
                           onChanged: (v) => setState(() => _gender = v ?? -1),
                         ),
@@ -314,7 +315,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                   const SizedBox(height: 20),
 
                   // APPOINTMENT DETAILS
-                  _sectionLabel('APPOINTMENT DETAILS'),
+                  _sectionLabel(t.appointmentDetails),
                   const SizedBox(height: 12),
                   Row(
                     children: [
@@ -322,8 +323,8 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                         child: TextFormField(
                           controller: _leadTimeCtrl,
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                              labelText: 'Lead Time (days) *'),
+                          decoration: InputDecoration(
+                              labelText: '${t.leadTime} *'),
                           validator: (v) {
                             final n = int.tryParse(v ?? '');
                             if (n == null || n < 0) return 'Required';
@@ -336,8 +337,8 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                         child: TextFormField(
                           controller: _priorDNACtrl,
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                              labelText: 'Prior DNA Count *'),
+                          decoration: InputDecoration(
+                              labelText: '${t.priorDNA} *'),
                           validator: (v) {
                             final n = int.tryParse(v ?? '');
                             if (n == null || n < 0) return 'Required';
@@ -348,37 +349,37 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  _buildCheckTile('SMS Reminder Received', _smsReceived,
+                  _buildCheckTile(t.smsReceived, _smsReceived,
                       (v) => setState(() => _smsReceived = v)),
                   const SizedBox(height: 20),
 
                   // CLINICAL FLAGS
-                  _sectionLabel('CLINICAL FLAGS'),
+                  _sectionLabel(t.clinicalFlags),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
                     runSpacing: 4,
                     children: [
-                      _buildCheckTile('Hypertension', _hypertension,
+                      _buildCheckTile(t.hypertension, _hypertension,
                           (v) => setState(() => _hypertension = v)),
-                      _buildCheckTile('Diabetes', _diabetes,
+                      _buildCheckTile(t.diabetes, _diabetes,
                           (v) => setState(() => _diabetes = v)),
-                      _buildCheckTile('Alcoholism', _alcoholism,
+                      _buildCheckTile(t.alcoholism, _alcoholism,
                           (v) => setState(() => _alcoholism = v)),
-                      _buildCheckTile('Disability', _disability,
+                      _buildCheckTile(t.disability, _disability,
                           (v) => setState(() => _disability = v)),
                     ],
                   ),
                   const SizedBox(height: 20),
 
                   // SOCIAL CONTEXT
-                  _sectionLabel('SOCIAL CONTEXT'),
+                  _sectionLabel(t.socialContext),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _imdCtrl,
                     keyboardType: TextInputType.number,
                     decoration:
-                        const InputDecoration(labelText: 'IMD Decile (1-10) *'),
+                        InputDecoration(labelText: '${t.imdDecile} *'),
                     validator: (v) {
                       final n = int.tryParse(v ?? '');
                       if (n == null || n < 1 || n > 10) return '1-10';
@@ -396,7 +397,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                         color: NHSTheme.paleGrey,
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: Text('Age Group: $_ageGroup (auto-calculated)',
+                      child: Text(t.ageGroupLine(_ageGroup!),
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                               fontSize: 14, color: NHSTheme.darkGrey)),
@@ -412,7 +413,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                             width: 20,
                             child: CircularProgressIndicator(
                                 color: Colors.white, strokeWidth: 2))
-                        : const Text('ASSESS RISK'),
+                        : Text(t.assessRisk),
                   ),
                 ],
               ),
@@ -430,21 +431,19 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                 border:
                     const Border(left: BorderSide(color: NHSTheme.lightBlue, width: 4)),
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('About This Tool',
-                      style: TextStyle(
+                  Text(t.aboutTool,
+                      style: const TextStyle(
                           fontWeight: FontWeight.w700, color: NHSTheme.blue)),
-                  SizedBox(height: 6),
-                  Text(
-                      'Care Attend uses machine learning to predict DNA risk. Predictions explained via SHAP. System monitors for demographic bias.',
-                      style:
-                          TextStyle(fontSize: 13, color: NHSTheme.darkGrey)),
-                  SizedBox(height: 6),
-                  Text(
-                      'Data Handling: No patient data stored. Session-scoped only. GDPR Art 5(1)(c) compliant.',
-                      style: TextStyle(
+                  const SizedBox(height: 6),
+                  Text(t.aboutToolDesc,
+                      style: const TextStyle(
+                          fontSize: 13, color: NHSTheme.darkGrey)),
+                  const SizedBox(height: 6),
+                  Text(t.dataHandling,
+                      style: const TextStyle(
                           fontSize: 13,
                           color: NHSTheme.darkGrey,
                           fontWeight: FontWeight.w600)),

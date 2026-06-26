@@ -185,4 +185,36 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get orText => 'LUB';
+
+  @override
+  String get assessmentIntro =>
+      'Wprowadź dane pacjenta, aby wygenerować prognozę ryzyka nieobecności z wyjaśnialnymi wynikami AI.';
+
+  @override
+  String get autofill => 'Autouzupełnianie';
+
+  @override
+  String get carerProxy => 'Pełnomocnik opiekuna / rodziny';
+
+  @override
+  String get female => 'Kobieta';
+
+  @override
+  String get male => 'Mężczyzna';
+
+  @override
+  String ageGroupLine(String group) {
+    return 'Grupa wiekowa: $group (obliczono automatycznie)';
+  }
+
+  @override
+  String get aboutTool => 'O tym narzędziu';
+
+  @override
+  String get aboutToolDesc =>
+      'Care Attend wykorzystuje uczenie maszynowe do prognozowania ryzyka nieobecności. Prognozy wyjaśniane przez SHAP. System monitoruje stronniczość demograficzną.';
+
+  @override
+  String get dataHandling =>
+      'Przetwarzanie danych: brak przechowywania danych pacjenta. Tylko sesja. Zgodność z art. 5 ust. 1 lit. c) RODO.';
 }

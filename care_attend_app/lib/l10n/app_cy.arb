@@ -58,5 +58,14 @@
   "language": "Iaith",
   "rememberMe": "Cofiwch fi",
   "forgotPassword": "Anghofio cyfrinair?",
-  "orText": "NEU"
+  "orText": "NEU",
+  "assessmentIntro": "Rhowch fanylion y claf i gynhyrchu rhagfynegiad risg DNA gydag allbynnau AI esboniadwy.",
+  "autofill": "Llenwi'n awtomatig",
+  "carerProxy": "Dirprwy Gofalwr / Teulu",
+  "female": "Benyw",
+  "male": "Gwryw",
+  "ageGroupLine": "Grŵp Oedran: {group} (cyfrifo'n awtomatig)",
+  "aboutTool": "Am yr Offeryn Hwn",
+  "aboutToolDesc": "Mae Care Attend yn defnyddio dysgu peirianyddol i ragfynegi risg DNA. Esbonnir rhagfynegiadau drwy SHAP. Mae'r system yn monitro am ragfarn ddemograffig.",
+  "dataHandling": "Trin Data: Ni storir data cleifion. Sesiwn yn unig. Yn cydymffurfio ag Erthygl 5(1)(c) GDPR."
 }

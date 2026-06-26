@@ -184,4 +184,36 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get orText => 'یا';
+
+  @override
+  String get assessmentIntro =>
+      'قابل وضاحت AI نتائج کے ساتھ DNA خطرے کی پیش گوئی پیدا کرنے کے لیے مریض کی تفصیلات درج کریں۔';
+
+  @override
+  String get autofill => 'خودکار بھریں';
+
+  @override
+  String get carerProxy => 'نگہداشت کنندہ / خاندانی نمائندہ';
+
+  @override
+  String get female => 'خاتون';
+
+  @override
+  String get male => 'مرد';
+
+  @override
+  String ageGroupLine(String group) {
+    return 'عمر کا گروپ: $group (خودکار حساب)';
+  }
+
+  @override
+  String get aboutTool => 'اس آلے کے بارے میں';
+
+  @override
+  String get aboutToolDesc =>
+      'Care Attend مشین لرننگ کا استعمال کرتے ہوئے DNA خطرے کی پیش گوئی کرتا ہے۔ پیش گوئیاں SHAP کے ذریعے بیان کی جاتی ہیں۔ نظام آبادیاتی تعصب کی نگرانی کرتا ہے۔';
+
+  @override
+  String get dataHandling =>
+      'ڈیٹا ہینڈلنگ: مریض کا ڈیٹا محفوظ نہیں۔ صرف سیشن۔ GDPR آرٹیکل 5(1)(c) کے مطابق۔';
 }
