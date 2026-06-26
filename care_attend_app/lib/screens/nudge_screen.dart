@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../nhs_theme.dart';
 import '../services/api_service.dart';
 
@@ -61,38 +62,39 @@ class _NudgeScreenState extends State<NudgeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return ListView(
       padding: const EdgeInsets.all(12),
       children: [
-        const Text('Patient Nudge',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
+        Text(t.nudgeTitle,
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
         const SizedBox(height: 4),
-        Text('Generate a personalised, non-stigmatising outreach message.',
-            style: TextStyle(color: NHSTheme.darkGrey)),
+        Text(t.nudgeSubtitle,
+            style: const TextStyle(color: NHSTheme.darkGrey)),
         const SizedBox(height: 16),
         Card(child: Padding(
           padding: const EdgeInsets.all(14),
           child: Column(children: [
             TextField(
               controller: _name,
-              decoration: const InputDecoration(labelText: 'Patient name (optional)'),
+              decoration: InputDecoration(labelText: t.nudgeName),
             ),
             const SizedBox(height: 10),
             Row(children: [
-              _num(_age, 'Age'),
+              _num(_age, t.nudgeAge),
               const SizedBox(width: 10),
-              _num(_imd, 'IMD (1-10)'),
+              _num(_imd, t.nudgeImd),
             ]),
             const SizedBox(height: 10),
             Row(children: [
-              _num(_lead, 'Lead days'),
+              _num(_lead, t.nudgeLeadDays),
               const SizedBox(width: 10),
-              _num(_prior, 'Prior DNAs'),
+              _num(_prior, t.nudgePriorDnas),
             ]),
             const SizedBox(height: 10),
             DropdownButtonFormField<String>(
               initialValue: _language,
-              decoration: const InputDecoration(labelText: 'Language'),
+              decoration: InputDecoration(labelText: t.language),
               items: _languages.entries
                   .map((e) =>
                       DropdownMenuItem(value: e.key, child: Text(e.value)))
@@ -101,13 +103,13 @@ class _NudgeScreenState extends State<NudgeScreen> {
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Registered disability'),
+              title: Text(t.disability),
               value: _disability == 1,
               onChanged: (v) => setState(() => _disability = v ? 1 : 0),
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('SMS reminder sent'),
+              title: Text(t.nudgeSmsSent),
               value: _sms == 1,
               onChanged: (v) => setState(() => _sms = v ? 1 : 0),
             ),
@@ -115,7 +117,7 @@ class _NudgeScreenState extends State<NudgeScreen> {
             ElevatedButton.icon(
               onPressed: _loading ? null : _run,
               icon: const Icon(Icons.message),
-              label: Text(_loading ? 'Generating…' : 'Generate message'),
+              label: Text(_loading ? t.nudgeGenerating : t.nudgeGenerate),
             ),
           ]),
         )),

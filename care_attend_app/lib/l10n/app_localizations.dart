@@ -689,6 +689,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Top factor: {factor}'**
   String batchTopFactor(String factor);
+
+  /// No description provided for @ethicsFramework.
+  ///
+  /// In en, this message translates to:
+  /// **'Ethics Framework'**
+  String get ethicsFramework;
+
+  /// No description provided for @ethicsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'NHS England (2024) six-principle mapping with evidence.'**
+  String get ethicsSubtitle;
+
+  /// No description provided for @ethicsCvTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cross-Validation (5-Fold)'**
+  String get ethicsCvTitle;
+
+  /// No description provided for @ethicsCvDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Bootstrap 95% CIs and McNemar significance tests.'**
+  String get ethicsCvDesc;
+
+  /// No description provided for @ethicsCvRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'Running…'**
+  String get ethicsCvRunning;
+
+  /// No description provided for @ethicsCvRun.
+  ///
+  /// In en, this message translates to:
+  /// **'Run Cross-Validation'**
+  String get ethicsCvRun;
+
+  /// No description provided for @ethicsMcnemar.
+  ///
+  /// In en, this message translates to:
+  /// **'McNemar significance'**
+  String get ethicsMcnemar;
+
+  /// No description provided for @ethicsSignificant.
+  ///
+  /// In en, this message translates to:
+  /// **'(significant)'**
+  String get ethicsSignificant;
+
+  /// No description provided for @ethicsMeanF1.
+  ///
+  /// In en, this message translates to:
+  /// **'Mean F1'**
+  String get ethicsMeanF1;
+
+  /// No description provided for @ethicsRecall.
+  ///
+  /// In en, this message translates to:
+  /// **'Recall'**
+  String get ethicsRecall;
+
+  /// No description provided for @ethicsRocAuc.
+  ///
+  /// In en, this message translates to:
+  /// **'ROC-AUC'**
+  String get ethicsRocAuc;
+
+  /// No description provided for @ethicsCi.
+  ///
+  /// In en, this message translates to:
+  /// **'95% CI (F1): [{lo}, {hi}]'**
+  String ethicsCi(String lo, String hi);
+
+  /// No description provided for @nudgeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Patient Nudge'**
+  String get nudgeTitle;
+
+  /// No description provided for @nudgeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate a personalised, non-stigmatising outreach message.'**
+  String get nudgeSubtitle;
+
+  /// No description provided for @nudgeName.
+  ///
+  /// In en, this message translates to:
+  /// **'Patient name (optional)'**
+  String get nudgeName;
+
+  /// No description provided for @nudgeAge.
+  ///
+  /// In en, this message translates to:
+  /// **'Age'**
+  String get nudgeAge;
+
+  /// No description provided for @nudgeImd.
+  ///
+  /// In en, this message translates to:
+  /// **'IMD (1-10)'**
+  String get nudgeImd;
+
+  /// No description provided for @nudgeLeadDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Lead days'**
+  String get nudgeLeadDays;
+
+  /// No description provided for @nudgePriorDnas.
+  ///
+  /// In en, this message translates to:
+  /// **'Prior DNAs'**
+  String get nudgePriorDnas;
+
+  /// No description provided for @nudgeSmsSent.
+  ///
+  /// In en, this message translates to:
+  /// **'SMS reminder sent'**
+  String get nudgeSmsSent;
+
+  /// No description provided for @nudgeGenerating.
+  ///
+  /// In en, this message translates to:
+  /// **'Generating…'**
+  String get nudgeGenerating;
+
+  /// No description provided for @nudgeGenerate.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate message'**
+  String get nudgeGenerate;
 }
 
 class _AppLocalizationsDelegate

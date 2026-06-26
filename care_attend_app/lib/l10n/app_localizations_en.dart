@@ -318,4 +318,75 @@ class AppLocalizationsEn extends AppLocalizations {
   String batchTopFactor(String factor) {
     return 'Top factor: $factor';
   }
+
+  @override
+  String get ethicsFramework => 'Ethics Framework';
+
+  @override
+  String get ethicsSubtitle =>
+      'NHS England (2024) six-principle mapping with evidence.';
+
+  @override
+  String get ethicsCvTitle => 'Cross-Validation (5-Fold)';
+
+  @override
+  String get ethicsCvDesc =>
+      'Bootstrap 95% CIs and McNemar significance tests.';
+
+  @override
+  String get ethicsCvRunning => 'Running…';
+
+  @override
+  String get ethicsCvRun => 'Run Cross-Validation';
+
+  @override
+  String get ethicsMcnemar => 'McNemar significance';
+
+  @override
+  String get ethicsSignificant => '(significant)';
+
+  @override
+  String get ethicsMeanF1 => 'Mean F1';
+
+  @override
+  String get ethicsRecall => 'Recall';
+
+  @override
+  String get ethicsRocAuc => 'ROC-AUC';
+
+  @override
+  String ethicsCi(String lo, String hi) {
+    return '95% CI (F1): [$lo, $hi]';
+  }
+
+  @override
+  String get nudgeTitle => 'Patient Nudge';
+
+  @override
+  String get nudgeSubtitle =>
+      'Generate a personalised, non-stigmatising outreach message.';
+
+  @override
+  String get nudgeName => 'Patient name (optional)';
+
+  @override
+  String get nudgeAge => 'Age';
+
+  @override
+  String get nudgeImd => 'IMD (1-10)';
+
+  @override
+  String get nudgeLeadDays => 'Lead days';
+
+  @override
+  String get nudgePriorDnas => 'Prior DNAs';
+
+  @override
+  String get nudgeSmsSent => 'SMS reminder sent';
+
+  @override
+  String get nudgeGenerating => 'Generating…';
+
+  @override
+  String get nudgeGenerate => 'Generate message';
 }
