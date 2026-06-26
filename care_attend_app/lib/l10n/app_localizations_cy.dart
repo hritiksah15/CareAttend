@@ -218,4 +218,42 @@ class AppLocalizationsCy extends AppLocalizations {
   @override
   String get dataHandling =>
       'Trin Data: Ni storir data cleifion. Sesiwn yn unig. Yn cydymffurfio ag Erthygl 5(1)(c) GDPR.';
+
+  @override
+  String get noAssessmentYet => 'Dim Asesiad Eto';
+
+  @override
+  String get noAssessmentDesc => 'Cwblhewch asesiad claf i weld canlyniadau.';
+
+  @override
+  String get goToAssessment => 'Mynd i\'r Asesiad';
+
+  @override
+  String get plainEnglishSummary => 'Crynodeb Iaith Glir';
+
+  @override
+  String get exportReport => 'Allforio adroddiad';
+
+  @override
+  String get feedbackQuestion => 'A oedd y rhagfynegiad hwn yn gywir?';
+
+  @override
+  String get feedbackDesc => 'Mae eich adborth yn gwella tracio cywirdeb.';
+
+  @override
+  String get feedbackAttended => 'Mynychwyd';
+
+  @override
+  String get feedbackDna => 'DNA';
+
+  @override
+  String get feedbackCorrect => 'Cywir';
+
+  @override
+  String get feedbackIncorrect => 'Anghywir';
+
+  @override
+  String feedbackRecorded(String outcome) {
+    return 'Adborth wedi\'i gofnodi: $outcome';
+  }
 }

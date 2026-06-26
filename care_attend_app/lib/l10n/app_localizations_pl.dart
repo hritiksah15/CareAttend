@@ -217,4 +217,42 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get dataHandling =>
       'Przetwarzanie danych: brak przechowywania danych pacjenta. Tylko sesja. Zgodność z art. 5 ust. 1 lit. c) RODO.';
+
+  @override
+  String get noAssessmentYet => 'Brak oceny';
+
+  @override
+  String get noAssessmentDesc => 'Wykonaj ocenę pacjenta, aby zobaczyć wyniki.';
+
+  @override
+  String get goToAssessment => 'Przejdź do oceny';
+
+  @override
+  String get plainEnglishSummary => 'Podsumowanie prostym językiem';
+
+  @override
+  String get exportReport => 'Eksportuj raport';
+
+  @override
+  String get feedbackQuestion => 'Czy ta prognoza była trafna?';
+
+  @override
+  String get feedbackDesc => 'Twoja opinia poprawia śledzenie dokładności.';
+
+  @override
+  String get feedbackAttended => 'Obecny';
+
+  @override
+  String get feedbackDna => 'Nieobecny';
+
+  @override
+  String get feedbackCorrect => 'Poprawna';
+
+  @override
+  String get feedbackIncorrect => 'Błędna';
+
+  @override
+  String feedbackRecorded(String outcome) {
+    return 'Zapisano opinię: $outcome';
+  }
 }
