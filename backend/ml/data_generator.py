@@ -3,9 +3,16 @@ import pandas as pd
 
 
 FEATURE_NAMES = [
-    "Age", "Gender", "AppointmentLeadTimeDays", "SMSReceived",
-    "PriorDNACount", "Hypertension", "Diabetes", "Alcoholism",
-    "Disability", "IMDDecile"
+    "Age",
+    "Gender",
+    "AppointmentLeadTimeDays",
+    "SMSReceived",
+    "PriorDNACount",
+    "Hypertension",
+    "Diabetes",
+    "Alcoholism",
+    "Disability",
+    "IMDDecile",
 ]
 
 PLAIN_ENGLISH_NAMES = {
@@ -32,12 +39,15 @@ def generate_synthetic_dataset(n_samples=12000, random_state=42):
 
     # UK-contextualised age distribution (ONS 2024 GP registration profile)
     age = np.clip(
-        np.concatenate([
-            rng.normal(42, 15, int(n_samples * 0.55)),   # working age
-            rng.normal(73, 8, int(n_samples * 0.30)),     # elderly cohort
-            rng.normal(28, 10, n_samples - int(n_samples * 0.55) - int(n_samples * 0.30)),
-        ]),
-        0, 105
+        np.concatenate(
+            [
+                rng.normal(42, 15, int(n_samples * 0.55)),  # working age
+                rng.normal(73, 8, int(n_samples * 0.30)),  # elderly cohort
+                rng.normal(28, 10, n_samples - int(n_samples * 0.55) - int(n_samples * 0.30)),
+            ]
+        ),
+        0,
+        105,
     ).astype(int)
     rng.shuffle(age)
 
@@ -81,19 +91,21 @@ def generate_synthetic_dataset(n_samples=12000, random_state=42):
     prob = 1 / (1 + np.exp(-log_odds))
     no_show = rng.binomial(1, prob)
 
-    df = pd.DataFrame({
-        "Age": age,
-        "Gender": gender,
-        "AppointmentLeadTimeDays": lead_time,
-        "SMSReceived": sms_received,
-        "PriorDNACount": prior_dna,
-        "Hypertension": hypertension,
-        "Diabetes": diabetes,
-        "Alcoholism": alcoholism,
-        "Disability": disability,
-        "IMDDecile": imd_decile,
-        "NoShow": no_show,
-    })
+    df = pd.DataFrame(
+        {
+            "Age": age,
+            "Gender": gender,
+            "AppointmentLeadTimeDays": lead_time,
+            "SMSReceived": sms_received,
+            "PriorDNACount": prior_dna,
+            "Hypertension": hypertension,
+            "Diabetes": diabetes,
+            "Alcoholism": alcoholism,
+            "Disability": disability,
+            "IMDDecile": imd_decile,
+            "NoShow": no_show,
+        }
+    )
 
     return df
 
@@ -101,31 +113,51 @@ def generate_synthetic_dataset(n_samples=12000, random_state=42):
 NHS_TRUST_PROFILES = {
     "urban_deprived": {
         "description": "Inner-city GP practice (e.g., Tower Hamlets, Newham)",
-        "age_mean": 42, "age_std": 18, "elderly_pct": 0.15,
-        "imd_mean": 2.5, "imd_std": 1.5, "sms_coverage": 0.50,
-        "dna_prior_mean": 2.2, "alcoholism_rate": 0.07,
+        "age_mean": 42,
+        "age_std": 18,
+        "elderly_pct": 0.15,
+        "imd_mean": 2.5,
+        "imd_std": 1.5,
+        "sms_coverage": 0.50,
+        "dna_prior_mean": 2.2,
+        "alcoholism_rate": 0.07,
     },
     "rural_elderly": {
         "description": "Rural GP surgery (e.g., North Norfolk, Powys)",
-        "age_mean": 68, "age_std": 15, "elderly_pct": 0.55,
-        "imd_mean": 5.0, "imd_std": 2.0, "sms_coverage": 0.45,
-        "dna_prior_mean": 1.0, "alcoholism_rate": 0.03,
+        "age_mean": 68,
+        "age_std": 15,
+        "elderly_pct": 0.55,
+        "imd_mean": 5.0,
+        "imd_std": 2.0,
+        "sms_coverage": 0.45,
+        "dna_prior_mean": 1.0,
+        "alcoholism_rate": 0.03,
     },
     "suburban_mixed": {
         "description": "Suburban multi-GP practice (e.g., Solihull, Reading)",
-        "age_mean": 50, "age_std": 20, "elderly_pct": 0.30,
-        "imd_mean": 6.0, "imd_std": 2.5, "sms_coverage": 0.70,
-        "dna_prior_mean": 1.2, "alcoholism_rate": 0.04,
+        "age_mean": 50,
+        "age_std": 20,
+        "elderly_pct": 0.30,
+        "imd_mean": 6.0,
+        "imd_std": 2.5,
+        "sms_coverage": 0.70,
+        "dna_prior_mean": 1.2,
+        "alcoholism_rate": 0.04,
     },
 }
 
 
 def generate_ctgan_uk_supplement(n_samples=3000, random_state=99, trust_profile="urban_deprived"):
-    """Generate CTGAN-style UK demographic supplement calibrated to NHS trust profile.
+    """Generate a CTGAN-STYLE UK demographic supplement for an NHS trust profile.
 
-    Simulates CTGAN output validated against ONS/NHS Digital aggregate
-    statistics. Addresses R01 (dataset mismatch) and R08 (UK data scarcity).
-    Trust profiles calibrated to real NHS demographic distributions.
+    IMPORTANT (validity note): this is NOT trained CTGAN output. It is the same
+    parametric logistic generator as generate_synthetic_dataset, re-parameterised
+    per NHS-trust demographic profile and drawn with a different seed. The label
+    "CTGAN-style" describes the intent (trust-calibrated synthetic supplement),
+    not the method. Because the labels come from a known logistic log-odds, model
+    metrics on this data measure fit-to-generator, not real-world generalisation.
+    Addresses R01 (dataset mismatch) and R08 (UK data scarcity) at prototype scope;
+    real NHS data is out of scope per AT2 Section 1.3.
     """
     rng = np.random.RandomState(random_state)
     profile = NHS_TRUST_PROFILES.get(trust_profile, NHS_TRUST_PROFILES["urban_deprived"])
@@ -133,11 +165,14 @@ def generate_ctgan_uk_supplement(n_samples=3000, random_state=99, trust_profile=
     working_n = n_samples - elderly_n
 
     age = np.clip(
-        np.concatenate([
-            rng.normal(78, 7, elderly_n),
-            rng.normal(profile["age_mean"], profile["age_std"], working_n),
-        ]),
-        18, 105
+        np.concatenate(
+            [
+                rng.normal(78, 7, elderly_n),
+                rng.normal(profile["age_mean"], profile["age_std"], working_n),
+            ]
+        ),
+        18,
+        105,
     ).astype(int)
     rng.shuffle(age)
 
@@ -169,19 +204,21 @@ def generate_ctgan_uk_supplement(n_samples=3000, random_state=99, trust_profile=
     prob = 1 / (1 + np.exp(-log_odds))
     no_show = rng.binomial(1, prob)
 
-    df = pd.DataFrame({
-        "Age": age,
-        "Gender": gender,
-        "AppointmentLeadTimeDays": lead_time,
-        "SMSReceived": sms_received,
-        "PriorDNACount": prior_dna,
-        "Hypertension": hypertension,
-        "Diabetes": diabetes,
-        "Alcoholism": alcoholism,
-        "Disability": disability,
-        "IMDDecile": imd_decile,
-        "NoShow": no_show,
-    })
+    df = pd.DataFrame(
+        {
+            "Age": age,
+            "Gender": gender,
+            "AppointmentLeadTimeDays": lead_time,
+            "SMSReceived": sms_received,
+            "PriorDNACount": prior_dna,
+            "Hypertension": hypertension,
+            "Diabetes": diabetes,
+            "Alcoholism": alcoholism,
+            "Disability": disability,
+            "IMDDecile": imd_decile,
+            "NoShow": no_show,
+        }
+    )
 
     return df
 

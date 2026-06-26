@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Care Attend - Flask REST API Backend.
 
-Architecture: Flask REST API with JWT authentication, ML inference,
+Architecture: Flask REST API with token-based authentication (server-side,
+revocable DB-backed sessions — opaque bearer tokens, not JWT), ML inference,
 SHAP explainability, bias audit, and intervention engine.
 Routes: /predict, /bias-audit, /auth/login, /auth/register, /batch
 """
@@ -294,7 +295,9 @@ def predict():
         return jsonify({"error": error}), 400
 
     result = predictor.predict(patient)
-    interventions, risk_tier, age_group = generate_interventions(patient, result["probability"], result["shap_values"])
+    interventions, risk_tier, age_group = generate_interventions(
+        patient, result["probability"], result["shap_values"], result["risk_tier"]
+    )
 
     nl_summary = _generate_nl_summary(patient, result, age_group)
     prediction_id = str(uuid.uuid4())
@@ -392,7 +395,9 @@ def batch_predict():
             continue
 
         pred = predictor.predict(patient)
-        _, risk_tier, age_group = generate_interventions(patient, pred["probability"], pred["shap_values"])
+        _, risk_tier, age_group = generate_interventions(
+            patient, pred["probability"], pred["shap_values"], pred["risk_tier"]
+        )
         top_shap = pred["shap_values"][0]["label"] if pred["shap_values"] else ""
 
         results.append(
@@ -722,7 +727,7 @@ def create_appointments():
             continue
 
         pred = predictor.predict(patient)
-        _, _, age_group = generate_interventions(patient, pred["probability"], pred["shap_values"])
+        _, _, age_group = generate_interventions(patient, pred["probability"], pred["shap_values"], pred["risk_tier"])
         appointment = AppointmentRecord(
             user_id=request.current_user["userId"],
             patient_id=patient_id,

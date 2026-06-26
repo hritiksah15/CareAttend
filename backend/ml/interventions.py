@@ -53,11 +53,19 @@ INTERVENTION_RULES = {
 }
 
 
-def generate_interventions(patient_data, risk_probability, shap_values):
+def generate_interventions(patient_data, risk_probability, shap_values, risk_tier=None):
+    """Build the ranked intervention list for a patient.
+
+    risk_tier is the single source of truth for the clinical tier and should be
+    supplied by the predictor (derived from the deployed operating threshold) so
+    every endpoint reports the same tier for the same patient. It is only
+    recomputed from the probability as a fallback when not provided.
+    """
     interventions = []
     age = patient_data.get("Age", 0)
     age_group = derive_age_group(age)
-    risk_tier = _get_risk_tier(risk_probability)
+    if risk_tier is None:
+        risk_tier = _get_risk_tier(risk_probability)
     top_features = [sv["feature"] for sv in shap_values[:3]] if shap_values else []
 
     if patient_data.get("PriorDNACount", 0) >= 2 or "PriorDNACount" in top_features:
@@ -97,6 +105,8 @@ def generate_interventions(patient_data, risk_probability, shap_values):
 
 
 def _get_risk_tier(probability):
+    """Fallback tier from raw probability. The predictor's threshold-derived
+    tier is authoritative — only used when no tier is passed in."""
     if probability <= 0.33:
         return "Low"
     elif probability <= 0.66:
