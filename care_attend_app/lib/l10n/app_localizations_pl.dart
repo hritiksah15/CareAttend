@@ -488,4 +488,84 @@ class AppLocalizationsPl extends AppLocalizations {
   String slotsWastedMinutes(String min) {
     return 'Oczekiwane zmarnowane minuty: $min';
   }
+
+  @override
+  String get biasMonitorTitle => 'Panel monitorowania stronniczości etycznej';
+
+  @override
+  String get biasSubtitle =>
+      'Wskaźniki sprawiedliwości w grupach cech chronionych. Próg: 0,10.';
+
+  @override
+  String get biasTabAge => 'Wiek';
+
+  @override
+  String get biasTabImd => 'IMD';
+
+  @override
+  String get biasAuditFailed =>
+      'Audyt nie powiódł się. Sprawdź połączenie z serwerem.';
+
+  @override
+  String get biasExportAudit => 'Eksportuj audyt';
+
+  @override
+  String get biasOverallPerf => 'Ogólna wydajność modelu';
+
+  @override
+  String get biasF1 => 'Wynik F1';
+
+  @override
+  String get biasPrecision => 'Precyzja';
+
+  @override
+  String get biasSamples => 'Próbki';
+
+  @override
+  String get biasAgeGroup => 'Grupa wiekowa';
+
+  @override
+  String get biasImdBand => 'Pasmo IMD';
+
+  @override
+  String get biasDpDiff => 'RÓŻNICA PARYTETU DEMOGRAFICZNEGO';
+
+  @override
+  String get biasPass => 'Zaliczono';
+
+  @override
+  String get biasFail => 'Niezaliczono';
+
+  @override
+  String get biasBarPass => 'ZALICZONE';
+
+  @override
+  String get biasBarWarn => 'OSTRZEŻENIE';
+
+  @override
+  String get biasBarFail => 'NIEZALICZONE';
+
+  @override
+  String get biasNameAge => 'wiek';
+
+  @override
+  String get biasNameGender => 'płeć';
+
+  @override
+  String get biasNameImd => 'IMD';
+
+  @override
+  String get biasFailDp => 'parytet demograficzny';
+
+  @override
+  String get biasFailEo => 'wyrównane szanse';
+
+  @override
+  String get biasSummaryPass =>
+      'Model wykazuje akceptowalną sprawiedliwość we wszystkich grupach cech chronionych. Wszystkie wskaźniki mieszczą się w progu 0,10.';
+
+  @override
+  String biasSummaryFail(String failures) {
+    return 'Model wykazuje akceptowalną sprawiedliwość w większości grup wiekowych. Następujące przekraczają próg 0,10: $failures. Może to odzwierciedlać rzeczywiste ryzyko kliniczne, a nie stronniczość algorytmiczną.';
+  }
 }

@@ -491,4 +491,84 @@ class AppLocalizationsCy extends AppLocalizations {
   String slotsWastedMinutes(String min) {
     return 'Munudau gwastraff disgwyliedig: $min';
   }
+
+  @override
+  String get biasMonitorTitle => 'Dangosfwrdd Monitro Rhagfarn Foesegol';
+
+  @override
+  String get biasSubtitle =>
+      'Metrigau tegwch ar draws grwpiau nodweddion gwarchodedig. Trothwy: 0.10.';
+
+  @override
+  String get biasTabAge => 'Oedran';
+
+  @override
+  String get biasTabImd => 'IMD';
+
+  @override
+  String get biasAuditFailed =>
+      'Methodd yr archwiliad. Gwiriwch gysylltiad y gweinydd.';
+
+  @override
+  String get biasExportAudit => 'Allforio archwiliad';
+
+  @override
+  String get biasOverallPerf => 'Perfformiad Model Cyffredinol';
+
+  @override
+  String get biasF1 => 'Sgôr F1';
+
+  @override
+  String get biasPrecision => 'Trachywiredd';
+
+  @override
+  String get biasSamples => 'Samplau';
+
+  @override
+  String get biasAgeGroup => 'Grŵp Oedran';
+
+  @override
+  String get biasImdBand => 'Band IMD';
+
+  @override
+  String get biasDpDiff => 'GWAHANIAETH CYDRADDOLDEB DEMOGRAFFIG';
+
+  @override
+  String get biasPass => 'Pasio';
+
+  @override
+  String get biasFail => 'Methu';
+
+  @override
+  String get biasBarPass => 'PASIO';
+
+  @override
+  String get biasBarWarn => 'RHYBUDD';
+
+  @override
+  String get biasBarFail => 'METHU';
+
+  @override
+  String get biasNameAge => 'oedran';
+
+  @override
+  String get biasNameGender => 'rhyw';
+
+  @override
+  String get biasNameImd => 'IMD';
+
+  @override
+  String get biasFailDp => 'cydraddoldeb demograffig';
+
+  @override
+  String get biasFailEo => 'ods cyfartal';
+
+  @override
+  String get biasSummaryPass =>
+      'Mae\'r model yn dangos tegwch derbyniol ar draws pob grŵp priodoledd gwarchodedig. Mae pob metrig o fewn y trothwy 0.10.';
+
+  @override
+  String biasSummaryFail(String failures) {
+    return 'Mae\'r model yn dangos tegwch derbyniol ar draws y rhan fwyaf o grwpiau oedran. Mae\'r canlynol yn fwy na\'r trothwy 0.10: $failures. Gall hyn adlewyrchu risg glinigol go iawn yn hytrach na rhagfarn algorithmig.';
+  }
 }

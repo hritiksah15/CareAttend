@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../nhs_theme.dart';
 import '../services/api_service.dart';
 import '../utils/export.dart';
@@ -23,6 +24,7 @@ class _BiasScreenState extends State<BiasScreen>
   }
 
   Future<void> _runAudit() async {
+    final t = AppLocalizations.of(context);
     setState(() => _loading = true);
     try {
       final data = await ApiService.biasAudit();
@@ -34,7 +36,7 @@ class _BiasScreenState extends State<BiasScreen>
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Audit failed. Check server connection.')),
+        SnackBar(content: Text(t.biasAuditFailed)),
       );
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -43,6 +45,7 @@ class _BiasScreenState extends State<BiasScreen>
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -52,16 +55,15 @@ class _BiasScreenState extends State<BiasScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Ethical Bias Monitoring Dashboard',
-                    style: TextStyle(
+                Text(t.biasMonitorTitle,
+                    style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: NHSTheme.blue)),
                 const SizedBox(height: 4),
-                const Text(
-                    'Fairness metrics across protected characteristic groups. Threshold: 0.10.',
-                    style:
-                        TextStyle(fontSize: 14, color: NHSTheme.darkGrey)),
+                Text(t.biasSubtitle,
+                    style: const TextStyle(
+                        fontSize: 14, color: NHSTheme.darkGrey)),
                 const SizedBox(height: 16),
 
                 // Tab bar (Age / Gender / IMD)
@@ -82,10 +84,10 @@ class _BiasScreenState extends State<BiasScreen>
                         fontWeight: FontWeight.w700, fontSize: 14),
                     indicatorSize: TabBarIndicatorSize.tab,
                     dividerHeight: 0,
-                    tabs: const [
-                      Tab(text: 'Age'),
-                      Tab(text: 'Gender'),
-                      Tab(text: 'IMD'),
+                    tabs: [
+                      Tab(text: t.biasTabAge),
+                      Tab(text: t.gender),
+                      Tab(text: t.biasTabImd),
                     ],
                   ),
                 ),
@@ -98,7 +100,7 @@ class _BiasScreenState extends State<BiasScreen>
                           width: 20,
                           child: CircularProgressIndicator(
                               color: Colors.white, strokeWidth: 2))
-                      : const Text('Run Bias Audit'),
+                      : Text(t.runAudit),
                 ),
               ],
             ),
@@ -110,8 +112,8 @@ class _BiasScreenState extends State<BiasScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Export audit',
-                      style: TextStyle(
+                  Text(t.biasExportAudit,
+                      style: const TextStyle(
                           fontSize: 16, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 8),
                   Wrap(spacing: 8, children: [
@@ -137,8 +139,8 @@ class _BiasScreenState extends State<BiasScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Overall Model Performance',
-                      style: TextStyle(
+                  Text(t.biasOverallPerf,
+                      style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: NHSTheme.blue)),
@@ -155,9 +157,9 @@ class _BiasScreenState extends State<BiasScreen>
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  _buildAuditPanel(_auditData!['age_group'], 'Age Group'),
-                  _buildAuditPanel(_auditData!['gender'], 'Gender'),
-                  _buildAuditPanel(_auditData!['imd_band'], 'IMD Band'),
+                  _buildAuditPanel(_auditData!['age_group'], t.biasAgeGroup),
+                  _buildAuditPanel(_auditData!['gender'], t.gender),
+                  _buildAuditPanel(_auditData!['imd_band'], t.biasImdBand),
                 ],
               ),
             ),
@@ -176,8 +178,8 @@ class _BiasScreenState extends State<BiasScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Plain-English Summary',
-                      style: TextStyle(
+                  Text(t.plainEnglishSummary,
+                      style: const TextStyle(
                           fontWeight: FontWeight.w700, color: NHSTheme.blue)),
                   const SizedBox(height: 6),
                   Text(_generateSummary(),
@@ -193,14 +195,15 @@ class _BiasScreenState extends State<BiasScreen>
   }
 
   Widget _buildMetricsRow(Map<String, dynamic> om) {
+    final t = AppLocalizations.of(context);
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: [
-        _metricBox('F1-Score', '${om['f1_score']}'),
-        _metricBox('Recall', '${om['recall']}'),
-        _metricBox('Precision', '${om['precision']}'),
-        _metricBox('Samples', '${om['total_samples']}'),
+        _metricBox(t.biasF1, '${om['f1_score']}'),
+        _metricBox(t.ethicsRecall, '${om['recall']}'),
+        _metricBox(t.biasPrecision, '${om['precision']}'),
+        _metricBox(t.biasSamples, '${om['total_samples']}'),
       ],
     );
   }
@@ -227,6 +230,7 @@ class _BiasScreenState extends State<BiasScreen>
       );
 
   Widget _buildAuditPanel(Map<String, dynamic> audit, String title) {
+    final t = AppLocalizations.of(context);
     final dpDiff = (audit['demographic_parity_diff'] as num).toDouble();
     final eoDiff = (audit['equalised_odds_diff'] as num).toDouble();
     final dpPass = audit['dp_status'] == 'Pass';
@@ -246,8 +250,8 @@ class _BiasScreenState extends State<BiasScreen>
             const SizedBox(height: 12),
 
             // Demographic Parity bars
-            const Text('DEMOGRAPHIC PARITY DIFFERENCE',
-                style: TextStyle(
+            Text(t.biasDpDiff,
+                style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                     color: NHSTheme.darkGrey,
@@ -276,12 +280,18 @@ class _BiasScreenState extends State<BiasScreen>
   }
 
   Widget _biasBar(String label, double value) {
+    final t = AppLocalizations.of(context);
     final barWidth = (value * 4).clamp(0.0, 1.0);
     final status = value <= 0.10
         ? 'PASS'
         : value <= 0.12
             ? 'WARN'
             : 'FAIL';
+    final statusLabel = status == 'PASS'
+        ? t.biasBarPass
+        : status == 'WARN'
+            ? t.biasBarWarn
+            : t.biasBarFail;
     final statusColor = status == 'PASS'
         ? NHSTheme.riskLow
         : status == 'WARN'
@@ -331,7 +341,7 @@ class _BiasScreenState extends State<BiasScreen>
             ),
           ),
           const SizedBox(width: 4),
-          Text('[$status]',
+          Text('[$statusLabel]',
               style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
@@ -341,7 +351,9 @@ class _BiasScreenState extends State<BiasScreen>
     );
   }
 
-  Widget _statusBadge(String text, bool pass) => Container(
+  Widget _statusBadge(String text, bool pass) {
+    final t = AppLocalizations.of(context);
+    return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: pass ? NHSTheme.riskLowBg : NHSTheme.riskHighBg,
@@ -356,7 +368,7 @@ class _BiasScreenState extends State<BiasScreen>
                 color: pass ? NHSTheme.riskLowBg : NHSTheme.riskHighBg,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text(pass ? 'Pass' : 'Fail',
+              child: Text(pass ? t.biasPass : t.biasFail,
                   style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
@@ -373,24 +385,26 @@ class _BiasScreenState extends State<BiasScreen>
           ],
         ),
       );
+  }
 
   String _generateSummary() {
     if (_auditData == null) return '';
+    final t = AppLocalizations.of(context);
 
     final failures = <String>[];
     void check(Map<String, dynamic> audit, String name) {
-      if (audit['dp_status'] != 'Pass') failures.add('$name (demographic parity)');
-      if (audit['eo_status'] != 'Pass') failures.add('$name (equalised odds)');
+      if (audit['dp_status'] != 'Pass') failures.add('$name (${t.biasFailDp})');
+      if (audit['eo_status'] != 'Pass') failures.add('$name (${t.biasFailEo})');
     }
 
-    check(_auditData!['age_group'], 'age');
-    check(_auditData!['gender'], 'gender');
-    check(_auditData!['imd_band'], 'IMD');
+    check(_auditData!['age_group'], t.biasNameAge);
+    check(_auditData!['gender'], t.biasNameGender);
+    check(_auditData!['imd_band'], t.biasNameImd);
 
     if (failures.isEmpty) {
-      return 'Model shows acceptable fairness across all protected attribute groups. All metrics within the 0.10 threshold.';
+      return t.biasSummaryPass;
     }
-    return 'Model shows acceptable fairness across most age groups. The following exceed the 0.10 threshold: ${failures.join(', ')}. This may reflect genuine clinical risk rather than algorithmic bias.';
+    return t.biasSummaryFail(failures.join(', '));
   }
 
   Widget _card({required Widget child}) => Container(
