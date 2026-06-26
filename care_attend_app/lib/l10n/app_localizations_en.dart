@@ -569,4 +569,110 @@ class AppLocalizationsEn extends AppLocalizations {
   String biasSummaryFail(String failures) {
     return 'Model shows acceptable fairness across most age groups. The following exceed the 0.10 threshold: $failures. This may reflect genuine clinical risk rather than algorithmic bias.';
   }
+
+  @override
+  String get clinicTitle => 'Clinic List';
+
+  @override
+  String get clinicSubtitle =>
+      'Score appointments and track outreach progress.';
+
+  @override
+  String get clinicNoAppointments => 'No appointments imported for this date.';
+
+  @override
+  String get clinicRefresh => 'Refresh';
+
+  @override
+  String get clinicPatientId => 'Patient ID';
+
+  @override
+  String get clinicTime => 'Time';
+
+  @override
+  String get clinicClinic => 'Clinic';
+
+  @override
+  String get clinicWorking => 'Working...';
+
+  @override
+  String get clinicAddAppointment => 'Add appointment';
+
+  @override
+  String get clinicBulkImport => 'Bulk JSON import';
+
+  @override
+  String get clinicApptsJson => 'Appointments JSON';
+
+  @override
+  String get clinicImportJson => 'Import JSON';
+
+  @override
+  String get clinicApptsLabel => 'Appointments';
+
+  @override
+  String get clinicActioned => 'Actioned';
+
+  @override
+  String get clinicNeedsAction => 'Needs action';
+
+  @override
+  String get clinicStatus => 'Status';
+
+  @override
+  String clinicActionsCount(String count) {
+    return '$count action(s)';
+  }
+
+  @override
+  String clinicRemindersCount(String count) {
+    return '$count reminder(s)';
+  }
+
+  @override
+  String get clinicNeedsOutreach => 'Needs outreach action';
+
+  @override
+  String get clinicReminder => 'Reminder';
+
+  @override
+  String get clinicCall => 'Call';
+
+  @override
+  String get clinicEnterPatientId => 'Enter a patient ID.';
+
+  @override
+  String get clinicJsonInvalid => 'Appointment JSON is not valid.';
+
+  @override
+  String clinicImported(String count) {
+    return '$count appointment(s) imported.';
+  }
+
+  @override
+  String get clinicStatusUpdated => 'Appointment status updated.';
+
+  @override
+  String get clinicReminderScheduled => 'Reminder scheduled.';
+
+  @override
+  String get clinicCallRecorded => 'Call action recorded.';
+
+  @override
+  String get clinicStScheduled => 'Scheduled';
+
+  @override
+  String get clinicStConfirmed => 'Confirmed';
+
+  @override
+  String get clinicStAttended => 'Attended';
+
+  @override
+  String get clinicStDna => 'DNA';
+
+  @override
+  String get clinicStCancelled => 'Cancelled';
+
+  @override
+  String get clinicStRescheduled => 'Rescheduled';
 }

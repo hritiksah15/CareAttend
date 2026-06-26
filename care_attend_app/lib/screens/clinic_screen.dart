@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../nhs_theme.dart';
 import '../services/api_service.dart';
 
@@ -89,7 +90,7 @@ class _ClinicScreenState extends State<ClinicScreen> {
   Future<void> _addAppointment() async {
     final patientId = _patientId.text.trim();
     if (patientId.isEmpty) {
-      _toast('Enter a patient ID.');
+      _toast(AppLocalizations.of(context).clinicEnterPatientId);
       return;
     }
     await _postAppointments({
@@ -101,6 +102,7 @@ class _ClinicScreenState extends State<ClinicScreen> {
   }
 
   Future<void> _importJson() async {
+    final t = AppLocalizations.of(context);
     try {
       final parsed = jsonDecode(_bulkJson.text);
       final payload = parsed is List
@@ -108,11 +110,12 @@ class _ClinicScreenState extends State<ClinicScreen> {
           : Map<String, dynamic>.from(parsed as Map);
       await _postAppointments(payload);
     } catch (_) {
-      _toast('Appointment JSON is not valid.');
+      _toast(t.clinicJsonInvalid);
     }
   }
 
   Future<void> _postAppointments(Map<String, dynamic> payload) async {
+    final t = AppLocalizations.of(context);
     setState(() {
       _loading = true;
       _error = null;
@@ -120,7 +123,7 @@ class _ClinicScreenState extends State<ClinicScreen> {
     try {
       final res = await ApiService.createAppointments(payload);
       if (!mounted) return;
-      _toast('${res['created']} appointment(s) imported.');
+      _toast(t.clinicImported('${res['created']}'));
       _patientId.clear();
       await _load();
     } catch (e) {
@@ -132,10 +135,11 @@ class _ClinicScreenState extends State<ClinicScreen> {
   }
 
   Future<void> _updateStatus(String appointmentId, String status) async {
+    final t = AppLocalizations.of(context);
     try {
       await ApiService.updateAppointmentStatus(appointmentId, status);
       if (!mounted) return;
-      _toast('Appointment status updated.');
+      _toast(t.clinicStatusUpdated);
       await _load();
     } catch (e) {
       _toast(e.toString());
@@ -143,6 +147,7 @@ class _ClinicScreenState extends State<ClinicScreen> {
   }
 
   Future<void> _scheduleReminder(Map<String, dynamic> appt) async {
+    final t = AppLocalizations.of(context);
     try {
       await ApiService.scheduleNotification(
         patientId: '${appt['patient_id']}',
@@ -150,7 +155,7 @@ class _ClinicScreenState extends State<ClinicScreen> {
         appointmentDate: '${appt['appointment_date']}',
       );
       if (!mounted) return;
-      _toast('Reminder scheduled.');
+      _toast(t.clinicReminderScheduled);
       await _load();
     } catch (e) {
       _toast(e.toString());
@@ -158,6 +163,7 @@ class _ClinicScreenState extends State<ClinicScreen> {
   }
 
   Future<void> _recordCall(Map<String, dynamic> appt) async {
+    final t = AppLocalizations.of(context);
     try {
       await ApiService.createOutreachAction({
         'patient_id': appt['patient_id'],
@@ -169,7 +175,7 @@ class _ClinicScreenState extends State<ClinicScreen> {
         'notes': 'Recorded from mobile clinic list.',
       });
       if (!mounted) return;
-      _toast('Call action recorded.');
+      _toast(t.clinicCallRecorded);
       await _load();
     } catch (e) {
       _toast(e.toString());
@@ -185,6 +191,7 @@ class _ClinicScreenState extends State<ClinicScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final appointments = ((_data?['appointments'] as List?) ?? [])
         .cast<Map<String, dynamic>>();
     final summary = (_data?['summary'] as Map<String, dynamic>?) ?? {};
@@ -196,11 +203,11 @@ class _ClinicScreenState extends State<ClinicScreen> {
         // clear the floating chatbot button in the bottom-right corner.
         padding: const EdgeInsets.fromLTRB(12, 12, 12, 88),
         children: [
-          const Text('Clinic List',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
+          Text(t.clinicTitle,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
-          const Text('Score appointments and track outreach progress.',
-              style: TextStyle(color: NHSTheme.darkGrey)),
+          Text(t.clinicSubtitle,
+              style: const TextStyle(color: NHSTheme.darkGrey)),
           const SizedBox(height: 16),
           _buildImportCard(),
           if (_error != null)
@@ -218,10 +225,10 @@ class _ClinicScreenState extends State<ClinicScreen> {
               child: Center(child: CircularProgressIndicator()),
             )
           else if (appointments.isEmpty)
-            const Card(
+            Card(
               child: Padding(
-                padding: EdgeInsets.all(18),
-                child: Text('No appointments imported for this date.'),
+                padding: const EdgeInsets.all(18),
+                child: Text(t.clinicNoAppointments),
               ),
             )
           else
@@ -232,6 +239,7 @@ class _ClinicScreenState extends State<ClinicScreen> {
   }
 
   Widget _buildImportCard() {
+    final t = AppLocalizations.of(context);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -246,7 +254,7 @@ class _ClinicScreenState extends State<ClinicScreen> {
             ),
             const SizedBox(width: 10),
             IconButton(
-              tooltip: 'Refresh',
+              tooltip: t.clinicRefresh,
               onPressed: _loading ? null : _load,
               icon: const Icon(Icons.refresh),
             ),
@@ -254,21 +262,21 @@ class _ClinicScreenState extends State<ClinicScreen> {
           const SizedBox(height: 12),
           TextField(
             controller: _patientId,
-            decoration: const InputDecoration(labelText: 'Patient ID'),
+            decoration: InputDecoration(labelText: t.clinicPatientId),
           ),
           const SizedBox(height: 10),
           Row(children: [
             Expanded(
               child: TextField(
                 controller: _time,
-                decoration: const InputDecoration(labelText: 'Time'),
+                decoration: InputDecoration(labelText: t.clinicTime),
               ),
             ),
             const SizedBox(width: 10),
             Expanded(
               child: TextField(
                 controller: _clinic,
-                decoration: const InputDecoration(labelText: 'Clinic'),
+                decoration: InputDecoration(labelText: t.clinicClinic),
               ),
             ),
           ]),
@@ -276,26 +284,26 @@ class _ClinicScreenState extends State<ClinicScreen> {
           ElevatedButton.icon(
             onPressed: _loading ? null : _addAppointment,
             icon: const Icon(Icons.calendar_today),
-            label: Text(_loading ? 'Working...' : 'Add appointment'),
+            label: Text(_loading ? t.clinicWorking : t.clinicAddAppointment),
           ),
           const SizedBox(height: 8),
           ExpansionTile(
             tilePadding: EdgeInsets.zero,
-            title: const Text('Bulk JSON import',
-                style: TextStyle(fontWeight: FontWeight.w700)),
+            title: Text(t.clinicBulkImport,
+                style: const TextStyle(fontWeight: FontWeight.w700)),
             children: [
               TextField(
                 controller: _bulkJson,
                 minLines: 4,
                 maxLines: 8,
                 decoration:
-                    const InputDecoration(labelText: 'Appointments JSON'),
+                    InputDecoration(labelText: t.clinicApptsJson),
               ),
               const SizedBox(height: 10),
               OutlinedButton.icon(
                 onPressed: _loading ? null : _importJson,
                 icon: const Icon(Icons.upload_file),
-                label: const Text('Import JSON'),
+                label: Text(t.clinicImportJson),
               ),
             ],
           ),
@@ -305,17 +313,18 @@ class _ClinicScreenState extends State<ClinicScreen> {
   }
 
   Widget _buildSummary(Map<String, dynamic> s) {
+    final t = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Wrap(
         spacing: 8,
         runSpacing: 8,
         children: [
-          _metric('${s['total'] ?? 0}', 'Appointments', NHSTheme.blue),
-          _metric('${s['high_risk'] ?? 0}', 'High', NHSTheme.riskHigh),
-          _metric('${s['medium_risk'] ?? 0}', 'Medium', NHSTheme.riskMedium),
-          _metric('${s['actioned'] ?? 0}', 'Actioned', NHSTheme.riskLow),
-          _metric('${s['needs_action'] ?? 0}', 'Needs action', NHSTheme.darkGrey),
+          _metric('${s['total'] ?? 0}', t.clinicApptsLabel, NHSTheme.blue),
+          _metric('${s['high_risk'] ?? 0}', t.statHigh, NHSTheme.riskHigh),
+          _metric('${s['medium_risk'] ?? 0}', t.statMedium, NHSTheme.riskMedium),
+          _metric('${s['actioned'] ?? 0}', t.clinicActioned, NHSTheme.riskLow),
+          _metric('${s['needs_action'] ?? 0}', t.clinicNeedsAction, NHSTheme.darkGrey),
         ],
       ),
     );
@@ -346,7 +355,25 @@ class _ClinicScreenState extends State<ClinicScreen> {
     );
   }
 
+  String _statusLabel(AppLocalizations t, String status) {
+    switch (status) {
+      case 'confirmed':
+        return t.clinicStConfirmed;
+      case 'attended':
+        return t.clinicStAttended;
+      case 'dna':
+        return t.clinicStDna;
+      case 'cancelled':
+        return t.clinicStCancelled;
+      case 'rescheduled':
+        return t.clinicStRescheduled;
+      default:
+        return t.clinicStScheduled;
+    }
+  }
+
   Widget _buildAppointmentCard(Map<String, dynamic> appt) {
+    final t = AppLocalizations.of(context);
     final tier = '${appt['risk_tier'] ?? 'Low'}';
     final prob = appt['probability'] is num
         ? '${((appt['probability'] as num) * 100).toStringAsFixed(1)}%'
@@ -383,9 +410,10 @@ class _ClinicScreenState extends State<ClinicScreen> {
             Expanded(
               child: DropdownButtonFormField<String>(
                 initialValue: status,
-                decoration: const InputDecoration(labelText: 'Status'),
+                decoration: InputDecoration(labelText: t.clinicStatus),
                 items: _statuses
-                    .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                    .map((s) => DropdownMenuItem(
+                        value: s, child: Text(_statusLabel(t, s))))
                     .toList(),
                 onChanged: (v) {
                   if (v != null) _updateStatus('${appt['id']}', v);
@@ -395,17 +423,18 @@ class _ClinicScreenState extends State<ClinicScreen> {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                '${appt['action_count'] ?? 0} action(s)\n${appt['notification_count'] ?? 0} reminder(s)',
+                '${t.clinicActionsCount('${appt['action_count'] ?? 0}')}\n'
+                '${t.clinicRemindersCount('${appt['notification_count'] ?? 0}')}',
                 style: const TextStyle(
                     color: NHSTheme.darkGrey, fontWeight: FontWeight.w600),
               ),
             ),
           ]),
           if (appt['needs_action'] == true)
-            const Padding(
-              padding: EdgeInsets.only(top: 8),
-              child: Text('Needs outreach action',
-                  style: TextStyle(
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(t.clinicNeedsOutreach,
+                  style: const TextStyle(
                       color: NHSTheme.riskHigh, fontWeight: FontWeight.w800)),
             ),
           const SizedBox(height: 10),
@@ -414,7 +443,7 @@ class _ClinicScreenState extends State<ClinicScreen> {
               child: OutlinedButton.icon(
                 onPressed: canNotify ? () => _scheduleReminder(appt) : null,
                 icon: const Icon(Icons.notifications_active),
-                label: const Text('Reminder'),
+                label: Text(t.clinicReminder),
               ),
             ),
             const SizedBox(width: 10),
@@ -422,7 +451,7 @@ class _ClinicScreenState extends State<ClinicScreen> {
               child: OutlinedButton.icon(
                 onPressed: () => _recordCall(appt),
                 icon: const Icon(Icons.call),
-                label: const Text('Call'),
+                label: Text(t.clinicCall),
               ),
             ),
           ]),

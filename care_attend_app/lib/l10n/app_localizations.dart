@@ -1157,6 +1157,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Model shows acceptable fairness across most age groups. The following exceed the 0.10 threshold: {failures}. This may reflect genuine clinical risk rather than algorithmic bias.'**
   String biasSummaryFail(String failures);
+
+  /// No description provided for @clinicTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clinic List'**
+  String get clinicTitle;
+
+  /// No description provided for @clinicSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Score appointments and track outreach progress.'**
+  String get clinicSubtitle;
+
+  /// No description provided for @clinicNoAppointments.
+  ///
+  /// In en, this message translates to:
+  /// **'No appointments imported for this date.'**
+  String get clinicNoAppointments;
+
+  /// No description provided for @clinicRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get clinicRefresh;
+
+  /// No description provided for @clinicPatientId.
+  ///
+  /// In en, this message translates to:
+  /// **'Patient ID'**
+  String get clinicPatientId;
+
+  /// No description provided for @clinicTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get clinicTime;
+
+  /// No description provided for @clinicClinic.
+  ///
+  /// In en, this message translates to:
+  /// **'Clinic'**
+  String get clinicClinic;
+
+  /// No description provided for @clinicWorking.
+  ///
+  /// In en, this message translates to:
+  /// **'Working...'**
+  String get clinicWorking;
+
+  /// No description provided for @clinicAddAppointment.
+  ///
+  /// In en, this message translates to:
+  /// **'Add appointment'**
+  String get clinicAddAppointment;
+
+  /// No description provided for @clinicBulkImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Bulk JSON import'**
+  String get clinicBulkImport;
+
+  /// No description provided for @clinicApptsJson.
+  ///
+  /// In en, this message translates to:
+  /// **'Appointments JSON'**
+  String get clinicApptsJson;
+
+  /// No description provided for @clinicImportJson.
+  ///
+  /// In en, this message translates to:
+  /// **'Import JSON'**
+  String get clinicImportJson;
+
+  /// No description provided for @clinicApptsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Appointments'**
+  String get clinicApptsLabel;
+
+  /// No description provided for @clinicActioned.
+  ///
+  /// In en, this message translates to:
+  /// **'Actioned'**
+  String get clinicActioned;
+
+  /// No description provided for @clinicNeedsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs action'**
+  String get clinicNeedsAction;
+
+  /// No description provided for @clinicStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get clinicStatus;
+
+  /// No description provided for @clinicActionsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} action(s)'**
+  String clinicActionsCount(String count);
+
+  /// No description provided for @clinicRemindersCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} reminder(s)'**
+  String clinicRemindersCount(String count);
+
+  /// No description provided for @clinicNeedsOutreach.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs outreach action'**
+  String get clinicNeedsOutreach;
+
+  /// No description provided for @clinicReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder'**
+  String get clinicReminder;
+
+  /// No description provided for @clinicCall.
+  ///
+  /// In en, this message translates to:
+  /// **'Call'**
+  String get clinicCall;
+
+  /// No description provided for @clinicEnterPatientId.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a patient ID.'**
+  String get clinicEnterPatientId;
+
+  /// No description provided for @clinicJsonInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Appointment JSON is not valid.'**
+  String get clinicJsonInvalid;
+
+  /// No description provided for @clinicImported.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} appointment(s) imported.'**
+  String clinicImported(String count);
+
+  /// No description provided for @clinicStatusUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Appointment status updated.'**
+  String get clinicStatusUpdated;
+
+  /// No description provided for @clinicReminderScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder scheduled.'**
+  String get clinicReminderScheduled;
+
+  /// No description provided for @clinicCallRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Call action recorded.'**
+  String get clinicCallRecorded;
+
+  /// No description provided for @clinicStScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled'**
+  String get clinicStScheduled;
+
+  /// No description provided for @clinicStConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed'**
+  String get clinicStConfirmed;
+
+  /// No description provided for @clinicStAttended.
+  ///
+  /// In en, this message translates to:
+  /// **'Attended'**
+  String get clinicStAttended;
+
+  /// No description provided for @clinicStDna.
+  ///
+  /// In en, this message translates to:
+  /// **'DNA'**
+  String get clinicStDna;
+
+  /// No description provided for @clinicStCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get clinicStCancelled;
+
+  /// No description provided for @clinicStRescheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Rescheduled'**
+  String get clinicStRescheduled;
 }
 
 class _AppLocalizationsDelegate
