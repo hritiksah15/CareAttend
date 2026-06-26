@@ -386,4 +386,105 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get nudgeGenerate => 'پیغام تیار کریں';
+
+  @override
+  String get adminTitle => 'صارف کا انتظام';
+
+  @override
+  String get adminSubtitle =>
+      'صرف ایڈمن۔ نئے سائن اپ صرف پڑھنے والے صارفین کے طور پر شروع ہوتے ہیں — قابل اعتماد ساتھیوں کو یہاں ترقی دیں۔';
+
+  @override
+  String get adminRoleUpdated => 'کردار اپ ڈیٹ ہو گیا۔';
+
+  @override
+  String get adminDeleteTitle => 'صارف کو حذف کریں';
+
+  @override
+  String adminDeleteConfirm(String username) {
+    return '\"$username\" کو حذف کریں؟ یہ واپس نہیں کیا جا سکتا۔';
+  }
+
+  @override
+  String get adminCancel => 'منسوخ کریں';
+
+  @override
+  String get adminDelete => 'حذف کریں';
+
+  @override
+  String get adminDeleted => 'حذف ہو گیا۔';
+
+  @override
+  String get adminRolePerms => 'کردار کی اجازتیں';
+
+  @override
+  String get adminFeature => 'خصوصیت';
+
+  @override
+  String get adminRoleUser => 'صارف';
+
+  @override
+  String get adminRoleStaff => 'عملہ';
+
+  @override
+  String get adminRoleAdmin => 'ایڈمن';
+
+  @override
+  String get adminPermAssessment => 'تشخیص + نتائج';
+
+  @override
+  String get adminPermDashboard => 'ڈیش بورڈ، سلاٹس، یاد دہانی';
+
+  @override
+  String get adminPermBias => 'تعصب، اخلاقیات، ماڈل معلومات';
+
+  @override
+  String get adminPermAudit => 'آڈٹ لاگ، صارف کا انتظام';
+
+  @override
+  String get adminRoleLabel => 'کردار:';
+
+  @override
+  String get slotsTitle => 'سلاٹ کی اصلاح';
+
+  @override
+  String get slotsSubtitle =>
+      'ایک سلاٹ کے لیے DNA کے خطرے کا تخمینہ لگائیں اور آیا اسے اوور بک کیا جا سکتا ہے۔';
+
+  @override
+  String get slotsSlotMins => 'سلاٹ منٹ';
+
+  @override
+  String get slotsAnalysing => 'تجزیہ ہو رہا ہے…';
+
+  @override
+  String get slotsAnalyse => 'سلاٹ کا تجزیہ کریں';
+
+  @override
+  String get slotsOverbookable => 'اوور بک کے قابل';
+
+  @override
+  String get slotsExpectedWaste => 'متوقع ضیاع';
+
+  @override
+  String get slotsRecoveryPotential => 'بحالی کی صلاحیت';
+
+  @override
+  String slotsRiskLine(String prob, String tier) {
+    return '$prob% DNA خطرہ · $tier';
+  }
+
+  @override
+  String get slotsCanOverbookLabel => 'اوور بک کر سکتے ہیں:';
+
+  @override
+  String get commonYes => 'ہاں';
+
+  @override
+  String get commonNo => 'نہیں';
+
+  @override
+  String slotsWastedMinutes(String min) {
+    return 'متوقع ضائع منٹ: $min';
+  }
 }

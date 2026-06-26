@@ -389,4 +389,105 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nudgeGenerate => 'Generate message';
+
+  @override
+  String get adminTitle => 'User Management';
+
+  @override
+  String get adminSubtitle =>
+      'Admin only. New sign-ups start as read-only users — promote trusted colleagues here.';
+
+  @override
+  String get adminRoleUpdated => 'Role updated.';
+
+  @override
+  String get adminDeleteTitle => 'Delete user';
+
+  @override
+  String adminDeleteConfirm(String username) {
+    return 'Delete \"$username\"? This cannot be undone.';
+  }
+
+  @override
+  String get adminCancel => 'Cancel';
+
+  @override
+  String get adminDelete => 'Delete';
+
+  @override
+  String get adminDeleted => 'Deleted.';
+
+  @override
+  String get adminRolePerms => 'Role Permissions';
+
+  @override
+  String get adminFeature => 'Feature';
+
+  @override
+  String get adminRoleUser => 'User';
+
+  @override
+  String get adminRoleStaff => 'Staff';
+
+  @override
+  String get adminRoleAdmin => 'Admin';
+
+  @override
+  String get adminPermAssessment => 'Assessment + Results';
+
+  @override
+  String get adminPermDashboard => 'Dashboard, Slots, Nudge';
+
+  @override
+  String get adminPermBias => 'Bias, Ethics, Model info';
+
+  @override
+  String get adminPermAudit => 'Audit log, User management';
+
+  @override
+  String get adminRoleLabel => 'Role:';
+
+  @override
+  String get slotsTitle => 'Slot Optimisation';
+
+  @override
+  String get slotsSubtitle =>
+      'Estimate DNA risk for a slot and whether it can be overbooked.';
+
+  @override
+  String get slotsSlotMins => 'Slot mins';
+
+  @override
+  String get slotsAnalysing => 'Analysing…';
+
+  @override
+  String get slotsAnalyse => 'Analyse slot';
+
+  @override
+  String get slotsOverbookable => 'Overbookable';
+
+  @override
+  String get slotsExpectedWaste => 'Expected waste';
+
+  @override
+  String get slotsRecoveryPotential => 'Recovery potential';
+
+  @override
+  String slotsRiskLine(String prob, String tier) {
+    return '$prob% DNA risk · $tier';
+  }
+
+  @override
+  String get slotsCanOverbookLabel => 'Can overbook:';
+
+  @override
+  String get commonYes => 'Yes';
+
+  @override
+  String get commonNo => 'No';
+
+  @override
+  String slotsWastedMinutes(String min) {
+    return 'Expected wasted minutes: $min';
+  }
 }

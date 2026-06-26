@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../nhs_theme.dart';
 import '../services/api_service.dart';
 
@@ -40,9 +41,10 @@ class _AdminScreenState extends State<AdminScreen> {
   }
 
   Future<void> _setRole(String userId, String role) async {
+    final t = AppLocalizations.of(context);
     try {
       await ApiService.adminSetRole(userId, role);
-      _toast('Role updated.');
+      _toast(t.adminRoleUpdated);
       _load();
     } catch (e) {
       _toast(e.toString());
@@ -50,26 +52,27 @@ class _AdminScreenState extends State<AdminScreen> {
   }
 
   Future<void> _delete(String userId, String username) async {
+    final t = AppLocalizations.of(context);
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Delete user'),
-        content: Text('Delete "$username"? This cannot be undone.'),
+        title: Text(t.adminDeleteTitle),
+        content: Text(t.adminDeleteConfirm(username)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel')),
+              child: Text(t.adminCancel)),
           TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Delete',
-                  style: TextStyle(color: NHSTheme.riskHigh))),
+              child: Text(t.adminDelete,
+                  style: const TextStyle(color: NHSTheme.riskHigh))),
         ],
       ),
     );
     if (ok != true) return;
     try {
       final res = await ApiService.adminDeleteUser(userId);
-      _toast(res['message']?.toString() ?? 'Deleted.');
+      _toast(res['message']?.toString() ?? t.adminDeleted);
       _load();
     } catch (e) {
       _toast(e.toString());
@@ -84,17 +87,17 @@ class _AdminScreenState extends State<AdminScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
         padding: const EdgeInsets.all(12),
         children: [
-          const Text('User Management',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
+          Text(t.adminTitle,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
-          const Text(
-              'Admin only. New sign-ups start as read-only users — promote trusted colleagues here.',
-              style: TextStyle(color: NHSTheme.darkGrey)),
+          Text(t.adminSubtitle,
+              style: const TextStyle(color: NHSTheme.darkGrey)),
           const SizedBox(height: 16),
           if (_loading)
             const Center(
@@ -117,11 +120,12 @@ class _AdminScreenState extends State<AdminScreen> {
 
   // Role-permission reference (parity with the website Admin tab).
   Widget _permissionMatrix() {
+    final t = AppLocalizations.of(context);
     // flex applied here once — the cell itself must NOT be an Expanded, or two
     // Expanded compete for the same child's parent data and the tree throws.
-    Widget cell(String t, int flex, {bool head = false}) => Expanded(
+    Widget cell(String label, int flex, {bool head = false}) => Expanded(
           flex: flex,
-          child: Text(t,
+          child: Text(label,
               textAlign: flex == 2 ? TextAlign.left : TextAlign.center,
               style: TextStyle(
                   fontSize: 12,
@@ -141,26 +145,38 @@ class _AdminScreenState extends State<AdminScreen> {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Role Permissions',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+          Text(t.adminRolePerms,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
           Row(children: [
-            cell('Feature', 2, head: true),
-            cell('User', 1, head: true),
-            cell('Staff', 1, head: true),
-            cell('Admin', 1, head: true),
+            cell(t.adminFeature, 2, head: true),
+            cell(t.adminRoleUser, 1, head: true),
+            cell(t.adminRoleStaff, 1, head: true),
+            cell(t.adminRoleAdmin, 1, head: true),
           ]),
           const Divider(),
-          rowFor('Assessment + Results', true, true, true),
-          rowFor('Dashboard, Slots, Nudge', false, true, true),
-          rowFor('Bias, Ethics, Model info', false, false, true),
-          rowFor('Audit log, User management', false, false, true),
+          rowFor(t.adminPermAssessment, true, true, true),
+          rowFor(t.adminPermDashboard, false, true, true),
+          rowFor(t.adminPermBias, false, false, true),
+          rowFor(t.adminPermAudit, false, false, true),
         ]),
       ),
     );
   }
 
+  String _roleLabel(AppLocalizations t, String role) {
+    switch (role) {
+      case 'staff':
+        return t.adminRoleStaff;
+      case 'admin':
+        return t.adminRoleAdmin;
+      default:
+        return t.adminRoleUser;
+    }
+  }
+
   Widget _userCard(Map<String, dynamic> u) {
+    final t = AppLocalizations.of(context);
     final userId = u['userId']?.toString() ?? '';
     final username = u['username']?.toString() ?? '';
     final email = u['email']?.toString() ?? '';
@@ -183,13 +199,13 @@ class _AdminScreenState extends State<AdminScreen> {
             const SizedBox(height: 8),
             Row(
               children: [
-                const Text('Role:'),
+                Text('${t.adminRoleLabel} '),
                 const SizedBox(width: 8),
                 DropdownButton<String>(
                   value: current,
                   items: [
                     for (final r in _roles)
-                      DropdownMenuItem(value: r, child: Text(r)),
+                      DropdownMenuItem(value: r, child: Text(_roleLabel(t, r))),
                   ],
                   onChanged: (v) {
                     if (v != null && v != current) _setRole(userId, v);
@@ -199,7 +215,7 @@ class _AdminScreenState extends State<AdminScreen> {
                 IconButton(
                   icon: const Icon(Icons.delete_outline,
                       color: NHSTheme.riskHigh),
-                  tooltip: 'Delete user',
+                  tooltip: t.adminDeleteTitle,
                   onPressed: () => _delete(userId, username),
                 ),
               ],
