@@ -571,4 +571,111 @@ class AppLocalizationsCy extends AppLocalizations {
   String biasSummaryFail(String failures) {
     return 'Mae\'r model yn dangos tegwch derbyniol ar draws y rhan fwyaf o grwpiau oedran. Mae\'r canlynol yn fwy na\'r trothwy 0.10: $failures. Gall hyn adlewyrchu risg glinigol go iawn yn hytrach na rhagfarn algorithmig.';
   }
+
+  @override
+  String get clinicTitle => 'Rhestr Clinig';
+
+  @override
+  String get clinicSubtitle =>
+      'Sgorio apwyntiadau ac olrhain cynnydd allgymorth.';
+
+  @override
+  String get clinicNoAppointments =>
+      'Dim apwyntiadau wedi\'u mewnforio ar gyfer y dyddiad hwn.';
+
+  @override
+  String get clinicRefresh => 'Adnewyddu';
+
+  @override
+  String get clinicPatientId => 'ID Claf';
+
+  @override
+  String get clinicTime => 'Amser';
+
+  @override
+  String get clinicClinic => 'Clinig';
+
+  @override
+  String get clinicWorking => 'Wrthi\'n gweithio...';
+
+  @override
+  String get clinicAddAppointment => 'Ychwanegu apwyntiad';
+
+  @override
+  String get clinicBulkImport => 'Mewnforio JSON swmp';
+
+  @override
+  String get clinicApptsJson => 'JSON Apwyntiadau';
+
+  @override
+  String get clinicImportJson => 'Mewnforio JSON';
+
+  @override
+  String get clinicApptsLabel => 'Apwyntiadau';
+
+  @override
+  String get clinicActioned => 'Wedi gweithredu';
+
+  @override
+  String get clinicNeedsAction => 'Angen gweithredu';
+
+  @override
+  String get clinicStatus => 'Statws';
+
+  @override
+  String clinicActionsCount(String count) {
+    return '$count gweithred';
+  }
+
+  @override
+  String clinicRemindersCount(String count) {
+    return '$count nodyn atgoffa';
+  }
+
+  @override
+  String get clinicNeedsOutreach => 'Angen gweithred allgymorth';
+
+  @override
+  String get clinicReminder => 'Nodyn atgoffa';
+
+  @override
+  String get clinicCall => 'Galw';
+
+  @override
+  String get clinicEnterPatientId => 'Rhowch ID claf.';
+
+  @override
+  String get clinicJsonInvalid => 'Nid yw JSON yr apwyntiad yn ddilys.';
+
+  @override
+  String clinicImported(String count) {
+    return '$count apwyntiad wedi\'u mewnforio.';
+  }
+
+  @override
+  String get clinicStatusUpdated => 'Statws apwyntiad wedi\'i ddiweddaru.';
+
+  @override
+  String get clinicReminderScheduled => 'Nodyn atgoffa wedi\'i drefnu.';
+
+  @override
+  String get clinicCallRecorded => 'Gweithred galw wedi\'i chofnodi.';
+
+  @override
+  String get clinicStScheduled => 'Wedi\'i drefnu';
+
+  @override
+  String get clinicStConfirmed => 'Wedi\'i gadarnhau';
+
+  @override
+  String get clinicStAttended => 'Wedi mynychu';
+
+  @override
+  String get clinicStDna => 'DNA';
+
+  @override
+  String get clinicStCancelled => 'Wedi\'i ganslo';
+
+  @override
+  String get clinicStRescheduled => 'Wedi\'i aildrefnu';
 }

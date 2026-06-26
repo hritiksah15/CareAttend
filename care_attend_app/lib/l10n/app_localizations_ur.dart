@@ -566,4 +566,111 @@ class AppLocalizationsUr extends AppLocalizations {
   String biasSummaryFail(String failures) {
     return 'ماڈل زیادہ تر عمر کے گروپوں میں قابل قبول انصاف دکھاتا ہے۔ درج ذیل 0.10 کی حد سے تجاوز کرتے ہیں: $failures۔ یہ الگورتھمک تعصب کے بجائے حقیقی طبی خطرے کی عکاسی کر سکتا ہے۔';
   }
+
+  @override
+  String get clinicTitle => 'کلینک کی فہرست';
+
+  @override
+  String get clinicSubtitle =>
+      'ملاقاتوں کو اسکور کریں اور رابطے کی پیش رفت کو ٹریک کریں۔';
+
+  @override
+  String get clinicNoAppointments =>
+      'اس تاریخ کے لیے کوئی ملاقات درآمد نہیں کی گئی۔';
+
+  @override
+  String get clinicRefresh => 'ریفریش کریں';
+
+  @override
+  String get clinicPatientId => 'مریض کی شناخت';
+
+  @override
+  String get clinicTime => 'وقت';
+
+  @override
+  String get clinicClinic => 'کلینک';
+
+  @override
+  String get clinicWorking => 'کام جاری ہے...';
+
+  @override
+  String get clinicAddAppointment => 'ملاقات شامل کریں';
+
+  @override
+  String get clinicBulkImport => 'بلک JSON درآمد';
+
+  @override
+  String get clinicApptsJson => 'ملاقاتوں کا JSON';
+
+  @override
+  String get clinicImportJson => 'JSON درآمد کریں';
+
+  @override
+  String get clinicApptsLabel => 'ملاقاتیں';
+
+  @override
+  String get clinicActioned => 'کارروائی شدہ';
+
+  @override
+  String get clinicNeedsAction => 'کارروائی درکار';
+
+  @override
+  String get clinicStatus => 'حیثیت';
+
+  @override
+  String clinicActionsCount(String count) {
+    return '$count کارروائیاں';
+  }
+
+  @override
+  String clinicRemindersCount(String count) {
+    return '$count یاد دہانیاں';
+  }
+
+  @override
+  String get clinicNeedsOutreach => 'رابطے کی کارروائی درکار';
+
+  @override
+  String get clinicReminder => 'یاد دہانی';
+
+  @override
+  String get clinicCall => 'کال';
+
+  @override
+  String get clinicEnterPatientId => 'مریض کی شناخت درج کریں۔';
+
+  @override
+  String get clinicJsonInvalid => 'ملاقات کا JSON درست نہیں ہے۔';
+
+  @override
+  String clinicImported(String count) {
+    return '$count ملاقاتیں درآمد کی گئیں۔';
+  }
+
+  @override
+  String get clinicStatusUpdated => 'ملاقات کی حیثیت اپ ڈیٹ ہو گئی۔';
+
+  @override
+  String get clinicReminderScheduled => 'یاد دہانی طے شدہ۔';
+
+  @override
+  String get clinicCallRecorded => 'کال کارروائی ریکارڈ کی گئی۔';
+
+  @override
+  String get clinicStScheduled => 'طے شدہ';
+
+  @override
+  String get clinicStConfirmed => 'تصدیق شدہ';
+
+  @override
+  String get clinicStAttended => 'حاضر ہوا';
+
+  @override
+  String get clinicStDna => 'DNA';
+
+  @override
+  String get clinicStCancelled => 'منسوخ شدہ';
+
+  @override
+  String get clinicStRescheduled => 'دوبارہ طے شدہ';
 }

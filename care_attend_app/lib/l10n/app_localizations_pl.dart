@@ -568,4 +568,110 @@ class AppLocalizationsPl extends AppLocalizations {
   String biasSummaryFail(String failures) {
     return 'Model wykazuje akceptowalną sprawiedliwość w większości grup wiekowych. Następujące przekraczają próg 0,10: $failures. Może to odzwierciedlać rzeczywiste ryzyko kliniczne, a nie stronniczość algorytmiczną.';
   }
+
+  @override
+  String get clinicTitle => 'Lista kliniki';
+
+  @override
+  String get clinicSubtitle =>
+      'Oceniaj wizyty i śledź postęp działań kontaktowych.';
+
+  @override
+  String get clinicNoAppointments => 'Brak zaimportowanych wizyt na ten dzień.';
+
+  @override
+  String get clinicRefresh => 'Odśwież';
+
+  @override
+  String get clinicPatientId => 'ID pacjenta';
+
+  @override
+  String get clinicTime => 'Czas';
+
+  @override
+  String get clinicClinic => 'Klinika';
+
+  @override
+  String get clinicWorking => 'Trwa praca...';
+
+  @override
+  String get clinicAddAppointment => 'Dodaj wizytę';
+
+  @override
+  String get clinicBulkImport => 'Import zbiorczy JSON';
+
+  @override
+  String get clinicApptsJson => 'JSON wizyt';
+
+  @override
+  String get clinicImportJson => 'Importuj JSON';
+
+  @override
+  String get clinicApptsLabel => 'Wizyty';
+
+  @override
+  String get clinicActioned => 'Podjęto działanie';
+
+  @override
+  String get clinicNeedsAction => 'Wymaga działania';
+
+  @override
+  String get clinicStatus => 'Status';
+
+  @override
+  String clinicActionsCount(String count) {
+    return '$count działań';
+  }
+
+  @override
+  String clinicRemindersCount(String count) {
+    return '$count przypomnień';
+  }
+
+  @override
+  String get clinicNeedsOutreach => 'Wymaga działania kontaktowego';
+
+  @override
+  String get clinicReminder => 'Przypomnienie';
+
+  @override
+  String get clinicCall => 'Połączenie';
+
+  @override
+  String get clinicEnterPatientId => 'Wprowadź ID pacjenta.';
+
+  @override
+  String get clinicJsonInvalid => 'JSON wizyty jest nieprawidłowy.';
+
+  @override
+  String clinicImported(String count) {
+    return 'Zaimportowano $count wizyt.';
+  }
+
+  @override
+  String get clinicStatusUpdated => 'Status wizyty zaktualizowany.';
+
+  @override
+  String get clinicReminderScheduled => 'Przypomnienie zaplanowane.';
+
+  @override
+  String get clinicCallRecorded => 'Działanie połączenia zarejestrowane.';
+
+  @override
+  String get clinicStScheduled => 'Zaplanowano';
+
+  @override
+  String get clinicStConfirmed => 'Potwierdzono';
+
+  @override
+  String get clinicStAttended => 'Obecny';
+
+  @override
+  String get clinicStDna => 'DNA';
+
+  @override
+  String get clinicStCancelled => 'Anulowano';
+
+  @override
+  String get clinicStRescheduled => 'Przełożono';
 }
