@@ -641,6 +641,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Operational Outcomes'**
   String get operationalOutcomes;
+
+  /// No description provided for @batchUploadDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload a CSV of up to 100 patients. Required columns: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile.'**
+  String get batchUploadDesc;
+
+  /// No description provided for @batchScoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Scoring…'**
+  String get batchScoring;
+
+  /// No description provided for @batchPickCsv.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick CSV & Score'**
+  String get batchPickCsv;
+
+  /// No description provided for @batchFile.
+  ///
+  /// In en, this message translates to:
+  /// **'File: {filename}'**
+  String batchFile(String filename);
+
+  /// No description provided for @batchReadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read the file.'**
+  String get batchReadError;
+
+  /// No description provided for @batchPatients.
+  ///
+  /// In en, this message translates to:
+  /// **'Patients'**
+  String get batchPatients;
+
+  /// No description provided for @batchRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Row {row}'**
+  String batchRow(String row);
+
+  /// No description provided for @batchTopFactor.
+  ///
+  /// In en, this message translates to:
+  /// **'Top factor: {factor}'**
+  String batchTopFactor(String factor);
 }
 
 class _AppLocalizationsDelegate

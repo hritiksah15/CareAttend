@@ -287,4 +287,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get operationalOutcomes => 'Operational Outcomes';
+
+  @override
+  String get batchUploadDesc =>
+      'Upload a CSV of up to 100 patients. Required columns: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile.';
+
+  @override
+  String get batchScoring => 'Scoring…';
+
+  @override
+  String get batchPickCsv => 'Pick CSV & Score';
+
+  @override
+  String batchFile(String filename) {
+    return 'File: $filename';
+  }
+
+  @override
+  String get batchReadError => 'Could not read the file.';
+
+  @override
+  String get batchPatients => 'Patients';
+
+  @override
+  String batchRow(String row) {
+    return 'Row $row';
+  }
+
+  @override
+  String batchTopFactor(String factor) {
+    return 'Top factor: $factor';
+  }
 }

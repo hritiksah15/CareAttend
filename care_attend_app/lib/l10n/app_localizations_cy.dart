@@ -288,4 +288,35 @@ class AppLocalizationsCy extends AppLocalizations {
 
   @override
   String get operationalOutcomes => 'Canlyniadau Gweithredol';
+
+  @override
+  String get batchUploadDesc =>
+      'Uwchlwythwch CSV o hyd at 100 o gleifion. Colofnau gofynnol: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile.';
+
+  @override
+  String get batchScoring => 'Yn sgorio…';
+
+  @override
+  String get batchPickCsv => 'Dewis CSV a Sgorio';
+
+  @override
+  String batchFile(String filename) {
+    return 'Ffeil: $filename';
+  }
+
+  @override
+  String get batchReadError => 'Methwyd darllen y ffeil.';
+
+  @override
+  String get batchPatients => 'Cleifion';
+
+  @override
+  String batchRow(String row) {
+    return 'Rhes $row';
+  }
+
+  @override
+  String batchTopFactor(String factor) {
+    return 'Prif ffactor: $factor';
+  }
 }

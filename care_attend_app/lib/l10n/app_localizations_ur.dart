@@ -285,4 +285,35 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get operationalOutcomes => 'آپریشنل نتائج';
+
+  @override
+  String get batchUploadDesc =>
+      'زیادہ سے زیادہ 100 مریضوں کی CSV اپ لوڈ کریں۔ مطلوبہ کالم: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile۔';
+
+  @override
+  String get batchScoring => 'اسکورنگ…';
+
+  @override
+  String get batchPickCsv => 'CSV منتخب کریں اور اسکور کریں';
+
+  @override
+  String batchFile(String filename) {
+    return 'فائل: $filename';
+  }
+
+  @override
+  String get batchReadError => 'فائل پڑھی نہیں جا سکی۔';
+
+  @override
+  String get batchPatients => 'مریض';
+
+  @override
+  String batchRow(String row) {
+    return 'قطار $row';
+  }
+
+  @override
+  String batchTopFactor(String factor) {
+    return 'اہم عنصر: $factor';
+  }
 }

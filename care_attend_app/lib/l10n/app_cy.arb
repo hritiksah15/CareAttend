@@ -89,5 +89,16 @@
   "averageRisk": "Risg cyfartalog",
   "recentAssessments": "Asesiadau diweddar",
   "noAssessmentsYet": "Dim asesiadau eto. Rhedwch Asesiad Claf yn gyntaf.",
-  "operationalOutcomes": "Canlyniadau Gweithredol"
+  "operationalOutcomes": "Canlyniadau Gweithredol",
+  "batchUploadDesc": "Uwchlwythwch CSV o hyd at 100 o gleifion. Colofnau gofynnol: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile.",
+  "batchScoring": "Yn sgorio…",
+  "batchPickCsv": "Dewis CSV a Sgorio",
+  "batchFile": "Ffeil: {filename}",
+  "@batchFile": { "placeholders": { "filename": { "type": "String" } } },
+  "batchReadError": "Methwyd darllen y ffeil.",
+  "batchPatients": "Cleifion",
+  "batchRow": "Rhes {row}",
+  "@batchRow": { "placeholders": { "row": { "type": "String" } } },
+  "batchTopFactor": "Prif ffactor: {factor}",
+  "@batchTopFactor": { "placeholders": { "factor": { "type": "String" } } }
 }

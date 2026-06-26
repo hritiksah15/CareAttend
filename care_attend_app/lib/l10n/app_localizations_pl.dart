@@ -285,4 +285,35 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get operationalOutcomes => 'Wyniki operacyjne';
+
+  @override
+  String get batchUploadDesc =>
+      'Prześlij plik CSV z maksymalnie 100 pacjentami. Wymagane kolumny: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile.';
+
+  @override
+  String get batchScoring => 'Ocenianie…';
+
+  @override
+  String get batchPickCsv => 'Wybierz CSV i oceń';
+
+  @override
+  String batchFile(String filename) {
+    return 'Plik: $filename';
+  }
+
+  @override
+  String get batchReadError => 'Nie można odczytać pliku.';
+
+  @override
+  String get batchPatients => 'Pacjenci';
+
+  @override
+  String batchRow(String row) {
+    return 'Wiersz $row';
+  }
+
+  @override
+  String batchTopFactor(String factor) {
+    return 'Główny czynnik: $factor';
+  }
 }
