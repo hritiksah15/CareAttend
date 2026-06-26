@@ -58,5 +58,15 @@
   "language": "Language",
   "rememberMe": "Remember me",
   "forgotPassword": "Forgot password?",
-  "orText": "OR"
+  "orText": "OR",
+  "assessmentIntro": "Enter patient details to generate a DNA risk prediction with explainable AI outputs.",
+  "autofill": "Auto-fill",
+  "carerProxy": "Carer / Family Proxy",
+  "female": "Female",
+  "male": "Male",
+  "ageGroupLine": "Age Group: {group} (auto-calculated)",
+  "@ageGroupLine": { "placeholders": { "group": { "type": "String" } } },
+  "aboutTool": "About This Tool",
+  "aboutToolDesc": "Care Attend uses machine learning to predict DNA risk. Predictions explained via SHAP. System monitors for demographic bias.",
+  "dataHandling": "Data Handling: No patient data stored. Session-scoped only. GDPR Art 5(1)(c) compliant."
 }

@@ -186,4 +186,36 @@ class AppLocalizationsCy extends AppLocalizations {
 
   @override
   String get orText => 'NEU';
+
+  @override
+  String get assessmentIntro =>
+      'Rhowch fanylion y claf i gynhyrchu rhagfynegiad risg DNA gydag allbynnau AI esboniadwy.';
+
+  @override
+  String get autofill => 'Llenwi\'n awtomatig';
+
+  @override
+  String get carerProxy => 'Dirprwy Gofalwr / Teulu';
+
+  @override
+  String get female => 'Benyw';
+
+  @override
+  String get male => 'Gwryw';
+
+  @override
+  String ageGroupLine(String group) {
+    return 'Grŵp Oedran: $group (cyfrifo\'n awtomatig)';
+  }
+
+  @override
+  String get aboutTool => 'Am yr Offeryn Hwn';
+
+  @override
+  String get aboutToolDesc =>
+      'Mae Care Attend yn defnyddio dysgu peirianyddol i ragfynegi risg DNA. Esbonnir rhagfynegiadau drwy SHAP. Mae\'r system yn monitro am ragfarn ddemograffig.';
+
+  @override
+  String get dataHandling =>
+      'Trin Data: Ni storir data cleifion. Sesiwn yn unig. Yn cydymffurfio ag Erthygl 5(1)(c) GDPR.';
 }

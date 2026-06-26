@@ -184,4 +184,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get orText => 'OR';
+
+  @override
+  String get assessmentIntro =>
+      'Enter patient details to generate a DNA risk prediction with explainable AI outputs.';
+
+  @override
+  String get autofill => 'Auto-fill';
+
+  @override
+  String get carerProxy => 'Carer / Family Proxy';
+
+  @override
+  String get female => 'Female';
+
+  @override
+  String get male => 'Male';
+
+  @override
+  String ageGroupLine(String group) {
+    return 'Age Group: $group (auto-calculated)';
+  }
+
+  @override
+  String get aboutTool => 'About This Tool';
+
+  @override
+  String get aboutToolDesc =>
+      'Care Attend uses machine learning to predict DNA risk. Predictions explained via SHAP. System monitors for demographic bias.';
+
+  @override
+  String get dataHandling =>
+      'Data Handling: No patient data stored. Session-scoped only. GDPR Art 5(1)(c) compliant.';
 }

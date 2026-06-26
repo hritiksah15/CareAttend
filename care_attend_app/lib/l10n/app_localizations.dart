@@ -455,6 +455,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'OR'**
   String get orText;
+
+  /// No description provided for @assessmentIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter patient details to generate a DNA risk prediction with explainable AI outputs.'**
+  String get assessmentIntro;
+
+  /// No description provided for @autofill.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-fill'**
+  String get autofill;
+
+  /// No description provided for @carerProxy.
+  ///
+  /// In en, this message translates to:
+  /// **'Carer / Family Proxy'**
+  String get carerProxy;
+
+  /// No description provided for @female.
+  ///
+  /// In en, this message translates to:
+  /// **'Female'**
+  String get female;
+
+  /// No description provided for @male.
+  ///
+  /// In en, this message translates to:
+  /// **'Male'**
+  String get male;
+
+  /// No description provided for @ageGroupLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Age Group: {group} (auto-calculated)'**
+  String ageGroupLine(String group);
+
+  /// No description provided for @aboutTool.
+  ///
+  /// In en, this message translates to:
+  /// **'About This Tool'**
+  String get aboutTool;
+
+  /// No description provided for @aboutToolDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Care Attend uses machine learning to predict DNA risk. Predictions explained via SHAP. System monitors for demographic bias.'**
+  String get aboutToolDesc;
+
+  /// No description provided for @dataHandling.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Handling: No patient data stored. Session-scoped only. GDPR Art 5(1)(c) compliant.'**
+  String get dataHandling;
 }
 
 class _AppLocalizationsDelegate
