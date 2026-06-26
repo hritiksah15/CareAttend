@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../nhs_theme.dart';
+import '../l10n/app_localizations.dart';
 import '../services/api_service.dart';
 import '../utils/export.dart';
 
@@ -19,6 +20,7 @@ class ResultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     if (result == null) {
       return Center(
         child: Column(
@@ -27,20 +29,21 @@ class ResultScreen extends StatelessWidget {
             const Icon(Icons.assessment_outlined,
                 size: 64, color: NHSTheme.grey),
             const SizedBox(height: 16),
-            const Text('No Assessment Yet',
-                style: TextStyle(
+            Text(t.noAssessmentYet,
+                style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: NHSTheme.darkGrey)),
             const SizedBox(height: 8),
-            const Text('Complete patient assessment to view results.',
-                style: TextStyle(color: NHSTheme.grey)),
+            Text(t.noAssessmentDesc,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: NHSTheme.grey)),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: onNewAssessment,
               style: ElevatedButton.styleFrom(
                   minimumSize: const Size(200, 44)),
-              child: const Text('Go to Assessment'),
+              child: Text(t.goToAssessment),
             ),
           ],
         ),
@@ -123,7 +126,11 @@ class ResultScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
-                          '${tier.toUpperCase()} RISK',
+                          tier == 'high'
+                              ? t.highRisk
+                              : tier == 'medium'
+                                  ? t.mediumRisk
+                                  : t.lowRisk,
                           style: const TextStyle(
                               color: Colors.white,
                               fontSize: 16,
@@ -161,8 +168,8 @@ class ResultScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Why This Score? (SHAP)',
-                    style: TextStyle(
+                Text(t.whyThisScore,
+                    style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: NHSTheme.blue)),
@@ -234,7 +241,7 @@ class ResultScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          isRisk ? 'Increases Risk' : 'Reduces Risk',
+                          isRisk ? t.increasesRisk : t.reducesRisk,
                           style: TextStyle(
                             fontSize: 11,
                             color: isRisk ? NHSTheme.riskHigh : NHSTheme.riskLow,
@@ -255,8 +262,8 @@ class ResultScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Recommended Interventions',
-                    style: TextStyle(
+                Text(t.interventions,
+                    style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: NHSTheme.blue)),
@@ -328,8 +335,8 @@ class ResultScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Plain-English Summary',
-                      style: TextStyle(
+                  Text(t.plainEnglishSummary,
+                      style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                           color: NHSTheme.blue)),
@@ -347,8 +354,8 @@ class ResultScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Export report',
-                    style: TextStyle(
+                Text(t.exportReport,
+                    style: const TextStyle(
                         fontSize: 16, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 8),
                 Wrap(spacing: 8, runSpacing: 8, children: [
@@ -379,14 +386,14 @@ class ResultScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Was this prediction accurate?',
-                    style: TextStyle(
+                Text(t.feedbackQuestion,
+                    style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: NHSTheme.blue)),
                 const SizedBox(height: 4),
-                const Text('Your feedback improves accuracy tracking.',
-                    style: TextStyle(color: NHSTheme.darkGrey, fontSize: 13)),
+                Text(t.feedbackDesc,
+                    style: const TextStyle(color: NHSTheme.darkGrey, fontSize: 13)),
                 const SizedBox(height: 12),
                 _FeedbackButtons(predictionId: fullSessionId),
               ],
@@ -400,8 +407,8 @@ class ResultScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Risk History (Session)',
-                      style: TextStyle(
+                  Text(t.riskHistory,
+                      style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                           color: NHSTheme.blue)),
@@ -419,7 +426,7 @@ class ResultScreen extends StatelessWidget {
               Expanded(
                 child: ElevatedButton(
                   onPressed: onNewAssessment,
-                  child: const Text('New Assessment'),
+                  child: Text(t.newAssessment),
                 ),
               ),
               const SizedBox(width: 12),
@@ -428,7 +435,7 @@ class ResultScreen extends StatelessWidget {
                   onPressed: onBiasDashboard,
                   style: ElevatedButton.styleFrom(
                       backgroundColor: NHSTheme.darkBlue),
-                  child: const Text('Bias Dashboard'),
+                  child: Text(t.biasDashboard),
                 ),
               ),
             ],
@@ -541,8 +548,9 @@ class _FeedbackButtonsState extends State<_FeedbackButtons> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     if (_done != null) {
-      return Text('Feedback recorded: $_done',
+      return Text(t.feedbackRecorded(_done!),
           style: const TextStyle(
               color: NHSTheme.riskLow, fontWeight: FontWeight.w600));
     }
@@ -553,10 +561,10 @@ class _FeedbackButtonsState extends State<_FeedbackButtons> {
           child: Text(label),
         );
     return Wrap(spacing: 8, runSpacing: 8, children: [
-      btn('Attended', 'attended', NHSTheme.riskLow),
-      btn('DNA', 'dna', NHSTheme.riskHigh),
-      btn('Correct', 'correct', NHSTheme.blue),
-      btn('Incorrect', 'incorrect', NHSTheme.darkGrey),
+      btn(t.feedbackAttended, 'attended', NHSTheme.riskLow),
+      btn(t.feedbackDna, 'dna', NHSTheme.riskHigh),
+      btn(t.feedbackCorrect, 'correct', NHSTheme.blue),
+      btn(t.feedbackIncorrect, 'incorrect', NHSTheme.darkGrey),
     ]);
   }
 }

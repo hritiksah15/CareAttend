@@ -67,5 +67,17 @@
   "ageGroupLine": "Grŵp Oedran: {group} (cyfrifo'n awtomatig)",
   "aboutTool": "Am yr Offeryn Hwn",
   "aboutToolDesc": "Mae Care Attend yn defnyddio dysgu peirianyddol i ragfynegi risg DNA. Esbonnir rhagfynegiadau drwy SHAP. Mae'r system yn monitro am ragfarn ddemograffig.",
-  "dataHandling": "Trin Data: Ni storir data cleifion. Sesiwn yn unig. Yn cydymffurfio ag Erthygl 5(1)(c) GDPR."
+  "dataHandling": "Trin Data: Ni storir data cleifion. Sesiwn yn unig. Yn cydymffurfio ag Erthygl 5(1)(c) GDPR.",
+  "noAssessmentYet": "Dim Asesiad Eto",
+  "noAssessmentDesc": "Cwblhewch asesiad claf i weld canlyniadau.",
+  "goToAssessment": "Mynd i'r Asesiad",
+  "plainEnglishSummary": "Crynodeb Iaith Glir",
+  "exportReport": "Allforio adroddiad",
+  "feedbackQuestion": "A oedd y rhagfynegiad hwn yn gywir?",
+  "feedbackDesc": "Mae eich adborth yn gwella tracio cywirdeb.",
+  "feedbackAttended": "Mynychwyd",
+  "feedbackDna": "DNA",
+  "feedbackCorrect": "Cywir",
+  "feedbackIncorrect": "Anghywir",
+  "feedbackRecorded": "Adborth wedi'i gofnodi: {outcome}"
 }

@@ -216,4 +216,43 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get dataHandling =>
       'Data Handling: No patient data stored. Session-scoped only. GDPR Art 5(1)(c) compliant.';
+
+  @override
+  String get noAssessmentYet => 'No Assessment Yet';
+
+  @override
+  String get noAssessmentDesc =>
+      'Complete a patient assessment to view results.';
+
+  @override
+  String get goToAssessment => 'Go to Assessment';
+
+  @override
+  String get plainEnglishSummary => 'Plain-English Summary';
+
+  @override
+  String get exportReport => 'Export report';
+
+  @override
+  String get feedbackQuestion => 'Was this prediction accurate?';
+
+  @override
+  String get feedbackDesc => 'Your feedback improves accuracy tracking.';
+
+  @override
+  String get feedbackAttended => 'Attended';
+
+  @override
+  String get feedbackDna => 'DNA';
+
+  @override
+  String get feedbackCorrect => 'Correct';
+
+  @override
+  String get feedbackIncorrect => 'Incorrect';
+
+  @override
+  String feedbackRecorded(String outcome) {
+    return 'Feedback recorded: $outcome';
+  }
 }

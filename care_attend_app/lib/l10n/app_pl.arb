@@ -67,5 +67,17 @@
   "ageGroupLine": "Grupa wiekowa: {group} (obliczono automatycznie)",
   "aboutTool": "O tym narzędziu",
   "aboutToolDesc": "Care Attend wykorzystuje uczenie maszynowe do prognozowania ryzyka nieobecności. Prognozy wyjaśniane przez SHAP. System monitoruje stronniczość demograficzną.",
-  "dataHandling": "Przetwarzanie danych: brak przechowywania danych pacjenta. Tylko sesja. Zgodność z art. 5 ust. 1 lit. c) RODO."
+  "dataHandling": "Przetwarzanie danych: brak przechowywania danych pacjenta. Tylko sesja. Zgodność z art. 5 ust. 1 lit. c) RODO.",
+  "noAssessmentYet": "Brak oceny",
+  "noAssessmentDesc": "Wykonaj ocenę pacjenta, aby zobaczyć wyniki.",
+  "goToAssessment": "Przejdź do oceny",
+  "plainEnglishSummary": "Podsumowanie prostym językiem",
+  "exportReport": "Eksportuj raport",
+  "feedbackQuestion": "Czy ta prognoza była trafna?",
+  "feedbackDesc": "Twoja opinia poprawia śledzenie dokładności.",
+  "feedbackAttended": "Obecny",
+  "feedbackDna": "Nieobecny",
+  "feedbackCorrect": "Poprawna",
+  "feedbackIncorrect": "Błędna",
+  "feedbackRecorded": "Zapisano opinię: {outcome}"
 }

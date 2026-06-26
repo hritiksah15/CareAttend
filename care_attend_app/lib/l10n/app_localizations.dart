@@ -509,6 +509,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Data Handling: No patient data stored. Session-scoped only. GDPR Art 5(1)(c) compliant.'**
   String get dataHandling;
+
+  /// No description provided for @noAssessmentYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No Assessment Yet'**
+  String get noAssessmentYet;
+
+  /// No description provided for @noAssessmentDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete a patient assessment to view results.'**
+  String get noAssessmentDesc;
+
+  /// No description provided for @goToAssessment.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Assessment'**
+  String get goToAssessment;
+
+  /// No description provided for @plainEnglishSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Plain-English Summary'**
+  String get plainEnglishSummary;
+
+  /// No description provided for @exportReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Export report'**
+  String get exportReport;
+
+  /// No description provided for @feedbackQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Was this prediction accurate?'**
+  String get feedbackQuestion;
+
+  /// No description provided for @feedbackDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your feedback improves accuracy tracking.'**
+  String get feedbackDesc;
+
+  /// No description provided for @feedbackAttended.
+  ///
+  /// In en, this message translates to:
+  /// **'Attended'**
+  String get feedbackAttended;
+
+  /// No description provided for @feedbackDna.
+  ///
+  /// In en, this message translates to:
+  /// **'DNA'**
+  String get feedbackDna;
+
+  /// No description provided for @feedbackCorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct'**
+  String get feedbackCorrect;
+
+  /// No description provided for @feedbackIncorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect'**
+  String get feedbackIncorrect;
+
+  /// No description provided for @feedbackRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback recorded: {outcome}'**
+  String feedbackRecorded(String outcome);
 }
 
 class _AppLocalizationsDelegate

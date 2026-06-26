@@ -68,5 +68,18 @@
   "@ageGroupLine": { "placeholders": { "group": { "type": "String" } } },
   "aboutTool": "About This Tool",
   "aboutToolDesc": "Care Attend uses machine learning to predict DNA risk. Predictions explained via SHAP. System monitors for demographic bias.",
-  "dataHandling": "Data Handling: No patient data stored. Session-scoped only. GDPR Art 5(1)(c) compliant."
+  "dataHandling": "Data Handling: No patient data stored. Session-scoped only. GDPR Art 5(1)(c) compliant.",
+  "noAssessmentYet": "No Assessment Yet",
+  "noAssessmentDesc": "Complete a patient assessment to view results.",
+  "goToAssessment": "Go to Assessment",
+  "plainEnglishSummary": "Plain-English Summary",
+  "exportReport": "Export report",
+  "feedbackQuestion": "Was this prediction accurate?",
+  "feedbackDesc": "Your feedback improves accuracy tracking.",
+  "feedbackAttended": "Attended",
+  "feedbackDna": "DNA",
+  "feedbackCorrect": "Correct",
+  "feedbackIncorrect": "Incorrect",
+  "feedbackRecorded": "Feedback recorded: {outcome}",
+  "@feedbackRecorded": { "placeholders": { "outcome": { "type": "String" } } }
 }

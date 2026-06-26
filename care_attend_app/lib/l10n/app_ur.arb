@@ -67,5 +67,17 @@
   "ageGroupLine": "عمر کا گروپ: {group} (خودکار حساب)",
   "aboutTool": "اس آلے کے بارے میں",
   "aboutToolDesc": "Care Attend مشین لرننگ کا استعمال کرتے ہوئے DNA خطرے کی پیش گوئی کرتا ہے۔ پیش گوئیاں SHAP کے ذریعے بیان کی جاتی ہیں۔ نظام آبادیاتی تعصب کی نگرانی کرتا ہے۔",
-  "dataHandling": "ڈیٹا ہینڈلنگ: مریض کا ڈیٹا محفوظ نہیں۔ صرف سیشن۔ GDPR آرٹیکل 5(1)(c) کے مطابق۔"
+  "dataHandling": "ڈیٹا ہینڈلنگ: مریض کا ڈیٹا محفوظ نہیں۔ صرف سیشن۔ GDPR آرٹیکل 5(1)(c) کے مطابق۔",
+  "noAssessmentYet": "ابھی تک کوئی تشخیص نہیں",
+  "noAssessmentDesc": "نتائج دیکھنے کے لیے مریض کی تشخیص مکمل کریں۔",
+  "goToAssessment": "تشخیص پر جائیں",
+  "plainEnglishSummary": "سادہ زبان میں خلاصہ",
+  "exportReport": "رپورٹ برآمد کریں",
+  "feedbackQuestion": "کیا یہ پیش گوئی درست تھی؟",
+  "feedbackDesc": "آپ کی رائے درستگی کی نگرانی بہتر بناتی ہے۔",
+  "feedbackAttended": "حاضر ہوا",
+  "feedbackDna": "غیر حاضر",
+  "feedbackCorrect": "درست",
+  "feedbackIncorrect": "غلط",
+  "feedbackRecorded": "رائے درج کی گئی: {outcome}"
 }

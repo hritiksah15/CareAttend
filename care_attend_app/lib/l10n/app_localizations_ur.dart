@@ -216,4 +216,42 @@ class AppLocalizationsUr extends AppLocalizations {
   @override
   String get dataHandling =>
       'ڈیٹا ہینڈلنگ: مریض کا ڈیٹا محفوظ نہیں۔ صرف سیشن۔ GDPR آرٹیکل 5(1)(c) کے مطابق۔';
+
+  @override
+  String get noAssessmentYet => 'ابھی تک کوئی تشخیص نہیں';
+
+  @override
+  String get noAssessmentDesc => 'نتائج دیکھنے کے لیے مریض کی تشخیص مکمل کریں۔';
+
+  @override
+  String get goToAssessment => 'تشخیص پر جائیں';
+
+  @override
+  String get plainEnglishSummary => 'سادہ زبان میں خلاصہ';
+
+  @override
+  String get exportReport => 'رپورٹ برآمد کریں';
+
+  @override
+  String get feedbackQuestion => 'کیا یہ پیش گوئی درست تھی؟';
+
+  @override
+  String get feedbackDesc => 'آپ کی رائے درستگی کی نگرانی بہتر بناتی ہے۔';
+
+  @override
+  String get feedbackAttended => 'حاضر ہوا';
+
+  @override
+  String get feedbackDna => 'غیر حاضر';
+
+  @override
+  String get feedbackCorrect => 'درست';
+
+  @override
+  String get feedbackIncorrect => 'غلط';
+
+  @override
+  String feedbackRecorded(String outcome) {
+    return 'رائے درج کی گئی: $outcome';
+  }
 }
