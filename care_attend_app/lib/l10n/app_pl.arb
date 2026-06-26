@@ -79,5 +79,15 @@
   "feedbackDna": "Nieobecny",
   "feedbackCorrect": "Poprawna",
   "feedbackIncorrect": "Błędna",
-  "feedbackRecorded": "Zapisano opinię: {outcome}"
+  "feedbackRecorded": "Zapisano opinię: {outcome}",
+  "practiceDashboard": "Panel praktyki",
+  "practiceOverview": "Ogólny przegląd ocen i wyników w praktyce.",
+  "statTotal": "Łącznie",
+  "statHigh": "Wysokie",
+  "statMedium": "Średnie",
+  "statLow": "Niskie",
+  "averageRisk": "Średnie ryzyko",
+  "recentAssessments": "Ostatnie oceny",
+  "noAssessmentsYet": "Brak ocen. Najpierw wykonaj ocenę pacjenta.",
+  "operationalOutcomes": "Wyniki operacyjne"
 }

@@ -581,6 +581,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Feedback recorded: {outcome}'**
   String feedbackRecorded(String outcome);
+
+  /// No description provided for @practiceDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice Dashboard'**
+  String get practiceDashboard;
+
+  /// No description provided for @practiceOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice-wide overview of assessments and outcomes.'**
+  String get practiceOverview;
+
+  /// No description provided for @statTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get statTotal;
+
+  /// No description provided for @statHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get statHigh;
+
+  /// No description provided for @statMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get statMedium;
+
+  /// No description provided for @statLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get statLow;
+
+  /// No description provided for @averageRisk.
+  ///
+  /// In en, this message translates to:
+  /// **'Average risk'**
+  String get averageRisk;
+
+  /// No description provided for @recentAssessments.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent assessments'**
+  String get recentAssessments;
+
+  /// No description provided for @noAssessmentsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No assessments yet. Run a Patient Assessment first.'**
+  String get noAssessmentsYet;
+
+  /// No description provided for @operationalOutcomes.
+  ///
+  /// In en, this message translates to:
+  /// **'Operational Outcomes'**
+  String get operationalOutcomes;
 }
 
 class _AppLocalizationsDelegate

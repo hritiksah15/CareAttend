@@ -79,5 +79,15 @@
   "feedbackDna": "DNA",
   "feedbackCorrect": "Cywir",
   "feedbackIncorrect": "Anghywir",
-  "feedbackRecorded": "Adborth wedi'i gofnodi: {outcome}"
+  "feedbackRecorded": "Adborth wedi'i gofnodi: {outcome}",
+  "practiceDashboard": "Dangosfwrdd Practis",
+  "practiceOverview": "Trosolwg practis-eang o asesiadau a chanlyniadau.",
+  "statTotal": "Cyfanswm",
+  "statHigh": "Uchel",
+  "statMedium": "Canolig",
+  "statLow": "Isel",
+  "averageRisk": "Risg cyfartalog",
+  "recentAssessments": "Asesiadau diweddar",
+  "noAssessmentsYet": "Dim asesiadau eto. Rhedwch Asesiad Claf yn gyntaf.",
+  "operationalOutcomes": "Canlyniadau Gweithredol"
 }

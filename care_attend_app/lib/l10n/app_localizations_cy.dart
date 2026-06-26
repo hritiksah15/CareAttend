@@ -256,4 +256,36 @@ class AppLocalizationsCy extends AppLocalizations {
   String feedbackRecorded(String outcome) {
     return 'Adborth wedi\'i gofnodi: $outcome';
   }
+
+  @override
+  String get practiceDashboard => 'Dangosfwrdd Practis';
+
+  @override
+  String get practiceOverview =>
+      'Trosolwg practis-eang o asesiadau a chanlyniadau.';
+
+  @override
+  String get statTotal => 'Cyfanswm';
+
+  @override
+  String get statHigh => 'Uchel';
+
+  @override
+  String get statMedium => 'Canolig';
+
+  @override
+  String get statLow => 'Isel';
+
+  @override
+  String get averageRisk => 'Risg cyfartalog';
+
+  @override
+  String get recentAssessments => 'Asesiadau diweddar';
+
+  @override
+  String get noAssessmentsYet =>
+      'Dim asesiadau eto. Rhedwch Asesiad Claf yn gyntaf.';
+
+  @override
+  String get operationalOutcomes => 'Canlyniadau Gweithredol';
 }

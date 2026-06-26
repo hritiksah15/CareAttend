@@ -255,4 +255,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String feedbackRecorded(String outcome) {
     return 'Feedback recorded: $outcome';
   }
+
+  @override
+  String get practiceDashboard => 'Practice Dashboard';
+
+  @override
+  String get practiceOverview =>
+      'Practice-wide overview of assessments and outcomes.';
+
+  @override
+  String get statTotal => 'Total';
+
+  @override
+  String get statHigh => 'High';
+
+  @override
+  String get statMedium => 'Medium';
+
+  @override
+  String get statLow => 'Low';
+
+  @override
+  String get averageRisk => 'Average risk';
+
+  @override
+  String get recentAssessments => 'Recent assessments';
+
+  @override
+  String get noAssessmentsYet =>
+      'No assessments yet. Run a Patient Assessment first.';
+
+  @override
+  String get operationalOutcomes => 'Operational Outcomes';
 }

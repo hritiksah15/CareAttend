@@ -255,4 +255,34 @@ class AppLocalizationsPl extends AppLocalizations {
   String feedbackRecorded(String outcome) {
     return 'Zapisano opinię: $outcome';
   }
+
+  @override
+  String get practiceDashboard => 'Panel praktyki';
+
+  @override
+  String get practiceOverview => 'Ogólny przegląd ocen i wyników w praktyce.';
+
+  @override
+  String get statTotal => 'Łącznie';
+
+  @override
+  String get statHigh => 'Wysokie';
+
+  @override
+  String get statMedium => 'Średnie';
+
+  @override
+  String get statLow => 'Niskie';
+
+  @override
+  String get averageRisk => 'Średnie ryzyko';
+
+  @override
+  String get recentAssessments => 'Ostatnie oceny';
+
+  @override
+  String get noAssessmentsYet => 'Brak ocen. Najpierw wykonaj ocenę pacjenta.';
+
+  @override
+  String get operationalOutcomes => 'Wyniki operacyjne';
 }
