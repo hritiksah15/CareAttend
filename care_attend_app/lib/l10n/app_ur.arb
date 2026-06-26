@@ -89,5 +89,16 @@
   "averageRisk": "اوسط خطرہ",
   "recentAssessments": "حالیہ تشخیصات",
   "noAssessmentsYet": "ابھی تک کوئی تشخیص نہیں۔ پہلے مریض کی تشخیص کریں۔",
-  "operationalOutcomes": "آپریشنل نتائج"
+  "operationalOutcomes": "آپریشنل نتائج",
+  "batchUploadDesc": "زیادہ سے زیادہ 100 مریضوں کی CSV اپ لوڈ کریں۔ مطلوبہ کالم: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile۔",
+  "batchScoring": "اسکورنگ…",
+  "batchPickCsv": "CSV منتخب کریں اور اسکور کریں",
+  "batchFile": "فائل: {filename}",
+  "@batchFile": { "placeholders": { "filename": { "type": "String" } } },
+  "batchReadError": "فائل پڑھی نہیں جا سکی۔",
+  "batchPatients": "مریض",
+  "batchRow": "قطار {row}",
+  "@batchRow": { "placeholders": { "row": { "type": "String" } } },
+  "batchTopFactor": "اہم عنصر: {factor}",
+  "@batchTopFactor": { "placeholders": { "factor": { "type": "String" } } }
 }

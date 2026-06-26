@@ -89,5 +89,16 @@
   "averageRisk": "Średnie ryzyko",
   "recentAssessments": "Ostatnie oceny",
   "noAssessmentsYet": "Brak ocen. Najpierw wykonaj ocenę pacjenta.",
-  "operationalOutcomes": "Wyniki operacyjne"
+  "operationalOutcomes": "Wyniki operacyjne",
+  "batchUploadDesc": "Prześlij plik CSV z maksymalnie 100 pacjentami. Wymagane kolumny: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile.",
+  "batchScoring": "Ocenianie…",
+  "batchPickCsv": "Wybierz CSV i oceń",
+  "batchFile": "Plik: {filename}",
+  "@batchFile": { "placeholders": { "filename": { "type": "String" } } },
+  "batchReadError": "Nie można odczytać pliku.",
+  "batchPatients": "Pacjenci",
+  "batchRow": "Wiersz {row}",
+  "@batchRow": { "placeholders": { "row": { "type": "String" } } },
+  "batchTopFactor": "Główny czynnik: {factor}",
+  "@batchTopFactor": { "placeholders": { "factor": { "type": "String" } } }
 }

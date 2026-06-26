@@ -1,5 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../nhs_theme.dart';
 import '../services/api_service.dart';
 
@@ -18,7 +19,7 @@ class _BatchScreenState extends State<BatchScreen> {
   String? _filename;
   List<List<String>> _rows = [];
 
-  Future<void> _pickAndScore() async {
+  Future<void> _pickAndScore(AppLocalizations t) async {
     setState(() {
       _busy = true;
       _error = null;
@@ -37,7 +38,7 @@ class _BatchScreenState extends State<BatchScreen> {
       final f = picked.files.first;
       final bytes = f.bytes;
       if (bytes == null) {
-        setState(() => _error = 'Could not read the file.');
+        setState(() => _error = t.batchReadError);
         return;
       }
       _filename = f.name;
@@ -60,26 +61,24 @@ class _BatchScreenState extends State<BatchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return ListView(
       padding: const EdgeInsets.all(12),
       children: [
-        const Text('Batch Upload',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
+        Text(t.batchUpload,
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
         const SizedBox(height: 4),
-        const Text(
-            'Upload a CSV of up to 100 patients. Required columns: Age, Gender, '
-            'AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile.',
-            style: TextStyle(color: NHSTheme.darkGrey)),
+        Text(t.batchUploadDesc, style: const TextStyle(color: NHSTheme.darkGrey)),
         const SizedBox(height: 16),
         ElevatedButton.icon(
-          onPressed: _busy ? null : _pickAndScore,
+          onPressed: _busy ? null : () => _pickAndScore(t),
           icon: const Icon(Icons.upload_file),
-          label: Text(_busy ? 'Scoring…' : 'Pick CSV & Score'),
+          label: Text(_busy ? t.batchScoring : t.batchPickCsv),
         ),
         if (_filename != null)
           Padding(
             padding: const EdgeInsets.only(top: 8),
-            child: Text('File: $_filename',
+            child: Text(t.batchFile(_filename!),
                 style: const TextStyle(
                     color: NHSTheme.darkGrey, fontSize: 12)),
           ),
@@ -89,15 +88,30 @@ class _BatchScreenState extends State<BatchScreen> {
                   padding: const EdgeInsets.all(16),
                   child: Text(_error!,
                       style: const TextStyle(color: NHSTheme.riskHigh)))),
-        if (_rows.isNotEmpty) ..._buildResults(),
+        if (_rows.isNotEmpty) ..._buildResults(t),
       ],
     );
+  }
+
+  /// Map a CSV tier value to the localized full-phrase tier label so word order
+  /// stays correct in RTL/CY rather than interpolating a word into a template.
+  String _tierPhrase(AppLocalizations t, String tier) {
+    switch (tier.toLowerCase()) {
+      case 'high':
+        return t.highRisk;
+      case 'medium':
+        return t.mediumRisk;
+      case 'low':
+        return t.lowRisk;
+      default:
+        return tier;
+    }
   }
 
   /// Render the returned CSV as readable per-patient cards instead of a wide
   /// table that overflows on a phone. Header row drives the field mapping so it
   /// works for both the success shape (risk_tier, ...) and the error shape.
-  List<Widget> _buildResults() {
+  List<Widget> _buildResults(AppLocalizations t) {
     final header = _rows.first.map((h) => h.trim().toLowerCase()).toList();
     int col(String name) => header.indexOf(name);
     final dataRows = _rows.skip(1).where((r) => r.length == header.length).toList();
@@ -130,10 +144,10 @@ class _BatchScreenState extends State<BatchScreen> {
     return [
       const SizedBox(height: 16),
       Row(children: [
-        _summary('${dataRows.length}', 'Patients', NHSTheme.blue),
-        _summary('$high', 'High', NHSTheme.riskHigh),
-        _summary('$med', 'Medium', NHSTheme.riskMedium),
-        _summary('$low', 'Low', NHSTheme.riskLow),
+        _summary('${dataRows.length}', t.batchPatients, NHSTheme.blue),
+        _summary('$high', t.statHigh, NHSTheme.riskHigh),
+        _summary('$med', t.statMedium, NHSTheme.riskMedium),
+        _summary('$low', t.statLow, NHSTheme.riskLow),
       ]),
       const SizedBox(height: 12),
       ...dataRows.map((r) {
@@ -141,7 +155,7 @@ class _BatchScreenState extends State<BatchScreen> {
           return Card(
             child: ListTile(
               leading: const Icon(Icons.error_outline, color: NHSTheme.riskHigh),
-              title: Text('Row ${iRow >= 0 ? r[iRow] : "?"}'),
+              title: Text(t.batchRow(iRow >= 0 ? r[iRow] : '?')),
               subtitle: Text(r[iErr]),
             ),
           );
@@ -154,10 +168,10 @@ class _BatchScreenState extends State<BatchScreen> {
               child: Text(iAge >= 0 ? r[iAge] : '?',
                   style: const TextStyle(color: Colors.white, fontSize: 13)),
             ),
-            title: Text('$tier risk'
+            title: Text('${_tierPhrase(t, tier)}'
                 '${iGroup >= 0 && r[iGroup].isNotEmpty ? " · ${r[iGroup]}" : ""}'),
             subtitle: iTop >= 0 && r[iTop].isNotEmpty
-                ? Text('Top factor: ${r[iTop]}')
+                ? Text(t.batchTopFactor(r[iTop]))
                 : null,
             trailing: Text(iProb >= 0 ? '${r[iProb]}%' : '',
                 style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),

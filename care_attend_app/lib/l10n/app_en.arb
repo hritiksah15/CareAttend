@@ -91,5 +91,16 @@
   "averageRisk": "Average risk",
   "recentAssessments": "Recent assessments",
   "noAssessmentsYet": "No assessments yet. Run a Patient Assessment first.",
-  "operationalOutcomes": "Operational Outcomes"
+  "operationalOutcomes": "Operational Outcomes",
+  "batchUploadDesc": "Upload a CSV of up to 100 patients. Required columns: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile.",
+  "batchScoring": "Scoring…",
+  "batchPickCsv": "Pick CSV & Score",
+  "batchFile": "File: {filename}",
+  "@batchFile": { "placeholders": { "filename": { "type": "String" } } },
+  "batchReadError": "Could not read the file.",
+  "batchPatients": "Patients",
+  "batchRow": "Row {row}",
+  "@batchRow": { "placeholders": { "row": { "type": "String" } } },
+  "batchTopFactor": "Top factor: {factor}",
+  "@batchTopFactor": { "placeholders": { "factor": { "type": "String" } } }
 }
