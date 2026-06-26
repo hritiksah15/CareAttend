@@ -254,4 +254,35 @@ class AppLocalizationsUr extends AppLocalizations {
   String feedbackRecorded(String outcome) {
     return 'رائے درج کی گئی: $outcome';
   }
+
+  @override
+  String get practiceDashboard => 'پریکٹس ڈیش بورڈ';
+
+  @override
+  String get practiceOverview => 'تشخیص اور نتائج کا پریکٹس وسیع جائزہ۔';
+
+  @override
+  String get statTotal => 'کل';
+
+  @override
+  String get statHigh => 'زیادہ';
+
+  @override
+  String get statMedium => 'درمیانہ';
+
+  @override
+  String get statLow => 'کم';
+
+  @override
+  String get averageRisk => 'اوسط خطرہ';
+
+  @override
+  String get recentAssessments => 'حالیہ تشخیصات';
+
+  @override
+  String get noAssessmentsYet =>
+      'ابھی تک کوئی تشخیص نہیں۔ پہلے مریض کی تشخیص کریں۔';
+
+  @override
+  String get operationalOutcomes => 'آپریشنل نتائج';
 }

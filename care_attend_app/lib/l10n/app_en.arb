@@ -81,5 +81,15 @@
   "feedbackCorrect": "Correct",
   "feedbackIncorrect": "Incorrect",
   "feedbackRecorded": "Feedback recorded: {outcome}",
-  "@feedbackRecorded": { "placeholders": { "outcome": { "type": "String" } } }
+  "@feedbackRecorded": { "placeholders": { "outcome": { "type": "String" } } },
+  "practiceDashboard": "Practice Dashboard",
+  "practiceOverview": "Practice-wide overview of assessments and outcomes.",
+  "statTotal": "Total",
+  "statHigh": "High",
+  "statMedium": "Medium",
+  "statLow": "Low",
+  "averageRisk": "Average risk",
+  "recentAssessments": "Recent assessments",
+  "noAssessmentsYet": "No assessments yet. Run a Patient Assessment first.",
+  "operationalOutcomes": "Operational Outcomes"
 }

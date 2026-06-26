@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../nhs_theme.dart';
+import '../l10n/app_localizations.dart';
 import '../services/api_service.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -58,11 +59,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: ListView(
         padding: const EdgeInsets.all(12),
         children: [
-          const Text('Practice Dashboard',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
+          Text(AppLocalizations.of(context).practiceDashboard,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
-          Text('Practice-wide overview of assessments and outcomes.',
-              style: TextStyle(color: NHSTheme.darkGrey)),
+          Text(AppLocalizations.of(context).practiceOverview,
+              style: const TextStyle(color: NHSTheme.darkGrey)),
           const SizedBox(height: 16),
           if (_loading) const Center(child: Padding(
               padding: EdgeInsets.all(24), child: CircularProgressIndicator())),
@@ -77,6 +78,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   List<Widget> _buildContent() {
+    final t = AppLocalizations.of(context);
     final d = _data!;
     final total = d['total'] ?? 0;
     final widgets = <Widget>[];
@@ -84,29 +86,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
       widgets.add(Card(
           child: Padding(
         padding: const EdgeInsets.all(20),
-        child: Column(children: const [
-          Icon(Icons.bar_chart, size: 48, color: NHSTheme.grey),
-          SizedBox(height: 8),
-          Text('No assessments yet. Run a Patient Assessment first.'),
+        child: Column(children: [
+          const Icon(Icons.bar_chart, size: 48, color: NHSTheme.grey),
+          const SizedBox(height: 8),
+          Text(t.noAssessmentsYet, textAlign: TextAlign.center),
         ]),
       )));
     } else {
       widgets.addAll([
         Row(children: [
-          _statCard('Total', '$total', NHSTheme.blue),
+          _statCard(t.statTotal, '$total', NHSTheme.blue),
           const SizedBox(width: 10),
-          _statCard('High', '${d['high_risk'] ?? 0}', NHSTheme.riskHigh),
+          _statCard(t.statHigh, '${d['high_risk'] ?? 0}', NHSTheme.riskHigh),
         ]),
         const SizedBox(height: 10),
         Row(children: [
-          _statCard('Medium', '${d['medium_risk'] ?? 0}', NHSTheme.riskMedium),
+          _statCard(t.statMedium, '${d['medium_risk'] ?? 0}', NHSTheme.riskMedium),
           const SizedBox(width: 10),
-          _statCard('Low', '${d['low_risk'] ?? 0}', NHSTheme.riskLow),
+          _statCard(t.statLow, '${d['low_risk'] ?? 0}', NHSTheme.riskLow),
         ]),
         const SizedBox(height: 8),
         Card(child: ListTile(
           leading: const Icon(Icons.percent, color: NHSTheme.blue),
-          title: const Text('Average risk'),
+          title: Text(t.averageRisk),
           trailing: Text(
               '${(((d['average_risk'] ?? 0) as num) * 100).toStringAsFixed(1)}%',
               style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
@@ -130,10 +132,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
         )),
       );
     widgets.add(const SizedBox(height: 8));
-    widgets.add(const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-      child: Text('Recent assessments',
-          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+    widgets.add(Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      child: Text(t.recentAssessments,
+          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
     ));
     widgets.addAll(
       ((d['recent_assessments'] as List?) ?? []).map((r) => Card(
@@ -171,11 +173,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Text('Operational Outcomes',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-              SizedBox(height: 8),
-              Text('Outcome metrics are not available yet.',
+            children: [
+              Text(AppLocalizations.of(context).operationalOutcomes,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 8),
+              const Text('Outcome metrics are not available yet.',
                   style: TextStyle(color: NHSTheme.darkGrey)),
             ],
           ),

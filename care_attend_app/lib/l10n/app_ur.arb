@@ -79,5 +79,15 @@
   "feedbackDna": "غیر حاضر",
   "feedbackCorrect": "درست",
   "feedbackIncorrect": "غلط",
-  "feedbackRecorded": "رائے درج کی گئی: {outcome}"
+  "feedbackRecorded": "رائے درج کی گئی: {outcome}",
+  "practiceDashboard": "پریکٹس ڈیش بورڈ",
+  "practiceOverview": "تشخیص اور نتائج کا پریکٹس وسیع جائزہ۔",
+  "statTotal": "کل",
+  "statHigh": "زیادہ",
+  "statMedium": "درمیانہ",
+  "statLow": "کم",
+  "averageRisk": "اوسط خطرہ",
+  "recentAssessments": "حالیہ تشخیصات",
+  "noAssessmentsYet": "ابھی تک کوئی تشخیص نہیں۔ پہلے مریض کی تشخیص کریں۔",
+  "operationalOutcomes": "آپریشنل نتائج"
 }
