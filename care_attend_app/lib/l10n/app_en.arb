@@ -398,5 +398,6 @@
   "ageBannerEnhancedTitle": "Enhanced sensitivity",
   "ageBannerElevatedTitle": "Elevated vulnerability",
   "ageBannerEnhancedMsg": "Patient is 85+ — apply enhanced sensitivity and proactive safeguarding when acting on this score.",
-  "ageBannerElevatedMsg": "Patient is 65+ — elevated vulnerability; consider proactive support and reminders."
+  "ageBannerElevatedMsg": "Patient is 65+ — elevated vulnerability; consider proactive support and reminders.",
+  "navAssessment": "Assessment"
 }

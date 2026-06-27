@@ -951,4 +951,7 @@ class AppLocalizationsCy extends AppLocalizations {
   @override
   String get ageBannerElevatedMsg =>
       'Mae\'r claf yn 65+ — bregusrwydd uwch; ystyriwch gymorth rhagweithiol ac atgoffa.';
+
+  @override
+  String get navAssessment => 'Asesiad';
 }

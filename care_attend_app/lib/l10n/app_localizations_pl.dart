@@ -949,4 +949,7 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get ageBannerElevatedMsg =>
       'Pacjent ma 65+ lat — podwyższona podatność; rozważ proaktywne wsparcie i przypomnienia.';
+
+  @override
+  String get navAssessment => 'Ocena';
 }

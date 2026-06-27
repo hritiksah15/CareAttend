@@ -948,4 +948,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get ageBannerElevatedMsg =>
       'Patient is 65+ — elevated vulnerability; consider proactive support and reminders.';
+
+  @override
+  String get navAssessment => 'Assessment';
 }
