@@ -910,4 +910,19 @@ class AppLocalizationsCy extends AppLocalizations {
   @override
   String get offlineBanner =>
       'Rydych chi all-lein — tynnwch i adnewyddu ar ôl ailgysylltu.';
+
+  @override
+  String get chatbotTitle => 'Care Attend AI';
+
+  @override
+  String get chatbotHint => 'Teipiwch neges…';
+
+  @override
+  String get chatbotSend => 'Anfon';
+
+  @override
+  String get chatbotAssistant => 'Cynorthwyydd';
+
+  @override
+  String get profilePhotoA11y => 'Llun proffil. Tapiwch i newid.';
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../nhs_theme.dart';
 
 /// Floating AI assistant — keyword Q&A ported from the website's
@@ -88,6 +89,7 @@ class _ChatbotOverlayState extends State<ChatbotOverlay> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Stack(
       alignment: Alignment.bottomRight,
       children: [
@@ -97,6 +99,7 @@ class _ChatbotOverlayState extends State<ChatbotOverlay> {
           child: FloatingActionButton(
             heroTag: 'chatbot',
             backgroundColor: NHSTheme.blue,
+            tooltip: t.chatbotAssistant,
             onPressed: () => setState(() => _open = !_open),
             child: Icon(_open ? Icons.close : Icons.smart_toy,
                 color: Colors.white),
@@ -124,11 +127,11 @@ class _ChatbotOverlayState extends State<ChatbotOverlay> {
                 borderRadius:
                     BorderRadius.vertical(top: Radius.circular(12)),
               ),
-              child: Row(children: const [
-                Icon(Icons.smart_toy, color: Colors.white, size: 20),
-                SizedBox(width: 8),
-                Text('Care Attend AI',
-                    style: TextStyle(
+              child: Row(children: [
+                const Icon(Icons.smart_toy, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Text(AppLocalizations.of(context).chatbotTitle,
+                    style: const TextStyle(
                         color: Colors.white, fontWeight: FontWeight.w700)),
               ]),
             ),
@@ -171,15 +174,16 @@ class _ChatbotOverlayState extends State<ChatbotOverlay> {
                   child: TextField(
                     controller: _input,
                     onSubmitted: (_) => _send(),
-                    decoration: const InputDecoration(
-                      hintText: 'Type a message…',
+                    decoration: InputDecoration(
+                      hintText: AppLocalizations.of(context).chatbotHint,
                       isDense: true,
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.send, color: NHSTheme.blue),
+                  tooltip: AppLocalizations.of(context).chatbotSend,
                   onPressed: _send,
                 ),
               ]),

@@ -295,5 +295,10 @@
   "fpCodeSent": "If that email is registered, a 6-digit code has been sent.",
   "fpDevCode": "Email not configured — your test code is {code}",
   "@fpDevCode": { "placeholders": { "code": { "type": "String" } } },
-  "offlineBanner": "You're offline — pull to refresh once reconnected."
+  "offlineBanner": "You're offline — pull to refresh once reconnected.",
+  "chatbotTitle": "Care Attend AI",
+  "chatbotHint": "Type a message…",
+  "chatbotSend": "Send",
+  "chatbotAssistant": "Assistant",
+  "profilePhotoA11y": "Profile photo. Tap to change."
 }

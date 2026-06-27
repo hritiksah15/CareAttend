@@ -1793,6 +1793,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You\'re offline — pull to refresh once reconnected.'**
   String get offlineBanner;
+
+  /// No description provided for @chatbotTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Care Attend AI'**
+  String get chatbotTitle;
+
+  /// No description provided for @chatbotHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Type a message…'**
+  String get chatbotHint;
+
+  /// No description provided for @chatbotSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get chatbotSend;
+
+  /// No description provided for @chatbotAssistant.
+  ///
+  /// In en, this message translates to:
+  /// **'Assistant'**
+  String get chatbotAssistant;
+
+  /// No description provided for @profilePhotoA11y.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile photo. Tap to change.'**
+  String get profilePhotoA11y;
 }
 
 class _AppLocalizationsDelegate

@@ -907,4 +907,19 @@ class AppLocalizationsUr extends AppLocalizations {
   @override
   String get offlineBanner =>
       'آپ آف لائن ہیں — دوبارہ کنیکٹ ہونے پر ریفریش کے لیے کھینچیں۔';
+
+  @override
+  String get chatbotTitle => 'Care Attend AI';
+
+  @override
+  String get chatbotHint => 'پیغام ٹائپ کریں…';
+
+  @override
+  String get chatbotSend => 'بھیجیں';
+
+  @override
+  String get chatbotAssistant => 'اسسٹنٹ';
+
+  @override
+  String get profilePhotoA11y => 'پروفائل تصویر۔ تبدیل کرنے کے لیے ٹیپ کریں۔';
 }

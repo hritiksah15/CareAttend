@@ -293,5 +293,10 @@
   "fpCodeSent": "Os yw'r e-bost hwnnw wedi'i gofrestru, mae cod 6 digid wedi'i anfon.",
   "fpDevCode": "E-bost heb ei ffurfweddu — eich cod prawf yw {code}",
   "@fpDevCode": { "placeholders": { "code": { "type": "String" } } },
-  "offlineBanner": "Rydych chi all-lein — tynnwch i adnewyddu ar ôl ailgysylltu."
+  "offlineBanner": "Rydych chi all-lein — tynnwch i adnewyddu ar ôl ailgysylltu.",
+  "chatbotTitle": "Care Attend AI",
+  "chatbotHint": "Teipiwch neges…",
+  "chatbotSend": "Anfon",
+  "chatbotAssistant": "Cynorthwyydd",
+  "profilePhotoA11y": "Llun proffil. Tapiwch i newid."
 }
