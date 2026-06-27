@@ -948,4 +948,7 @@ class AppLocalizationsUr extends AppLocalizations {
   @override
   String get ageBannerElevatedMsg =>
       'مریض کی عمر 65+ ہے — بڑھی ہوئی کمزوری؛ فعال مدد اور یاد دہانیوں پر غور کریں۔';
+
+  @override
+  String get navAssessment => 'تشخیص';
 }

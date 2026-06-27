@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -260,8 +261,16 @@ class _HomeScreenState extends State<HomeScreen> {
       onPanDown: (_) => _onUserActivity(),
       child: Scaffold(
         key: _scaffoldKey,
+        // Body flows under the translucent bottom bar so the backdrop blur has
+        // content to frost. Screens scroll, so trailing content reads fine.
+        extendBody: true,
         appBar: AppBar(
-          title: Text(AppLocalizations.of(context).appTitle),
+          // Left-align so the title isn't squeezed out by the trailing icons on
+          // narrow (≤360px) screens; theme centres it by default.
+          centerTitle: false,
+          titleSpacing: 12,
+          title: Text(AppLocalizations.of(context).appTitle,
+              overflow: TextOverflow.ellipsis),
           actions: [
             IconButton(
               icon: const Icon(Icons.help_outline, size: 20),
@@ -304,10 +313,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                   size: 13, color: Colors.white)
                               : null,
                         ),
-                        const SizedBox(width: 6),
-                        Text(widget.username,
-                            style: const TextStyle(
-                                fontSize: 13, color: Colors.white)),
+                        if (MediaQuery.sizeOf(context).width >= 360) ...[
+                          const SizedBox(width: 6),
+                          Text(widget.username,
+                              style: const TextStyle(
+                                  fontSize: 13, color: Colors.white)),
+                        ],
                       ],
                     ),
                   ),
@@ -351,7 +362,14 @@ class _HomeScreenState extends State<HomeScreen> {
     var selected = core.indexWhere((it) => it.index == _currentIndex);
     if (selected == -1) selected = hasMore ? core.length : 0;
 
-    return NavigationBar(
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final surface = Theme.of(context).colorScheme.surface;
+    // Hybrid frost: bottom bar is translucent with a backdrop blur so content
+    // scrolling underneath reads as frosted glass, while content cards stay
+    // flat/clinical for AA contrast. Border keeps the edge crisp in dark.
+    final bar = NavigationBar(
+      backgroundColor: surface.withValues(alpha: dark ? 0.72 : 0.82),
+      elevation: 0,
       selectedIndex: selected,
       onDestinationSelected: (i) {
         if (i < core.length) {
@@ -362,11 +380,28 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       destinations: [
         for (final it in core)
-          NavigationDestination(icon: Icon(it.icon), label: _navLabel(t, it)),
+          NavigationDestination(
+              icon: Icon(it.icon),
+              // Bottom-bar label stays short/single-line (case 0 uses the full
+              // "Patient Assessment" in the drawer; here it wraps + misaligns).
+              label: it.index == 0 ? t.navAssessment : _navLabel(t, it)),
         if (hasMore)
           NavigationDestination(
               icon: const Icon(Icons.more_horiz), label: t.navMore),
       ],
+    );
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border(
+                top: BorderSide(
+                    color: Theme.of(context).dividerColor.withValues(alpha: 0.4))),
+          ),
+          child: bar,
+        ),
+      ),
     );
   }
 

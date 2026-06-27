@@ -1871,6 +1871,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Patient is 65+ — elevated vulnerability; consider proactive support and reminders.'**
   String get ageBannerElevatedMsg;
+
+  /// No description provided for @navAssessment.
+  ///
+  /// In en, this message translates to:
+  /// **'Assessment'**
+  String get navAssessment;
 }
 
 class _AppLocalizationsDelegate
