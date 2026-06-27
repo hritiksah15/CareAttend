@@ -295,11 +295,13 @@ class ResultScreen extends StatelessWidget {
                       : priority == 2
                           ? NHSTheme.riskMedium
                           : NHSTheme.riskLow;
-                  final bgColor = priority == 1
-                      ? NHSTheme.riskHighBg
-                      : priority == 2
-                          ? NHSTheme.riskMediumBg
-                          : NHSTheme.riskLowBg;
+                  final bgColor = NHSTheme.calloutBg(
+                      context,
+                      priority == 1
+                          ? NHSTheme.riskHighBg
+                          : priority == 2
+                              ? NHSTheme.riskMediumBg
+                              : NHSTheme.riskLowBg);
 
                   return Container(
                     width: double.infinity,

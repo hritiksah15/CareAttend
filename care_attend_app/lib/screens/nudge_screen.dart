@@ -171,7 +171,7 @@ class _NudgeScreenState extends State<NudgeScreen> {
     final tier = '${r['risk_tier']}';
     final message = '${r['message']}';
     return Card(
-      color: NHSTheme.riskBgColor(tier),
+      color: NHSTheme.calloutBg(context, NHSTheme.riskBgColor(tier)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
