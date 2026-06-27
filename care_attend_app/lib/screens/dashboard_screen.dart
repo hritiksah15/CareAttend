@@ -85,7 +85,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(children: [
-          Icon(Icons.bar_chart, size: 48, color: NHSTheme.grey),
+          const Icon(Icons.bar_chart, size: 48, color: NHSTheme.grey),
           const SizedBox(height: 8),
           Text(t.noAssessmentsYet, textAlign: TextAlign.center),
         ]),

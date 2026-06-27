@@ -620,7 +620,7 @@ class _FeedbackButtonsState extends State<_FeedbackButtons> {
     final t = AppLocalizations.of(context);
     if (_done != null) {
       return Text(t.feedbackRecorded(_done!),
-          style: TextStyle(
+          style: const TextStyle(
               color: NHSTheme.riskLow, fontWeight: FontWeight.w600));
     }
     Widget btn(String label, String outcome, Color c) => OutlinedButton(

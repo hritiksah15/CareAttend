@@ -293,7 +293,7 @@ class _ClinicScreenState extends State<ClinicScreen> {
               const SizedBox(height: 10),
               OutlinedButton.icon(
                 onPressed: _loading ? null : _importJson,
-                icon: Icon(Icons.upload_file),
+                icon: const Icon(Icons.upload_file),
                 label: Text(t.clinicImportJson),
               ),
             ],
