@@ -925,4 +925,10 @@ class AppLocalizationsCy extends AppLocalizations {
 
   @override
   String get profilePhotoA11y => 'Llun proffil. Tapiwch i newid.';
+
+  @override
+  String get loadFailed => 'Methwyd llwytho. Tynnwch i lawr neu ailgynnig.';
+
+  @override
+  String get commonRetry => 'Ailgynnig';
 }

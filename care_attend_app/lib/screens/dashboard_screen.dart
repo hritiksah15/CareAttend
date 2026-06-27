@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../nhs_theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_service.dart';
+import '../widgets/ui.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -65,12 +66,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Text(AppLocalizations.of(context).practiceOverview,
               style: const TextStyle(color: NHSTheme.darkGrey)),
           const SizedBox(height: 16),
-          if (_loading) const Center(child: Padding(
-              padding: EdgeInsets.all(24), child: CircularProgressIndicator())),
+          if (_loading) const SkeletonList(count: 4),
           if (_error != null)
-            Card(child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(_error!, style: const TextStyle(color: NHSTheme.riskHigh)))),
+            ErrorView(AppLocalizations.of(context).loadFailed, onRetry: _load),
           if (_data != null) ..._buildContent(),
         ],
       ),

@@ -1823,6 +1823,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Profile photo. Tap to change.'**
   String get profilePhotoA11y;
+
+  /// No description provided for @loadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load. Pull down or retry.'**
+  String get loadFailed;
+
+  /// No description provided for @commonRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get commonRetry;
 }
 
 class _AppLocalizationsDelegate

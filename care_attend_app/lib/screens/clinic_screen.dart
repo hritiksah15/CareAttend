@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../nhs_theme.dart';
 import '../services/api_service.dart';
+import '../widgets/ui.dart';
 
 class ClinicScreen extends StatefulWidget {
   const ClinicScreen({super.key});
@@ -211,25 +212,14 @@ class _ClinicScreenState extends State<ClinicScreen> {
           const SizedBox(height: 16),
           _buildImportCard(),
           if (_error != null)
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(_error!,
-                    style: const TextStyle(color: NHSTheme.riskHigh)),
-              ),
-            ),
+            ErrorView(t.loadFailed, onRetry: _load),
           _buildSummary(summary),
           if (_loading)
-            const Padding(
-              padding: EdgeInsets.all(20),
-              child: Center(child: CircularProgressIndicator()),
-            )
+            const SkeletonList()
           else if (appointments.isEmpty)
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Text(t.clinicNoAppointments),
-              ),
+            EmptyState(
+              icon: Icons.event_busy,
+              title: t.clinicNoAppointments,
             )
           else
             for (final appt in appointments) _buildAppointmentCard(appt),

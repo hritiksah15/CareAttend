@@ -922,4 +922,10 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get profilePhotoA11y => 'پروفائل تصویر۔ تبدیل کرنے کے لیے ٹیپ کریں۔';
+
+  @override
+  String get loadFailed => 'لوڈ نہیں ہو سکا۔ نیچے کھینچیں یا دوبارہ کوشش کریں۔';
+
+  @override
+  String get commonRetry => 'دوبارہ کوشش';
 }
