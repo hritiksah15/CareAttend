@@ -360,6 +360,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _headerCard() {
+    final t = AppLocalizations.of(context);
     final p = _profile!;
     final sub = [p['jobTitle'], p['department']]
         .where((e) => e != null && e.toString().isNotEmpty)
@@ -369,7 +370,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            GestureDetector(
+            Semantics(
+              button: true,
+              label: t.profilePhotoA11y,
+              child: GestureDetector(
               onTap: _avatarOptions,
               child: Stack(
                 children: [
@@ -393,6 +397,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ],
               ),
+            ),
             ),
             const SizedBox(width: 16),
             Expanded(

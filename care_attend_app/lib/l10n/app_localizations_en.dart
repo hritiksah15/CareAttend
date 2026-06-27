@@ -907,4 +907,19 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get offlineBanner =>
       'You\'re offline — pull to refresh once reconnected.';
+
+  @override
+  String get chatbotTitle => 'Care Attend AI';
+
+  @override
+  String get chatbotHint => 'Type a message…';
+
+  @override
+  String get chatbotSend => 'Send';
+
+  @override
+  String get chatbotAssistant => 'Assistant';
+
+  @override
+  String get profilePhotoA11y => 'Profile photo. Tap to change.';
 }

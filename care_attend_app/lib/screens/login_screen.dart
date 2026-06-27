@@ -243,19 +243,22 @@ class _LoginScreenState extends State<LoginScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Expanded(
-              child: InkWell(
-                onTap: () => setState(() => _remember = !_remember),
-                child: Row(
-                  children: [
-                    Checkbox(
-                      value: _remember,
-                      onChanged: (v) => setState(() => _remember = v ?? false),
-                    ),
-                    Flexible(
-                      child: Text(t.rememberMe,
-                          style: const TextStyle(fontSize: 13)),
-                    ),
-                  ],
+              child: MergeSemantics(
+                child: InkWell(
+                  onTap: () => setState(() => _remember = !_remember),
+                  child: Row(
+                    children: [
+                      Checkbox(
+                        value: _remember,
+                        onChanged: (v) =>
+                            setState(() => _remember = v ?? false),
+                      ),
+                      Flexible(
+                        child: Text(t.rememberMe,
+                            style: const TextStyle(fontSize: 13)),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

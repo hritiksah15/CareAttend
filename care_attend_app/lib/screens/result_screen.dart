@@ -106,12 +106,16 @@ class ResultScreen extends StatelessWidget {
                           tween: Tween(begin: 0, end: percentage),
                           duration: const Duration(milliseconds: 900),
                           curve: Curves.easeOutCubic,
-                          builder: (context, value, _) => CustomPaint(
-                            painter: _GaugePainter(percentage: value, tier: tier),
-                            child: Center(
-                              child: Text('${value.toStringAsFixed(0)}%',
-                                  style: const TextStyle(
-                                      fontSize: 36, fontWeight: FontWeight.w700)),
+                          builder: (context, value, _) => RepaintBoundary(
+                            child: CustomPaint(
+                              painter:
+                                  _GaugePainter(percentage: value, tier: tier),
+                              child: Center(
+                                child: Text('${value.toStringAsFixed(0)}%',
+                                    style: const TextStyle(
+                                        fontSize: 36,
+                                        fontWeight: FontWeight.w700)),
+                              ),
                             ),
                           ),
                         ),

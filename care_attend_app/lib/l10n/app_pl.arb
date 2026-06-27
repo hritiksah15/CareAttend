@@ -293,5 +293,10 @@
   "fpCodeSent": "Jeśli ten e-mail jest zarejestrowany, wysłano 6-cyfrowy kod.",
   "fpDevCode": "E-mail nieskonfigurowany — Twój kod testowy to {code}",
   "@fpDevCode": { "placeholders": { "code": { "type": "String" } } },
-  "offlineBanner": "Jesteś offline — pociągnij, aby odświeżyć po ponownym połączeniu."
+  "offlineBanner": "Jesteś offline — pociągnij, aby odświeżyć po ponownym połączeniu.",
+  "chatbotTitle": "Care Attend AI",
+  "chatbotHint": "Wpisz wiadomość…",
+  "chatbotSend": "Wyślij",
+  "chatbotAssistant": "Asystent",
+  "profilePhotoA11y": "Zdjęcie profilowe. Dotknij, aby zmienić."
 }
