@@ -24,6 +24,14 @@ class NHSTheme {
 
   static const Color darkBg = AppColors.darkBg;
   static const Color darkSurface = AppColors.darkSurface;
+  static const Color darkSurfaceAlt = AppColors.darkSurfaceAlt;
+
+  /// Background for light pastel callout/stat boxes that must stay legible in
+  /// dark mode (where the box is dark-tinted instead of pale).
+  static Color calloutBg(BuildContext context, Color light) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? AppColors.darkSurfaceAlt
+          : light;
 
   static ThemeData get theme => _build(Brightness.light);
   static ThemeData get darkTheme => _build(Brightness.dark);

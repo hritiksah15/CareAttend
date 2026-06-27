@@ -1,0 +1,43 @@
+name: App CI (Flutter)
+
+# Flutter app pipeline, separate from the backend ci.yml. Only runs when the
+# app changes, so backend-only commits don't pay the Flutter toolchain cost.
+on:
+  push:
+    branches: [master, "app-worldclass-*"]
+    paths: ["care_attend_app/**", ".github/workflows/app-ci.yml"]
+  pull_request:
+    paths: ["care_attend_app/**", ".github/workflows/app-ci.yml"]
+
+defaults:
+  run:
+    working-directory: care_attend_app
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          # Pin to the dev machine's version so analyzer/deprecation behaviour
+          # matches locally (a newer channel can fail an otherwise-green tree).
+          flutter-version: 3.44.2
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate localizations
+        run: flutter gen-l10n
+
+      - name: Analyze (errors, warnings and infos are fatal)
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
+
+      - name: Build web (release) — guards the web-release boot path
+        run: flutter build web --release

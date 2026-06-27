@@ -122,7 +122,7 @@ class _AdminScreenState extends State<AdminScreen> {
               style: TextStyle(
                   fontSize: 12,
                   fontWeight: head ? FontWeight.w700 : FontWeight.w400,
-                  color: head ? NHSTheme.blue : NHSTheme.black)),
+                  color: head ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onSurface)),
         );
     Widget rowFor(String feature, bool u, bool s, bool a) => Padding(
           padding: const EdgeInsets.symmetric(vertical: 6),

@@ -57,10 +57,10 @@ class _BiasScreenState extends State<BiasScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(t.biasMonitorTitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: NHSTheme.blue)),
+                        color: Theme.of(context).colorScheme.primary)),
                 const SizedBox(height: 4),
                 Text(t.biasSubtitle,
                     style: TextStyle(
@@ -70,7 +70,7 @@ class _BiasScreenState extends State<BiasScreen>
                 // Tab bar (Age / Gender / IMD)
                 Container(
                   decoration: BoxDecoration(
-                    border: Border.all(color: NHSTheme.blue, width: 2),
+                    border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: TabBar(
@@ -141,10 +141,10 @@ class _BiasScreenState extends State<BiasScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(t.biasOverallPerf,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: NHSTheme.blue)),
+                          color: Theme.of(context).colorScheme.primary)),
                   const SizedBox(height: 12),
                   _buildMetricsRow(_auditData!['overall_metrics']),
                 ],
@@ -171,7 +171,7 @@ class _BiasScreenState extends State<BiasScreen>
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFF0F7FF),
+                color: NHSTheme.calloutBg(context, const Color(0xFFF0F7FF)),
                 borderRadius: BorderRadius.circular(8),
                 border: const Border(
                     left: BorderSide(color: NHSTheme.lightBlue, width: 4)),
@@ -180,8 +180,8 @@ class _BiasScreenState extends State<BiasScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(t.plainEnglishSummary,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w700, color: NHSTheme.blue)),
+                      style: TextStyle(
+                          fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.primary)),
                   const SizedBox(height: 6),
                   Text(_generateSummary(),
                       style: TextStyle(
@@ -213,16 +213,16 @@ class _BiasScreenState extends State<BiasScreen>
         width: 140,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: NHSTheme.paleGrey,
+          color: NHSTheme.calloutBg(context, NHSTheme.paleGrey),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Column(
           children: [
             Text(value,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
-                    color: NHSTheme.blue)),
+                    color: Theme.of(context).colorScheme.primary)),
             Text(label,
                 style:
                     TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
@@ -244,10 +244,10 @@ class _BiasScreenState extends State<BiasScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(title,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: NHSTheme.blue)),
+                    color: Theme.of(context).colorScheme.primary)),
             const SizedBox(height: 12),
 
             // Demographic Parity bars

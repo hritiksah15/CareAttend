@@ -57,7 +57,7 @@ class GuidedTour {
         barrierDismissible: false,
         builder: (_) => AlertDialog(
           title: Text(step['title'] as String,
-              style: const TextStyle(color: NHSTheme.blue)),
+              style: TextStyle(color: Theme.of(context).colorScheme.primary)),
           content: Text(step['body'] as String),
           actions: [
             TextButton(

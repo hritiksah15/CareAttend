@@ -266,10 +266,10 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(t.patientAssessment,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
-                          color: NHSTheme.blue)),
+                          color: Theme.of(context).colorScheme.primary)),
                   const SizedBox(height: 4),
                   Text(t.assessmentIntro,
                       style: TextStyle(
@@ -280,7 +280,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: NHSTheme.paleGrey,
+                      color: NHSTheme.calloutBg(context, NHSTheme.paleGrey),
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(color: NHSTheme.lightBlue, width: 1),
                     ),
@@ -438,7 +438,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: NHSTheme.paleGrey,
+                        color: NHSTheme.calloutBg(context, NHSTheme.paleGrey),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(t.ageGroupLine(_ageGroup!),
@@ -470,7 +470,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFF0F7FF),
+                color: NHSTheme.calloutBg(context, const Color(0xFFF0F7FF)),
                 borderRadius: BorderRadius.circular(8),
                 border:
                     const Border(left: BorderSide(color: NHSTheme.lightBlue, width: 4)),
@@ -479,8 +479,8 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(t.aboutTool,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w700, color: NHSTheme.blue)),
+                      style: TextStyle(
+                          fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.primary)),
                   const SizedBox(height: 6),
                   Text(t.aboutToolDesc,
                       style: TextStyle(
@@ -505,10 +505,10 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
 
   Widget _sectionLabel(String text) => Text(
         text,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w700,
-          color: NHSTheme.blue,
+          color: Theme.of(context).colorScheme.primary,
           letterSpacing: 0.5,
         ),
       );
@@ -532,7 +532,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                 child: Checkbox(
                   value: value,
                   onChanged: (v) => onChanged(v ?? false),
-                  activeColor: NHSTheme.blue,
+                  activeColor: Theme.of(context).colorScheme.primary,
                 ),
               ),
               const SizedBox(width: 8),

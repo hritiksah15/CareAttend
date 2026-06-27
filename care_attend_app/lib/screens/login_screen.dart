@@ -294,7 +294,7 @@ class _LoginScreenState extends State<LoginScreen> {
           }),
           style: OutlinedButton.styleFrom(
             minimumSize: const Size(double.infinity, 48),
-            side: const BorderSide(color: NHSTheme.blue, width: 2),
+            side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           ),
@@ -366,7 +366,7 @@ class _LoginScreenState extends State<LoginScreen> {
           }),
           style: OutlinedButton.styleFrom(
             minimumSize: const Size(double.infinity, 48),
-            side: const BorderSide(color: NHSTheme.blue, width: 2),
+            side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           ),

@@ -182,7 +182,7 @@ class _ChatbotOverlayState extends State<ChatbotOverlay> {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.send, color: NHSTheme.blue),
+                  icon: Icon(Icons.send, color: Theme.of(context).colorScheme.primary),
                   tooltip: AppLocalizations.of(context).chatbotSend,
                   onPressed: _send,
                 ),

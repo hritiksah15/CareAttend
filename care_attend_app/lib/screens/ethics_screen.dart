@@ -125,10 +125,10 @@ class _EthicsScreenState extends State<EthicsScreen> {
         padding: const EdgeInsets.all(14),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(name,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: NHSTheme.blue)),
+                  color: Theme.of(context).colorScheme.primary)),
           const SizedBox(height: 10),
           Row(children: [
             metric(t.ethicsMeanF1, f1.toStringAsFixed(4)),

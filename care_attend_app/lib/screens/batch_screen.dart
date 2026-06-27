@@ -87,7 +87,7 @@ class _BatchScreenState extends State<BatchScreen> {
               child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Text(_error!,
-                      style: const TextStyle(color: NHSTheme.riskHigh)))),
+                      style: TextStyle(color: NHSTheme.riskHigh)))),
         if (_rows.isNotEmpty) ..._buildResults(t),
       ],
     );
@@ -144,7 +144,7 @@ class _BatchScreenState extends State<BatchScreen> {
     return [
       const SizedBox(height: 16),
       Row(children: [
-        _summary('${dataRows.length}', t.batchPatients, NHSTheme.blue),
+        _summary('${dataRows.length}', t.batchPatients, Theme.of(context).colorScheme.primary),
         _summary('$high', t.statHigh, NHSTheme.riskHigh),
         _summary('$med', t.statMedium, NHSTheme.riskMedium),
         _summary('$low', t.statLow, NHSTheme.riskLow),
