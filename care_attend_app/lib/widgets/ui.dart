@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../theme/design_tokens.dart';
 
 /// Shared UI building blocks. Screens compose these so spacing, elevation, and
@@ -147,7 +148,9 @@ class ErrorView extends StatelessWidget {
         const SizedBox(width: AppSpace.md),
         Expanded(child: Text(message, style: const TextStyle(color: AppColors.riskHigh))),
         if (onRetry != null)
-          TextButton(onPressed: onRetry, child: const Text('Retry')),
+          TextButton(
+              onPressed: onRetry,
+              child: Text(AppLocalizations.of(context).commonRetry)),
       ]),
     );
   }

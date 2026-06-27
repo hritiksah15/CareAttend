@@ -298,5 +298,7 @@
   "chatbotHint": "Wpisz wiadomość…",
   "chatbotSend": "Wyślij",
   "chatbotAssistant": "Asystent",
-  "profilePhotoA11y": "Zdjęcie profilowe. Dotknij, aby zmienić."
+  "profilePhotoA11y": "Zdjęcie profilowe. Dotknij, aby zmienić.",
+  "loadFailed": "Nie udało się załadować. Pociągnij w dół lub spróbuj ponownie.",
+  "commonRetry": "Spróbuj ponownie"
 }

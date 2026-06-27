@@ -922,4 +922,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profilePhotoA11y => 'Profile photo. Tap to change.';
+
+  @override
+  String get loadFailed => 'Couldn\'t load. Pull down or retry.';
+
+  @override
+  String get commonRetry => 'Retry';
 }

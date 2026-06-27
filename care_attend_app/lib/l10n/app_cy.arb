@@ -298,5 +298,7 @@
   "chatbotHint": "Teipiwch neges…",
   "chatbotSend": "Anfon",
   "chatbotAssistant": "Cynorthwyydd",
-  "profilePhotoA11y": "Llun proffil. Tapiwch i newid."
+  "profilePhotoA11y": "Llun proffil. Tapiwch i newid.",
+  "loadFailed": "Methwyd llwytho. Tynnwch i lawr neu ailgynnig.",
+  "commonRetry": "Ailgynnig"
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../nhs_theme.dart';
 import '../services/api_service.dart';
+import '../widgets/ui.dart';
 
 class EthicsScreen extends StatefulWidget {
   const EthicsScreen({super.key});
@@ -158,12 +159,8 @@ class _EthicsScreenState extends State<EthicsScreen> {
           const SizedBox(height: 16),
           _cvCard(),
           const SizedBox(height: 8),
-          if (_loading) const Center(child: Padding(
-              padding: EdgeInsets.all(24), child: CircularProgressIndicator())),
-          if (_error != null)
-            Card(child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(_error!, style: const TextStyle(color: NHSTheme.riskHigh)))),
+          if (_loading) const SkeletonList(),
+          if (_error != null) ErrorView(t.loadFailed, onRetry: _load),
           if (_data != null)
             ...((_data!['principles'] as List?) ?? []).map((p) => Card(
                   child: ExpansionTile(

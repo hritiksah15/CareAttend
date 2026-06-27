@@ -300,5 +300,7 @@
   "chatbotHint": "Type a message…",
   "chatbotSend": "Send",
   "chatbotAssistant": "Assistant",
-  "profilePhotoA11y": "Profile photo. Tap to change."
+  "profilePhotoA11y": "Profile photo. Tap to change.",
+  "loadFailed": "Couldn't load. Pull down or retry.",
+  "commonRetry": "Retry"
 }

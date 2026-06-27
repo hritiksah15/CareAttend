@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../nhs_theme.dart';
 import '../services/api_service.dart';
+import '../widgets/ui.dart';
 
 /// Admin-only user management — list users, change roles, delete accounts.
 /// Mirrors the website Admin tab and the backend /api/admin/users endpoints.
@@ -99,17 +100,8 @@ class _AdminScreenState extends State<AdminScreen> {
           Text(t.adminSubtitle,
               style: const TextStyle(color: NHSTheme.darkGrey)),
           const SizedBox(height: 16),
-          if (_loading)
-            const Center(
-                child: Padding(
-                    padding: EdgeInsets.all(24),
-                    child: CircularProgressIndicator())),
-          if (_error != null)
-            Card(
-                child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(_error!,
-                        style: const TextStyle(color: NHSTheme.riskHigh)))),
+          if (_loading) const SkeletonList(),
+          if (_error != null) ErrorView(t.loadFailed, onRetry: _load),
           for (final u in _users) _userCard(u as Map<String, dynamic>),
           const SizedBox(height: 12),
           _permissionMatrix(),
