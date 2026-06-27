@@ -110,6 +110,19 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
         'percentage': result['percentage'],
         'risk_tier': result['risk_tier'],
       });
+      // Stash raw inputs so the Nudge screen can prefill from this assessment.
+      ApiService.lastPatient = {
+        'Age': int.parse(_ageCtrl.text),
+        'Gender': _gender,
+        'AppointmentLeadTimeDays': int.parse(_leadTimeCtrl.text),
+        'SMSReceived': _smsReceived ? 1 : 0,
+        'PriorDNACount': int.parse(_priorDNACtrl.text),
+        'IMDDecile': int.parse(_imdCtrl.text),
+        'Hypertension': _hypertension ? 1 : 0,
+        'Diabetes': _diabetes ? 1 : 0,
+        'Alcoholism': _alcoholism ? 1 : 0,
+        'Disability': _disability ? 1 : 0,
+      };
       widget.onResult(result);
     } on ApiException catch (e) {
       if (!mounted) return;

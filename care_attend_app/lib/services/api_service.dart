@@ -16,6 +16,11 @@ class ApiService {
   static String role = 'user';
   static String? avatar; // base64 data-URL of the logged-in user's photo
 
+  // Last patient assessed this session — lets the Nudge screen prefill from the
+  // most recent Assessment (web mirrors the assessment form directly; the app
+  // splits the forms, so we stash the raw inputs here). Phase 4 moves to Riverpod.
+  static Map<String, dynamic>? lastPatient;
+
   static Map<String, String> get _headers => {
         'Content-Type': 'application/json',
         if (_token != null) 'Authorization': 'Bearer $_token',

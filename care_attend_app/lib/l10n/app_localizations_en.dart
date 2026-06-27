@@ -391,6 +391,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nudgeGenerate => 'Generate message';
 
   @override
+  String get nudgeCopy => 'Copy message';
+
+  @override
+  String get nudgeCopied => 'Message copied to clipboard.';
+
+  @override
+  String get nudgeUseAssessment => 'Use last assessment';
+
+  @override
+  String get nudgeNoAssessment =>
+      'Fill in the Assessment form first, then generate a nudge.';
+
+  @override
   String get adminTitle => 'User Management';
 
   @override

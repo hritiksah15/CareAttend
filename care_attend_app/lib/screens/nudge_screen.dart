@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../l10n/app_localizations.dart';
 import '../nhs_theme.dart';
 import '../services/api_service.dart';
@@ -60,6 +61,34 @@ class _NudgeScreenState extends State<NudgeScreen> {
     }
   }
 
+  // Prefill the form from the most recent Assessment (mirrors the web, where
+  // the nudge reads the shared assessment form). Snack if none yet.
+  void _prefillFromAssessment() {
+    final t = AppLocalizations.of(context);
+    final p = ApiService.lastPatient;
+    if (p == null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(t.nudgeNoAssessment)));
+      return;
+    }
+    setState(() {
+      _age.text = '${p['Age'] ?? ''}';
+      _imd.text = '${p['IMDDecile'] ?? ''}';
+      _lead.text = '${p['AppointmentLeadTimeDays'] ?? ''}';
+      _prior.text = '${p['PriorDNACount'] ?? ''}';
+      _gender = (p['Gender'] as int?) ?? 0;
+      _sms = (p['SMSReceived'] as int?) ?? 0;
+      _disability = (p['Disability'] as int?) ?? 0;
+    });
+  }
+
+  Future<void> _copyMessage(String message) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final copied = AppLocalizations.of(context).nudgeCopied;
+    await Clipboard.setData(ClipboardData(text: message));
+    messenger.showSnackBar(SnackBar(content: Text(copied)));
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
@@ -114,6 +143,12 @@ class _NudgeScreenState extends State<NudgeScreen> {
               onChanged: (v) => setState(() => _sms = v ? 1 : 0),
             ),
             const SizedBox(height: 6),
+            OutlinedButton.icon(
+              onPressed: _loading ? null : _prefillFromAssessment,
+              icon: const Icon(Icons.download_done),
+              label: Text(t.nudgeUseAssessment),
+            ),
+            const SizedBox(height: 6),
             ElevatedButton.icon(
               onPressed: _loading ? null : _run,
               icon: const Icon(Icons.message),
@@ -131,8 +166,10 @@ class _NudgeScreenState extends State<NudgeScreen> {
   }
 
   Widget _buildResult() {
+    final t = AppLocalizations.of(context);
     final r = _result!;
     final tier = '${r['risk_tier']}';
+    final message = '${r['message']}';
     return Card(
       color: NHSTheme.riskBgColor(tier),
       child: Padding(
@@ -151,13 +188,23 @@ class _NudgeScreenState extends State<NudgeScreen> {
                     color: NHSTheme.riskColor(tier))),
           ]),
           const SizedBox(height: 12),
-          Text('${r['message']}', style: const TextStyle(fontSize: 15, height: 1.4)),
-          const SizedBox(height: 12),
+          Text(message, style: const TextStyle(fontSize: 15, height: 1.4)),
+          const SizedBox(height: 8),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: OutlinedButton.icon(
+              onPressed: () => _copyMessage(message),
+              icon: const Icon(Icons.copy, size: 18),
+              label: Text(t.nudgeCopy),
+            ),
+          ),
+          const SizedBox(height: 8),
           Wrap(
             spacing: 6,
             children: ((r['personalisation_factors'] as List?) ?? [])
                 .map<Widget>((f) => Chip(
-                      label: Text('$f', style: const TextStyle(fontSize: 11)),
+                      label: Text('$f'.replaceAll('_', ' '),
+                          style: const TextStyle(fontSize: 11)),
                       visualDensity: VisualDensity.compact,
                     ))
                 .toList(),
