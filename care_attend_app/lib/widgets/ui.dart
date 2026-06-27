@@ -1,6 +1,45 @@
+import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../theme/design_tokens.dart';
+
+/// Frosted-glass surface for transient panels (drawer, bottom sheets, dialogs).
+///
+/// Blur is GPU-readback heavy, so this is used only on short-lived overlays —
+/// never on always-on chrome — to keep continuous rendering smooth.
+class GlassPanel extends StatelessWidget {
+  final Widget child;
+  final BorderRadius borderRadius;
+  final double sigma;
+  const GlassPanel({
+    super.key,
+    required this.child,
+    this.borderRadius = BorderRadius.zero,
+    this.sigma = 18,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final base = Theme.of(context).colorScheme.surface;
+    return ClipRRect(
+      borderRadius: borderRadius,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: base.withValues(alpha: dark ? 0.78 : 0.80),
+            borderRadius: borderRadius,
+            border: Border.all(
+                color: Colors.white.withValues(alpha: dark ? 0.10 : 0.45),
+                width: 1),
+          ),
+          child: child,
+        ),
+      ),
+    );
+  }
+}
 
 /// Shared UI building blocks. Screens compose these so spacing, elevation, and
 /// states (loading/empty/error) are consistent everywhere — the main lever for a
