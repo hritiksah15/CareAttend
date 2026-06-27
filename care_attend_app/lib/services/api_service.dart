@@ -1,5 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, ValueNotifier;
 import 'package:http/http.dart' as http;
 
 class ApiService {
@@ -18,8 +19,22 @@ class ApiService {
 
   // Last patient assessed this session — lets the Nudge screen prefill from the
   // most recent Assessment (web mirrors the assessment form directly; the app
-  // splits the forms, so we stash the raw inputs here). Phase 4 moves to Riverpod.
+  // splits the forms, so we stash the raw inputs here).
   static Map<String, dynamic>? lastPatient;
+
+  // True after a request fails for connectivity reasons (timeout / no route to
+  // host), cleared the next time any request succeeds. Drives the global offline
+  // banner. We key off real request outcomes rather than connectivity_plus
+  // because the only thing that matters here is whether the backend is
+  // reachable — on web navigator.onLine reports true even when it is not.
+  static final ValueNotifier<bool> offline = ValueNotifier<bool>(false);
+
+  // Generic (non-localized) fallback for connectivity failures surfaced through
+  // ApiException; the always-visible OfflineBanner carries the localized UX.
+  static const String _offlineMessage =
+      "Can't reach the server. Check your connection and try again.";
+
+  static const Duration _timeout = Duration(seconds: 12);
 
   static Map<String, String> get _headers => {
         'Content-Type': 'application/json',
@@ -45,6 +60,59 @@ class ApiService {
     riskHistory.clear();
   }
 
+  // ── Central transport ──────────────────────────────────────────────
+  // One injection point for timeout, connectivity detection, and retry.
+  // GETs are idempotent → safe to auto-retry once. Mutations are NOT
+  // auto-retried (a re-fired POST double-books appointments / re-submits
+  // feedback); the user re-taps the action to retry instead.
+
+  static Uri _uri(String path, [Map<String, String>? query]) =>
+      Uri.parse('$baseUrl$path').replace(
+          queryParameters: (query == null || query.isEmpty) ? null : query);
+
+  static Future<Map<String, dynamic>> _send(
+      Future<http.Response> Function() call,
+      {bool retryable = false}) async {
+    for (var attempt = 0;; attempt++) {
+      try {
+        final res = await call().timeout(_timeout);
+        offline.value = false; // a response (even a 4xx) means we are online
+        return _handleResponse(res);
+      } on ApiException {
+        rethrow; // server replied with an error body — not a connectivity issue
+      } catch (_) {
+        // Connectivity failure: TimeoutException, or http.ClientException
+        // (web) / SocketException (mobile, surfaced as a generic error here).
+        if (retryable && attempt == 0) {
+          await Future<void>.delayed(const Duration(milliseconds: 600));
+          continue; // single retry for idempotent GETs
+        }
+        offline.value = true;
+        throw ApiException(_offlineMessage);
+      }
+    }
+  }
+
+  static Future<Map<String, dynamic>> _get(String path,
+          {Map<String, String>? query}) =>
+      _send(() => http.get(_uri(path, query), headers: _headers),
+          retryable: true);
+
+  static Future<Map<String, dynamic>> _post(String path, {Object? body}) =>
+      _send(() => http.post(_uri(path),
+          headers: _headers, body: body == null ? null : jsonEncode(body)));
+
+  static Future<Map<String, dynamic>> _put(String path, {Object? body}) =>
+      _send(() => http.put(_uri(path),
+          headers: _headers, body: body == null ? null : jsonEncode(body)));
+
+  static Future<Map<String, dynamic>> _patch(String path, {Object? body}) =>
+      _send(() => http.patch(_uri(path),
+          headers: _headers, body: body == null ? null : jsonEncode(body)));
+
+  static Future<Map<String, dynamic>> _delete(String path) =>
+      _send(() => http.delete(_uri(path), headers: _headers));
+
   // ── Auth ──
 
   // Public self-registration always creates a 'user'; the backend ignores any
@@ -53,34 +121,17 @@ class ApiService {
     required String username,
     required String email,
     required String password,
-  }) async {
-    final res = await http.post(
-      Uri.parse('$baseUrl/auth/register'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'username': username,
-        'email': email,
-        'password': password,
-      }),
-    );
-    return _handleResponse(res);
-  }
+  }) =>
+      _post('/auth/register',
+          body: {'username': username, 'email': email, 'password': password});
 
   static Future<Map<String, dynamic>> login({
     required String username,
     required String password,
     bool remember = false,
   }) async {
-    final res = await http.post(
-      Uri.parse('$baseUrl/auth/login'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'username': username,
-        'password': password,
-        'remember': remember,
-      }),
-    );
-    final data = _handleResponse(res);
+    final data = await _post('/auth/login',
+        body: {'username': username, 'password': password, 'remember': remember});
     if (data.containsKey('token')) {
       _token = data['token'];
       // Pull the real role so the UI can gate features to match the backend.
@@ -95,95 +146,46 @@ class ApiService {
     return data;
   }
 
-  static Future<Map<String, dynamic>> forgotPassword(String email) async {
-    final res = await http.post(
-      Uri.parse('$baseUrl/auth/forgot-password'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email}),
-    );
-    return _handleResponse(res);
-  }
+  static Future<Map<String, dynamic>> forgotPassword(String email) =>
+      _post('/auth/forgot-password', body: {'email': email});
 
   static Future<Map<String, dynamic>> resetPassword({
     required String email,
     required String code,
     required String newPassword,
-  }) async {
-    final res = await http.post(
-      Uri.parse('$baseUrl/auth/reset-password'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'code': code, 'newPassword': newPassword}),
-    );
-    return _handleResponse(res);
-  }
+  }) =>
+      _post('/auth/reset-password',
+          body: {'email': email, 'code': code, 'newPassword': newPassword});
 
-  static Future<Map<String, dynamic>> getProfile() async {
-    final res = await http.get(
-      Uri.parse('$baseUrl/api/profile'),
-      headers: _headers,
-    );
-    return _handleResponse(res);
-  }
+  static Future<Map<String, dynamic>> getProfile() => _get('/api/profile');
 
   static Future<Map<String, dynamic>> updateProfile(
-      Map<String, dynamic> fields) async {
-    final res = await http.put(
-      Uri.parse('$baseUrl/api/profile'),
-      headers: _headers,
-      body: jsonEncode(fields),
-    );
-    return _handleResponse(res);
-  }
+          Map<String, dynamic> fields) =>
+      _put('/api/profile', body: fields);
 
   // ── Two-factor authentication (TOTP) ──
 
-  static Future<Map<String, dynamic>> setup2FA() async {
-    final res = await http.post(
-      Uri.parse('$baseUrl/api/profile/2fa/setup'),
-      headers: _headers,
-    );
-    return _handleResponse(res); // {secret, uri}
-  }
+  static Future<Map<String, dynamic>> setup2FA() =>
+      _post('/api/profile/2fa/setup'); // {secret, uri}
 
-  static Future<Map<String, dynamic>> enable2FA(String code) async {
-    final res = await http.post(
-      Uri.parse('$baseUrl/api/profile/2fa/enable'),
-      headers: _headers,
-      body: jsonEncode({'code': code}),
-    );
-    return _handleResponse(res);
-  }
+  static Future<Map<String, dynamic>> enable2FA(String code) =>
+      _post('/api/profile/2fa/enable', body: {'code': code});
 
-  static Future<Map<String, dynamic>> disable2FA(String password) async {
-    final res = await http.post(
-      Uri.parse('$baseUrl/api/profile/2fa/disable'),
-      headers: _headers,
-      body: jsonEncode({'password': password}),
-    );
-    return _handleResponse(res);
-  }
+  static Future<Map<String, dynamic>> disable2FA(String password) =>
+      _post('/api/profile/2fa/disable', body: {'password': password});
 
   static Future<Map<String, dynamic>> changePassword({
     required String currentPassword,
     required String newPassword,
-  }) async {
-    final res = await http.post(
-      Uri.parse('$baseUrl/api/profile/change-password'),
-      headers: _headers,
-      body: jsonEncode({
+  }) =>
+      _post('/api/profile/change-password', body: {
         'currentPassword': currentPassword,
         'newPassword': newPassword,
-      }),
-    );
-    return _handleResponse(res);
-  }
+      });
 
   static Future<void> logout() async {
     try {
-      await http.post(
-        Uri.parse('$baseUrl/auth/logout'),
-        headers: _headers,
-      );
+      await _post('/auth/logout');
     } catch (_) {}
     clearSession();
   }
@@ -201,11 +203,8 @@ class ApiService {
     required int alcoholism,
     required int disability,
     required int imdDecile,
-  }) async {
-    final res = await http.post(
-      Uri.parse('$baseUrl/api/predict'),
-      headers: _headers,
-      body: jsonEncode({
+  }) =>
+      _post('/api/predict', body: {
         'Age': age,
         'Gender': gender,
         'AppointmentLeadTimeDays': leadTimeDays,
@@ -216,10 +215,7 @@ class ApiService {
         'Alcoholism': alcoholism,
         'Disability': disability,
         'IMDDecile': imdDecile,
-      }),
-    );
-    return _handleResponse(res);
-  }
+      });
 
   // Session risk-trajectory (client-side, mirrors the website).
   static final List<Map<String, dynamic>> riskHistory = [];
@@ -228,183 +224,111 @@ class ApiService {
 
   static Future<String> batchPredict(
       List<int> bytes, String filename) async {
-    final req = http.MultipartRequest(
-        'POST', Uri.parse('$baseUrl/api/batch'));
-    if (_token != null) req.headers['Authorization'] = 'Bearer $_token';
-    req.files.add(http.MultipartFile.fromBytes('file', bytes,
-        filename: filename.endsWith('.csv') ? filename : '$filename.csv'));
-    final streamed = await req.send();
-    final res = await http.Response.fromStream(streamed);
-    if (res.statusCode >= 400) {
-      String msg = 'Batch failed';
-      try {
-        msg = (jsonDecode(res.body) as Map)['error']?.toString() ?? msg;
-      } catch (_) {}
-      throw ApiException(msg);
+    try {
+      final req =
+          http.MultipartRequest('POST', _uri('/api/batch'));
+      if (_token != null) req.headers['Authorization'] = 'Bearer $_token';
+      req.files.add(http.MultipartFile.fromBytes('file', bytes,
+          filename: filename.endsWith('.csv') ? filename : '$filename.csv'));
+      final streamed = await req.send().timeout(_timeout);
+      final res = await http.Response.fromStream(streamed);
+      offline.value = false;
+      if (res.statusCode >= 400) {
+        String msg = 'Batch failed';
+        try {
+          msg = (jsonDecode(res.body) as Map)['error']?.toString() ?? msg;
+        } catch (_) {}
+        throw ApiException(msg);
+      }
+      return res.body; // CSV text
+    } on ApiException {
+      rethrow;
+    } catch (_) {
+      offline.value = true;
+      throw ApiException(_offlineMessage);
     }
-    return res.body; // CSV text
   }
 
   // ── Prediction feedback ──
 
   static Future<Map<String, dynamic>> submitFeedback(
-      String predictionId, String outcome) async {
-    final res = await http.post(
-      Uri.parse('$baseUrl/api/feedback'),
-      headers: _headers,
-      body: jsonEncode({'prediction_id': predictionId, 'outcome': outcome}),
-    );
-    return _handleResponse(res);
-  }
+          String predictionId, String outcome) =>
+      _post('/api/feedback',
+          body: {'prediction_id': predictionId, 'outcome': outcome});
 
-  static Future<Map<String, dynamic>> feedbackSummary() async {
-    final res = await http.get(
-      Uri.parse('$baseUrl/api/feedback/summary'),
-      headers: _headers,
-    );
-    return _handleResponse(res);
-  }
+  static Future<Map<String, dynamic>> feedbackSummary() =>
+      _get('/api/feedback/summary');
 
   // ── Carer / family proxy ──
 
   static Future<Map<String, dynamic>> createCarerProxy(
-      Map<String, dynamic> fields) async {
-    final res = await http.post(
-      Uri.parse('$baseUrl/api/carer-proxy'),
-      headers: _headers,
-      body: jsonEncode(fields),
-    );
-    return _handleResponse(res);
-  }
+          Map<String, dynamic> fields) =>
+      _post('/api/carer-proxy', body: fields);
 
   // ── Rigorous evaluation (5-fold cross-validation + McNemar) ──
 
-  static Future<Map<String, dynamic>> crossValidation() async {
-    final res = await http.post(
-      Uri.parse('$baseUrl/api/evaluation/cross-validation'),
-      headers: _headers,
-    );
-    return _handleResponse(res);
-  }
+  static Future<Map<String, dynamic>> crossValidation() =>
+      _post('/api/evaluation/cross-validation');
 
   // ── Bias Audit ──
 
-  static Future<Map<String, dynamic>> biasAudit() async {
-    final res = await http.get(
-      Uri.parse('$baseUrl/api/bias-audit'),
-      headers: _headers,
-    );
-    return _handleResponse(res);
-  }
+  static Future<Map<String, dynamic>> biasAudit() => _get('/api/bias-audit');
 
   // ── Model Info ──
 
-  static Future<Map<String, dynamic>> modelInfo() async {
-    final res = await http.get(
-      Uri.parse('$baseUrl/api/model-info'),
-      headers: _headers,
-    );
-    return _handleResponse(res);
-  }
+  static Future<Map<String, dynamic>> modelInfo() => _get('/api/model-info');
 
   // ── Practice Dashboard ──
 
-  static Future<Map<String, dynamic>> dashboard() async {
-    final res = await http.get(
-      Uri.parse('$baseUrl/api/dashboard'),
-      headers: _headers,
-    );
-    return _handleResponse(res);
-  }
+  static Future<Map<String, dynamic>> dashboard() => _get('/api/dashboard');
 
   static Future<Map<String, dynamic>> operationalOutcomes(
-      {String? from, String? to}) async {
+      {String? from, String? to}) {
     final params = <String, String>{};
     if (from != null) params['from'] = from;
     if (to != null) params['to'] = to;
-    final uri = Uri.parse('$baseUrl/api/operational-outcomes')
-        .replace(queryParameters: params.isEmpty ? null : params);
-    final res = await http.get(uri, headers: _headers);
-    return _handleResponse(res);
+    return _get('/api/operational-outcomes', query: params);
   }
 
   // ── Appointment clinic list ──
 
   static Future<Map<String, dynamic>> createAppointments(
-      Map<String, dynamic> payload) async {
-    final res = await http.post(
-      Uri.parse('$baseUrl/api/appointments'),
-      headers: _headers,
-      body: jsonEncode(payload),
-    );
-    return _handleResponse(res);
-  }
+          Map<String, dynamic> payload) =>
+      _post('/api/appointments', body: payload);
 
-  static Future<Map<String, dynamic>> clinicList(String date) async {
-    final uri = Uri.parse('$baseUrl/api/clinic-list')
-        .replace(queryParameters: {'date': date});
-    final res = await http.get(uri, headers: _headers);
-    return _handleResponse(res);
-  }
+  static Future<Map<String, dynamic>> clinicList(String date) =>
+      _get('/api/clinic-list', query: {'date': date});
 
   static Future<Map<String, dynamic>> updateAppointmentStatus(
-      String appointmentId, String status) async {
-    final res = await http.patch(
-      Uri.parse('$baseUrl/api/appointments/$appointmentId/status'),
-      headers: _headers,
-      body: jsonEncode({'status': status}),
-    );
-    return _handleResponse(res);
-  }
+          String appointmentId, String status) =>
+      _patch('/api/appointments/$appointmentId/status',
+          body: {'status': status});
 
   static Future<Map<String, dynamic>> scheduleNotification({
     required String patientId,
     required String riskTier,
     required String appointmentDate,
-  }) async {
-    final res = await http.post(
-      Uri.parse('$baseUrl/api/notifications/schedule'),
-      headers: _headers,
-      body: jsonEncode({
+  }) =>
+      _post('/api/notifications/schedule', body: {
         'patient_id': patientId,
         'risk_tier': riskTier,
         'appointment_date': appointmentDate,
-      }),
-    );
-    return _handleResponse(res);
-  }
+      });
 
   static Future<Map<String, dynamic>> createOutreachAction(
-      Map<String, dynamic> fields) async {
-    final res = await http.post(
-      Uri.parse('$baseUrl/api/actions'),
-      headers: _headers,
-      body: jsonEncode(fields),
-    );
-    return _handleResponse(res);
-  }
+          Map<String, dynamic> fields) =>
+      _post('/api/actions', body: fields);
 
   // ── NHSX Ethics Framework ──
 
-  static Future<Map<String, dynamic>> ethicsFramework() async {
-    final res = await http.get(
-      Uri.parse('$baseUrl/api/ethics-framework'),
-      headers: _headers,
-    );
-    return _handleResponse(res);
-  }
+  static Future<Map<String, dynamic>> ethicsFramework() =>
+      _get('/api/ethics-framework');
 
   // ── Slot Optimisation ──
 
   static Future<Map<String, dynamic>> slotOptimisation(
-      List<Map<String, dynamic>> appointments) async {
-    final res = await http.post(
-      Uri.parse('$baseUrl/api/slot-optimisation'),
-      headers: _headers,
-      body: jsonEncode({'appointments': appointments}),
-    );
-    return _handleResponse(res);
-  }
+          List<Map<String, dynamic>> appointments) =>
+      _post('/api/slot-optimisation', body: {'appointments': appointments});
 
   // ── Patient Nudge ──
 
@@ -412,56 +336,29 @@ class ApiService {
     required Map<String, dynamic> patient,
     String language = 'en',
     String patientName = '',
-  }) async {
-    final res = await http.post(
-      Uri.parse('$baseUrl/api/patient-nudge'),
-      headers: _headers,
-      body: jsonEncode({
+  }) =>
+      _post('/api/patient-nudge', body: {
         'patient': patient,
         'language': language,
         if (patientName.isNotEmpty) 'patientName': patientName,
-      }),
-    );
-    return _handleResponse(res);
-  }
+      });
 
   // ── Mock EHR ──
 
-  static Future<Map<String, dynamic>> ehrLookup(String nhsNumber) async {
-    final res = await http.get(
-      Uri.parse('$baseUrl/api/ehr/lookup/$nhsNumber'),
-      headers: _headers,
-    );
-    return _handleResponse(res);
-  }
+  static Future<Map<String, dynamic>> ehrLookup(String nhsNumber) =>
+      _get('/api/ehr/lookup/$nhsNumber');
 
   // ── Admin: User Management (admin-only) ──
 
-  static Future<Map<String, dynamic>> adminListUsers() async {
-    final res = await http.get(
-      Uri.parse('$baseUrl/api/admin/users'),
-      headers: _headers,
-    );
-    return _handleResponse(res);
-  }
+  static Future<Map<String, dynamic>> adminListUsers() =>
+      _get('/api/admin/users');
 
   static Future<Map<String, dynamic>> adminSetRole(
-      String userId, String newRole) async {
-    final res = await http.put(
-      Uri.parse('$baseUrl/api/admin/users/$userId/role'),
-      headers: _headers,
-      body: jsonEncode({'role': newRole}),
-    );
-    return _handleResponse(res);
-  }
+          String userId, String newRole) =>
+      _put('/api/admin/users/$userId/role', body: {'role': newRole});
 
-  static Future<Map<String, dynamic>> adminDeleteUser(String userId) async {
-    final res = await http.delete(
-      Uri.parse('$baseUrl/api/admin/users/$userId'),
-      headers: _headers,
-    );
-    return _handleResponse(res);
-  }
+  static Future<Map<String, dynamic>> adminDeleteUser(String userId) =>
+      _delete('/api/admin/users/$userId');
 
   static Map<String, dynamic> _handleResponse(http.Response res) {
     final body = jsonDecode(res.body) as Map<String, dynamic>;

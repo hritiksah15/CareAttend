@@ -5,6 +5,7 @@ import '../services/api_service.dart';
 import '../utils/validators.dart';
 import '../widgets/password_field.dart';
 import '../widgets/language_button.dart';
+import '../widgets/offline_banner.dart';
 import 'home_screen.dart';
 import 'forgot_password_screen.dart';
 
@@ -109,7 +110,11 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
     return Scaffold(
-      body: SingleChildScrollView(
+      body: Column(
+        children: [
+          const OfflineBanner(),
+          Expanded(
+            child: SingleChildScrollView(
         child: Column(
           children: [
             // NHS Blue Hero Header
@@ -208,6 +213,9 @@ class _LoginScreenState extends State<LoginScreen> {
           ],
         ),
       ),
+            ),
+          ],
+        ),
     );
   }
 

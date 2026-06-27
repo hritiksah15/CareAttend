@@ -903,4 +903,8 @@ class AppLocalizationsPl extends AppLocalizations {
   String fpDevCode(String code) {
     return 'E-mail nieskonfigurowany — Twój kod testowy to $code';
   }
+
+  @override
+  String get offlineBanner =>
+      'Jesteś offline — pociągnij, aby odświeżyć po ponownym połączeniu.';
 }

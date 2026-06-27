@@ -906,4 +906,8 @@ class AppLocalizationsCy extends AppLocalizations {
   String fpDevCode(String code) {
     return 'E-bost heb ei ffurfweddu — eich cod prawf yw $code';
   }
+
+  @override
+  String get offlineBanner =>
+      'Rydych chi all-lein — tynnwch i adnewyddu ar ôl ailgysylltu.';
 }

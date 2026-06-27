@@ -292,5 +292,6 @@
   "fpResetDone": "پاس ورڈ دوبارہ ترتیب دیا گیا! براہ کرم لاگ ان کریں۔",
   "fpCodeSent": "اگر وہ ای میل رجسٹرڈ ہے تو 6 ہندسوں کا کوڈ بھیج دیا گیا ہے۔",
   "fpDevCode": "ای میل کنفیگر نہیں — آپ کا ٹیسٹ کوڈ {code} ہے",
-  "@fpDevCode": { "placeholders": { "code": { "type": "String" } } }
+  "@fpDevCode": { "placeholders": { "code": { "type": "String" } } },
+  "offlineBanner": "آپ آف لائن ہیں — دوبارہ کنیکٹ ہونے پر ریفریش کے لیے کھینچیں۔"
 }

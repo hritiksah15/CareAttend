@@ -294,5 +294,6 @@
   "fpResetDone": "Password reset! Please log in.",
   "fpCodeSent": "If that email is registered, a 6-digit code has been sent.",
   "fpDevCode": "Email not configured — your test code is {code}",
-  "@fpDevCode": { "placeholders": { "code": { "type": "String" } } }
+  "@fpDevCode": { "placeholders": { "code": { "type": "String" } } },
+  "offlineBanner": "You're offline — pull to refresh once reconnected."
 }
