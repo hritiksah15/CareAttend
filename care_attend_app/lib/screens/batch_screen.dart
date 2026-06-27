@@ -87,7 +87,7 @@ class _BatchScreenState extends State<BatchScreen> {
               child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Text(_error!,
-                      style: TextStyle(color: NHSTheme.riskHigh)))),
+                      style: const TextStyle(color: NHSTheme.riskHigh)))),
         if (_rows.isNotEmpty) ..._buildResults(t),
       ],
     );

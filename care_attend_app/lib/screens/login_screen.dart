@@ -334,7 +334,7 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(height: 16),
         PasswordField(controller: _regPassword, label: 'Password'),
         Padding(
-          padding: EdgeInsets.only(top: 4),
+          padding: const EdgeInsets.only(top: 4),
           child: Align(
             alignment: Alignment.centerLeft,
             child: Text(passwordHint,

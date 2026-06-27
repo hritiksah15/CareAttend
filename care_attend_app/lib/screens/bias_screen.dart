@@ -307,7 +307,7 @@ class _BiasScreenState extends State<BiasScreen>
             width: 60,
             child: Text(label,
                 style:
-                    TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                    const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
                 textAlign: TextAlign.right),
           ),
           const SizedBox(width: 8),

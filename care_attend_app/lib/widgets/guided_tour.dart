@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../nhs_theme.dart';
 
 /// Simple sequential guided tour — one dialog per step, describing the app's
 /// features for the current role. `onGoToTab(index)` switches the underlying
