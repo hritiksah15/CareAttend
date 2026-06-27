@@ -822,6 +822,30 @@ abstract class AppLocalizations {
   /// **'Generate message'**
   String get nudgeGenerate;
 
+  /// No description provided for @nudgeCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy message'**
+  String get nudgeCopy;
+
+  /// No description provided for @nudgeCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Message copied to clipboard.'**
+  String get nudgeCopied;
+
+  /// No description provided for @nudgeUseAssessment.
+  ///
+  /// In en, this message translates to:
+  /// **'Use last assessment'**
+  String get nudgeUseAssessment;
+
+  /// No description provided for @nudgeNoAssessment.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in the Assessment form first, then generate a nudge.'**
+  String get nudgeNoAssessment;
+
   /// No description provided for @adminTitle.
   ///
   /// In en, this message translates to:

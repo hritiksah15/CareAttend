@@ -388,6 +388,19 @@ class AppLocalizationsUr extends AppLocalizations {
   String get nudgeGenerate => 'پیغام تیار کریں';
 
   @override
+  String get nudgeCopy => 'پیغام کاپی کریں';
+
+  @override
+  String get nudgeCopied => 'پیغام کلپ بورڈ پر کاپی ہو گیا۔';
+
+  @override
+  String get nudgeUseAssessment => 'آخری تشخیص استعمال کریں';
+
+  @override
+  String get nudgeNoAssessment =>
+      'پہلے تشخیص فارم بھریں، پھر یاد دہانی تیار کریں۔';
+
+  @override
   String get adminTitle => 'صارف کا انتظام';
 
   @override

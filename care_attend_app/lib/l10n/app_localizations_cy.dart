@@ -392,6 +392,19 @@ class AppLocalizationsCy extends AppLocalizations {
   String get nudgeGenerate => 'Cynhyrchu neges';
 
   @override
+  String get nudgeCopy => 'Copïo neges';
+
+  @override
+  String get nudgeCopied => 'Neges wedi\'i chopïo i\'r clipfwrdd.';
+
+  @override
+  String get nudgeUseAssessment => 'Defnyddio\'r asesiad diwethaf';
+
+  @override
+  String get nudgeNoAssessment =>
+      'Llenwch y ffurflen Asesu yn gyntaf, yna cynhyrchu anogiad.';
+
+  @override
   String get adminTitle => 'Rheoli Defnyddwyr';
 
   @override

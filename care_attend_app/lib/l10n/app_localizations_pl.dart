@@ -389,6 +389,19 @@ class AppLocalizationsPl extends AppLocalizations {
   String get nudgeGenerate => 'Wygeneruj wiadomość';
 
   @override
+  String get nudgeCopy => 'Kopiuj wiadomość';
+
+  @override
+  String get nudgeCopied => 'Wiadomość skopiowana do schowka.';
+
+  @override
+  String get nudgeUseAssessment => 'Użyj ostatniej oceny';
+
+  @override
+  String get nudgeNoAssessment =>
+      'Najpierw wypełnij formularz oceny, a następnie wygeneruj przypomnienie.';
+
+  @override
   String get adminTitle => 'Zarządzanie użytkownikami';
 
   @override
