@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../nhs_theme.dart';
 import '../theme/design_tokens.dart';
 import '../l10n/app_localizations.dart';
@@ -173,6 +174,12 @@ class ResultScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
+
+          // Age vulnerability banner (65+ amber, 85+ red — enhanced sensitivity)
+          if (_ageOf(patient) >= 65) ...[
+            _ageBanner(context, _ageOf(patient)),
+            const SizedBox(height: 16),
+          ],
 
           // SHAP Explanation Card
           _card(
@@ -386,6 +393,11 @@ class ResultScreen extends StatelessWidget {
                     icon: const Icon(Icons.data_object, size: 18),
                     label: const Text('JSON'),
                   ),
+                  OutlinedButton.icon(
+                    onPressed: () => _copyResult(context),
+                    icon: const Icon(Icons.copy, size: 18),
+                    label: const Text('Copy'),
+                  ),
                 ]),
               ],
             ),
@@ -459,6 +471,63 @@ class ResultScreen extends StatelessWidget {
 
   Widget _card({required Widget child}) =>
       AppCard(padding: const EdgeInsets.all(20), child: child);
+
+  int _ageOf(Map<String, dynamic> patient) =>
+      (patient['Age'] as num?)?.toInt() ?? 0;
+
+  /// Clinical age-vulnerability banner. 85+ flags enhanced sensitivity (red);
+  /// 65-84 flags elevated vulnerability (amber). Risk-coloured text stays
+  /// legible on the pastel/dark-tinted surface in both themes.
+  Widget _ageBanner(BuildContext context, int age) {
+    final severe = age >= 85;
+    final accent = severe ? AppColors.riskHigh : AppColors.riskMedium;
+    final bg = NHSTheme.calloutBg(
+        context, severe ? AppColors.riskHighBg : AppColors.riskMediumBg);
+    final msg = severe
+        ? 'Patient is 85+ — apply enhanced sensitivity and proactive '
+            'safeguarding when acting on this score.'
+        : 'Patient is 65+ — elevated vulnerability; consider proactive '
+            'support and reminders.';
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpace.lg),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border(left: BorderSide(color: accent, width: 4)),
+      ),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Icon(severe ? Icons.warning_amber_rounded : Icons.info_outline,
+            color: accent, size: 22),
+        const SizedBox(width: AppSpace.md),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(severe ? 'Enhanced sensitivity' : 'Elevated vulnerability',
+                style: TextStyle(fontWeight: FontWeight.w700, color: accent)),
+            const SizedBox(height: 2),
+            Text(msg,
+                style: TextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).colorScheme.onSurface)),
+          ]),
+        ),
+      ]),
+    );
+  }
+
+  Future<void> _copyResult(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final tier = (result!['risk_tier'] as String).toUpperCase();
+    final pct = (result!['percentage'] as num).toStringAsFixed(0);
+    final nl = result!['nl_summary'] as String?;
+    final text = 'Care Attend risk result\n'
+        'Risk: $tier ($pct%)\n'
+        '${nl != null ? '$nl\n' : ''}'
+        '(Decision-support only — not a clinical diagnosis.)';
+    await Clipboard.setData(ClipboardData(text: text));
+    messenger.showSnackBar(
+        const SnackBar(content: Text('Result copied to clipboard')));
+  }
 
   Widget _chip(String text) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
