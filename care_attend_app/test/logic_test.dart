@@ -1,0 +1,57 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:care_attend_app/utils/validators.dart';
+import 'package:care_attend_app/nhs_theme.dart';
+import 'package:care_attend_app/theme/design_tokens.dart';
+
+/// Pure-logic unit tests — no widgets, no network. Deterministic and fast.
+void main() {
+  group('passwordError (mirrors backend validate_password)', () {
+    test('rejects too short', () {
+      expect(passwordError('Ab1!'), isNotNull);
+    });
+    test('needs an uppercase letter', () {
+      expect(passwordError('abcdefg1!'), 'Password needs an uppercase letter');
+    });
+    test('needs a lowercase letter', () {
+      expect(passwordError('ABCDEFG1!'), 'Password needs a lowercase letter');
+    });
+    test('needs a number', () {
+      expect(passwordError('Abcdefg!'), 'Password needs a number');
+    });
+    test('needs a symbol', () {
+      expect(passwordError('Abcdefg1'), 'Password needs a symbol');
+    });
+    test('accepts a strong password', () {
+      expect(passwordError('Abcdef1!'), isNull);
+    });
+  });
+
+  group('NHSTheme.ageGroup buckets', () {
+    test('boundaries', () {
+      expect(NHSTheme.ageGroup(10), 'Under 18');
+      expect(NHSTheme.ageGroup(17), 'Under 18');
+      expect(NHSTheme.ageGroup(18), '18-64');
+      expect(NHSTheme.ageGroup(64), '18-64');
+      expect(NHSTheme.ageGroup(65), '65-74');
+      expect(NHSTheme.ageGroup(74), '65-74');
+      expect(NHSTheme.ageGroup(75), '75-84');
+      expect(NHSTheme.ageGroup(84), '75-84');
+      expect(NHSTheme.ageGroup(85), '85+');
+      expect(NHSTheme.ageGroup(120), '85+');
+    });
+  });
+
+  group('AppColors.riskColor tier mapping', () {
+    test('maps each tier', () {
+      expect(AppColors.riskColor('High'), AppColors.riskHigh);
+      expect(AppColors.riskColor('Medium'), AppColors.riskMedium);
+      expect(AppColors.riskColor('Low'), AppColors.riskLow);
+    });
+    test('is case-insensitive', () {
+      expect(AppColors.riskColor('high'), AppColors.riskColor('High'));
+    });
+    test('falls back to Low for unknown tier', () {
+      expect(AppColors.riskColor('???'), AppColors.riskLow);
+    });
+  });
+}

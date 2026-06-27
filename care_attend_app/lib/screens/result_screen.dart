@@ -180,10 +180,10 @@ class ResultScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(t.whyThisScore,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: NHSTheme.blue)),
+                        color: Theme.of(context).colorScheme.primary)),
                 const SizedBox(height: 16),
                 ...shapValues.take(3).map((sv) {
                   final value = (sv['value'] as num).toDouble();
@@ -274,10 +274,10 @@ class ResultScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(t.interventions,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: NHSTheme.blue)),
+                        color: Theme.of(context).colorScheme.primary)),
                 const SizedBox(height: 12),
                 ...interventions.asMap().entries.map((entry) {
                   final i = entry.key;
@@ -320,10 +320,10 @@ class ResultScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(iv['title'] as String,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w700,
-                                      color: NHSTheme.blue)),
+                                      color: Theme.of(context).colorScheme.primary)),
                               Text(iv['description'] as String,
                                   style: TextStyle(
                                       fontSize: 12,
@@ -347,10 +347,10 @@ class ResultScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(t.plainEnglishSummary,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
-                          color: NHSTheme.blue)),
+                          color: Theme.of(context).colorScheme.primary)),
                   const SizedBox(height: 8),
                   Text(nlSummary,
                       style: const TextStyle(fontSize: 15, height: 1.5)),
@@ -398,10 +398,10 @@ class ResultScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(t.feedbackQuestion,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: NHSTheme.blue)),
+                        color: Theme.of(context).colorScheme.primary)),
                 const SizedBox(height: 4),
                 Text(t.feedbackDesc,
                     style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
@@ -419,10 +419,10 @@ class ResultScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(t.riskHistory,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
-                          color: NHSTheme.blue)),
+                          color: Theme.of(context).colorScheme.primary)),
                   const SizedBox(height: 16),
                   SizedBox(height: 180, child: _RiskHistoryChart()),
                 ],
@@ -561,7 +561,7 @@ class _FeedbackButtonsState extends State<_FeedbackButtons> {
     return Wrap(spacing: 8, runSpacing: 8, children: [
       btn(t.feedbackAttended, 'attended', NHSTheme.riskLow),
       btn(t.feedbackDna, 'dna', NHSTheme.riskHigh),
-      btn(t.feedbackCorrect, 'correct', NHSTheme.blue),
+      btn(t.feedbackCorrect, 'correct', Theme.of(context).colorScheme.primary),
       btn(t.feedbackIncorrect, 'incorrect', Theme.of(context).colorScheme.onSurfaceVariant),
     ]);
   }

@@ -118,15 +118,15 @@ class _SlotsScreenState extends State<SlotsScreen> {
           margin: const EdgeInsets.symmetric(horizontal: 4),
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: NHSTheme.paleGrey,
+            color: NHSTheme.calloutBg(context, NHSTheme.paleGrey),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Column(children: [
             Text(value,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
-                    color: NHSTheme.blue)),
+                    color: Theme.of(context).colorScheme.primary)),
             const SizedBox(height: 2),
             Text(label,
                 textAlign: TextAlign.center,

@@ -103,7 +103,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             if (hasPhoto)
               ListTile(
-                leading: const Icon(Icons.visibility, color: NHSTheme.blue),
+                leading: Icon(Icons.visibility, color: Theme.of(context).colorScheme.primary),
                 title: Text(t.profileViewPhoto),
                 onTap: () {
                   Navigator.pop(context);
@@ -111,7 +111,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 },
               ),
             ListTile(
-              leading: const Icon(Icons.photo_camera, color: NHSTheme.blue),
+              leading: Icon(Icons.photo_camera, color: Theme.of(context).colorScheme.primary),
               title: Text(hasPhoto ? t.profileChangePhoto : t.profileAddPhoto),
               onTap: () {
                 Navigator.pop(context);

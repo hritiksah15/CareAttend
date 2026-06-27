@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../nhs_theme.dart';
+import '../theme/design_tokens.dart';
 import '../services/api_service.dart';
 import '../widgets/ui.dart';
 
@@ -304,43 +305,64 @@ class _ClinicScreenState extends State<ClinicScreen> {
 
   Widget _buildSummary(Map<String, dynamic> s) {
     final t = AppLocalizations.of(context);
+    final cs = Theme.of(context).colorScheme;
+    final metrics = <(String, String, Color)>[
+      ('${s['total'] ?? 0}', t.clinicApptsLabel, cs.primary),
+      ('${s['high_risk'] ?? 0}', t.statHigh, NHSTheme.riskHigh),
+      ('${s['medium_risk'] ?? 0}', t.statMedium, NHSTheme.riskMedium),
+      ('${s['actioned'] ?? 0}', t.clinicActioned, NHSTheme.riskLow),
+      ('${s['needs_action'] ?? 0}', t.clinicNeedsAction, cs.onSurfaceVariant),
+    ];
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          _metric('${s['total'] ?? 0}', t.clinicApptsLabel, NHSTheme.blue),
-          _metric('${s['high_risk'] ?? 0}', t.statHigh, NHSTheme.riskHigh),
-          _metric('${s['medium_risk'] ?? 0}', t.statMedium, NHSTheme.riskMedium),
-          _metric('${s['actioned'] ?? 0}', t.clinicActioned, NHSTheme.riskLow),
-          _metric('${s['needs_action'] ?? 0}', t.clinicNeedsAction, Theme.of(context).colorScheme.onSurfaceVariant),
-        ],
-      ),
+      padding: const EdgeInsets.symmetric(vertical: AppSpace.sm),
+      child: LayoutBuilder(builder: (context, c) {
+        const gap = AppSpace.sm;
+        // Equal-width tiles that fill each row flush (3-up on phones, more on
+        // wide screens) so the stat grid reads as an organised system.
+        final perRow = c.maxWidth >= 540 ? 5 : (c.maxWidth >= 340 ? 3 : 2);
+        final w = (c.maxWidth - gap * (perRow - 1)) / perRow;
+        return Wrap(
+          spacing: gap,
+          runSpacing: gap,
+          children: [
+            for (final m in metrics)
+              SizedBox(width: w, child: _metric(m.$1, m.$2, m.$3)),
+          ],
+        );
+      }),
     );
   }
 
   Widget _metric(String value, String label, Color color) {
-    return SizedBox(
-      width: 112,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(8),
-          border: Border(top: BorderSide(color: color, width: 3)),
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border(
+          top: BorderSide(color: color, width: 3),
+          left: dark ? const BorderSide(color: AppColors.darkOutline) : BorderSide.none,
+          right: dark ? const BorderSide(color: AppColors.darkOutline) : BorderSide.none,
+          bottom: dark ? const BorderSide(color: AppColors.darkOutline) : BorderSide.none,
         ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
-          child: Column(children: [
-            Text(value,
-                style: TextStyle(
-                    color: color, fontSize: 20, fontWeight: FontWeight.w800)),
-            Text(label,
-                textAlign: TextAlign.center,
-                style:
-                    TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-          ]),
-        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
+        child: Column(children: [
+          Text(value,
+              maxLines: 1,
+              style: TextStyle(
+                  color: color, fontSize: 20, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 2),
+          Text(label,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  fontSize: 11,
+                  height: 1.2,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant)),
+        ]),
       ),
     );
   }

@@ -85,7 +85,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(children: [
-          const Icon(Icons.bar_chart, size: 48, color: NHSTheme.grey),
+          Icon(Icons.bar_chart, size: 48, color: NHSTheme.grey),
           const SizedBox(height: 8),
           Text(t.noAssessmentsYet, textAlign: TextAlign.center),
         ]),
@@ -93,7 +93,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     } else {
       widgets.addAll([
         Row(children: [
-          _statCard(t.statTotal, '$total', NHSTheme.blue),
+          _statCard(t.statTotal, '$total', Theme.of(context).colorScheme.primary),
           const SizedBox(width: 10),
           _statCard(t.statHigh, '${d['high_risk'] ?? 0}', NHSTheme.riskHigh),
         ]),
@@ -105,7 +105,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ]),
         const SizedBox(height: 8),
         Card(child: ListTile(
-          leading: const Icon(Icons.percent, color: NHSTheme.blue),
+          leading: Icon(Icons.percent, color: Theme.of(context).colorScheme.primary),
           title: Text(t.averageRisk),
           trailing: Text(
               '${(((d['average_risk'] ?? 0) as num) * 100).toStringAsFixed(1)}%',
@@ -116,7 +116,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (_fb != null && (_fb!['feedback_received'] ?? 0) > 0) {
       widgets.add(
         Card(child: ListTile(
-          leading: const Icon(Icons.fact_check_outlined, color: NHSTheme.blue),
+          leading: Icon(Icons.fact_check_outlined, color: Theme.of(context).colorScheme.primary),
           title: Text('Feedback: ${_fb!['feedback_received']} of '
               '${_fb!['total_predictions']}'),
           trailing: Text(
@@ -205,14 +205,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
             spacing: 8,
             runSpacing: 8,
             children: [
-              _metric('${appointments['completed'] ?? 0}', 'Completed', NHSTheme.blue),
+              _metric('${appointments['completed'] ?? 0}', 'Completed', Theme.of(context).colorScheme.primary),
               _metric(fmt(asDouble(outcomes['attended_rate'])), 'Attendance', NHSTheme.riskLow),
               _metric(fmt(asDouble(outcomes['dna_rate'])), 'DNA', NHSTheme.riskHigh),
               _metric('${interventions['completed_actions'] ?? 0}', 'Actions', Theme.of(context).colorScheme.onSurfaceVariant),
               _metric(
                 delta is num ? fmt(delta.toDouble()) : '--',
                 'DNA Gap (obs.)',
-                NHSTheme.blue,
+                Theme.of(context).colorScheme.primary,
               ),
             ],
           ),

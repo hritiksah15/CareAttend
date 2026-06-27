@@ -16,7 +16,7 @@ class Exporter {
     doc.addPage(pw.Page(build: (ctx) {
       return pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
         pw.Text('Care Attend — Patient Risk Report',
-            style: pw.TextStyle(fontSize: 18, color: _blue, fontWeight: pw.FontWeight.bold)),
+            style: const pw.TextStyle(fontSize: 18, color: _blue, fontWeight: pw.FontWeight.bold)),
         pw.SizedBox(height: 8),
         pw.Text('Generated: ${DateTime.now()}'),
         pw.SizedBox(height: 12),
@@ -26,9 +26,9 @@ class Exporter {
         _kv('Model', '${r['model_used'] ?? 'Logistic Regression'}'),
         pw.SizedBox(height: 12),
         pw.Text('SHAP Risk Factors',
-            style: pw.TextStyle(fontSize: 14, color: _blue, fontWeight: pw.FontWeight.bold)),
+            style: const pw.TextStyle(fontSize: 14, color: _blue, fontWeight: pw.FontWeight.bold)),
         pw.SizedBox(height: 6),
-        pw.Table.fromTextArray(
+        pw.TableHelper.fromTextArray(
           headers: const ['Factor', 'Impact', 'Direction'],
           data: [
             for (final s in shap)
@@ -42,7 +42,7 @@ class Exporter {
         if (r['nl_summary'] != null) ...[
           pw.SizedBox(height: 12),
           pw.Text('Summary',
-              style: pw.TextStyle(fontSize: 14, color: _blue, fontWeight: pw.FontWeight.bold)),
+              style: const pw.TextStyle(fontSize: 14, color: _blue, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 4),
           pw.Text('${r['nl_summary']}'),
         ],
@@ -89,11 +89,11 @@ class Exporter {
     doc.addPage(pw.MultiPage(build: (ctx) {
       return [
         pw.Text('Care Attend — Ethical Bias Audit',
-            style: pw.TextStyle(fontSize: 18, color: _blue, fontWeight: pw.FontWeight.bold)),
+            style: const pw.TextStyle(fontSize: 18, color: _blue, fontWeight: pw.FontWeight.bold)),
         pw.SizedBox(height: 8),
         pw.Text('Generated: ${DateTime.now()}'),
         pw.SizedBox(height: 12),
-        pw.Text('Overall', style: pw.TextStyle(fontSize: 14, color: _blue)),
+        pw.Text('Overall', style: const pw.TextStyle(fontSize: 14, color: _blue)),
         _kv('F1-Score', '${om['f1_score']}'),
         _kv('Recall', '${om['recall']}'),
         _kv('Precision', '${om['precision']}'),
@@ -101,7 +101,7 @@ class Exporter {
         for (final e in groups.entries)
           if (e.value is Map) ...[
             pw.Text('${e.key} fairness',
-                style: pw.TextStyle(fontSize: 14, color: _blue)),
+                style: const pw.TextStyle(fontSize: 14, color: _blue)),
             _kv('Demographic parity',
                 '${e.value['demographic_parity_diff']} [${e.value['dp_status']}]'),
             _kv('Equalised odds',
@@ -109,7 +109,7 @@ class Exporter {
             pw.SizedBox(height: 8),
           ],
         pw.SizedBox(height: 8),
-        pw.Text('Summary', style: pw.TextStyle(fontSize: 14, color: _blue)),
+        pw.Text('Summary', style: const pw.TextStyle(fontSize: 14, color: _blue)),
         pw.Text(summary),
       ];
     }));
@@ -120,7 +120,7 @@ class Exporter {
         padding: const pw.EdgeInsets.symmetric(vertical: 2),
         child: pw.Row(children: [
           pw.SizedBox(width: 150, child: pw.Text(k)),
-          pw.Text(v, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+          pw.Text(v, style: const pw.TextStyle(fontWeight: pw.FontWeight.bold)),
         ]),
       );
 }

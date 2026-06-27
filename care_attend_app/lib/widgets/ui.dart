@@ -60,7 +60,7 @@ class SectionHeader extends StatelessWidget {
       style: Theme.of(context)
           .textTheme
           .titleMedium
-          ?.copyWith(color: AppColors.brand, fontWeight: FontWeight.w700));
+          ?.copyWith(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w700));
 }
 
 /// Risk tier pill.

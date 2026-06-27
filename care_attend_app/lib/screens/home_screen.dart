@@ -165,11 +165,11 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showNotifications() {
     showModalBottomSheet(
       context: context,
-      builder: (_) => const Padding(
-        padding: EdgeInsets.all(20),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.all(20),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Row(children: [
-            Icon(Icons.notifications, color: NHSTheme.blue),
+            Icon(Icons.notifications, color: Theme.of(context).colorScheme.primary),
             SizedBox(width: 8),
             Text('Notifications',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
