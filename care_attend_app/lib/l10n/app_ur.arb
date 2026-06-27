@@ -94,13 +94,31 @@
   "batchScoring": "اسکورنگ…",
   "batchPickCsv": "CSV منتخب کریں اور اسکور کریں",
   "batchFile": "فائل: {filename}",
-  "@batchFile": { "placeholders": { "filename": { "type": "String" } } },
+  "@batchFile": {
+    "placeholders": {
+      "filename": {
+        "type": "String"
+      }
+    }
+  },
   "batchReadError": "فائل پڑھی نہیں جا سکی۔",
   "batchPatients": "مریض",
   "batchRow": "قطار {row}",
-  "@batchRow": { "placeholders": { "row": { "type": "String" } } },
+  "@batchRow": {
+    "placeholders": {
+      "row": {
+        "type": "String"
+      }
+    }
+  },
   "batchTopFactor": "اہم عنصر: {factor}",
-  "@batchTopFactor": { "placeholders": { "factor": { "type": "String" } } },
+  "@batchTopFactor": {
+    "placeholders": {
+      "factor": {
+        "type": "String"
+      }
+    }
+  },
   "ethicsFramework": "اخلاقی فریم ورک",
   "ethicsSubtitle": "NHS England (2024) چھ اصولوں کی نقشہ سازی شواہد کے ساتھ۔",
   "ethicsCvTitle": "کراس ویلیڈیشن (5-فولڈ)",
@@ -113,7 +131,16 @@
   "ethicsRecall": "ریکال",
   "ethicsRocAuc": "ROC-AUC",
   "ethicsCi": "95% CI (F1): [{lo}، {hi}]",
-  "@ethicsCi": { "placeholders": { "lo": { "type": "String" }, "hi": { "type": "String" } } },
+  "@ethicsCi": {
+    "placeholders": {
+      "lo": {
+        "type": "String"
+      },
+      "hi": {
+        "type": "String"
+      }
+    }
+  },
   "nudgeTitle": "مریض کی یاد دہانی",
   "nudgeSubtitle": "ذاتی نوعیت کا، غیر داغ دار رابطہ پیغام تیار کریں۔",
   "nudgeName": "مریض کا نام (اختیاری)",
@@ -133,7 +160,13 @@
   "adminRoleUpdated": "کردار اپ ڈیٹ ہو گیا۔",
   "adminDeleteTitle": "صارف کو حذف کریں",
   "adminDeleteConfirm": "\"{username}\" کو حذف کریں؟ یہ واپس نہیں کیا جا سکتا۔",
-  "@adminDeleteConfirm": { "placeholders": { "username": { "type": "String" } } },
+  "@adminDeleteConfirm": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  },
   "adminCancel": "منسوخ کریں",
   "adminDelete": "حذف کریں",
   "adminDeleted": "حذف ہو گیا۔",
@@ -156,12 +189,27 @@
   "slotsExpectedWaste": "متوقع ضیاع",
   "slotsRecoveryPotential": "بحالی کی صلاحیت",
   "slotsRiskLine": "{prob}% DNA خطرہ · {tier}",
-  "@slotsRiskLine": { "placeholders": { "prob": { "type": "String" }, "tier": { "type": "String" } } },
+  "@slotsRiskLine": {
+    "placeholders": {
+      "prob": {
+        "type": "String"
+      },
+      "tier": {
+        "type": "String"
+      }
+    }
+  },
   "slotsCanOverbookLabel": "اوور بک کر سکتے ہیں:",
   "commonYes": "ہاں",
   "commonNo": "نہیں",
   "slotsWastedMinutes": "متوقع ضائع منٹ: {min}",
-  "@slotsWastedMinutes": { "placeholders": { "min": { "type": "String" } } },
+  "@slotsWastedMinutes": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      }
+    }
+  },
   "biasMonitorTitle": "اخلاقی تعصب کی نگرانی کا ڈیش بورڈ",
   "biasSubtitle": "محفوظ خصوصیات کے گروپوں میں انصاف کے میٹرکس۔ حد: 0.10۔",
   "biasTabAge": "عمر",
@@ -187,7 +235,13 @@
   "biasFailEo": "مساوی امکانات",
   "biasSummaryPass": "ماڈل تمام محفوظ خصوصیات کے گروپوں میں قابل قبول انصاف دکھاتا ہے۔ تمام میٹرکس 0.10 کی حد کے اندر ہیں۔",
   "biasSummaryFail": "ماڈل زیادہ تر عمر کے گروپوں میں قابل قبول انصاف دکھاتا ہے۔ درج ذیل 0.10 کی حد سے تجاوز کرتے ہیں: {failures}۔ یہ الگورتھمک تعصب کے بجائے حقیقی طبی خطرے کی عکاسی کر سکتا ہے۔",
-  "@biasSummaryFail": { "placeholders": { "failures": { "type": "String" } } },
+  "@biasSummaryFail": {
+    "placeholders": {
+      "failures": {
+        "type": "String"
+      }
+    }
+  },
   "clinicTitle": "کلینک کی فہرست",
   "clinicSubtitle": "ملاقاتوں کو اسکور کریں اور رابطے کی پیش رفت کو ٹریک کریں۔",
   "clinicNoAppointments": "اس تاریخ کے لیے کوئی ملاقات درآمد نہیں کی گئی۔",
@@ -205,16 +259,34 @@
   "clinicNeedsAction": "کارروائی درکار",
   "clinicStatus": "حیثیت",
   "clinicActionsCount": "{count} کارروائیاں",
-  "@clinicActionsCount": { "placeholders": { "count": { "type": "String" } } },
+  "@clinicActionsCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "clinicRemindersCount": "{count} یاد دہانیاں",
-  "@clinicRemindersCount": { "placeholders": { "count": { "type": "String" } } },
+  "@clinicRemindersCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "clinicNeedsOutreach": "رابطے کی کارروائی درکار",
   "clinicReminder": "یاد دہانی",
   "clinicCall": "کال",
   "clinicEnterPatientId": "مریض کی شناخت درج کریں۔",
   "clinicJsonInvalid": "ملاقات کا JSON درست نہیں ہے۔",
   "clinicImported": "{count} ملاقاتیں درآمد کی گئیں۔",
-  "@clinicImported": { "placeholders": { "count": { "type": "String" } } },
+  "@clinicImported": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "clinicStatusUpdated": "ملاقات کی حیثیت اپ ڈیٹ ہو گئی۔",
   "clinicReminderScheduled": "یاد دہانی طے شدہ۔",
   "clinicCallRecorded": "کال کارروائی ریکارڈ کی گئی۔",
@@ -292,7 +364,13 @@
   "fpResetDone": "پاس ورڈ دوبارہ ترتیب دیا گیا! براہ کرم لاگ ان کریں۔",
   "fpCodeSent": "اگر وہ ای میل رجسٹرڈ ہے تو 6 ہندسوں کا کوڈ بھیج دیا گیا ہے۔",
   "fpDevCode": "ای میل کنفیگر نہیں — آپ کا ٹیسٹ کوڈ {code} ہے",
-  "@fpDevCode": { "placeholders": { "code": { "type": "String" } } },
+  "@fpDevCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
   "offlineBanner": "آپ آف لائن ہیں — دوبارہ کنیکٹ ہونے پر ریفریش کے لیے کھینچیں۔",
   "chatbotTitle": "Care Attend AI",
   "chatbotHint": "پیغام ٹائپ کریں…",
@@ -300,5 +378,11 @@
   "chatbotAssistant": "اسسٹنٹ",
   "profilePhotoA11y": "پروفائل تصویر۔ تبدیل کرنے کے لیے ٹیپ کریں۔",
   "loadFailed": "لوڈ نہیں ہو سکا۔ نیچے کھینچیں یا دوبارہ کوشش کریں۔",
-  "commonRetry": "دوبارہ کوشش"
+  "commonRetry": "دوبارہ کوشش",
+  "resultCopy": "کاپی کریں",
+  "resultCopied": "نتیجہ کلپ بورڈ پر کاپی ہو گیا",
+  "ageBannerEnhancedTitle": "بڑھی ہوئی حساسیت",
+  "ageBannerElevatedTitle": "بڑھی ہوئی کمزوری",
+  "ageBannerEnhancedMsg": "مریض کی عمر 85+ ہے — اس اسکور پر عمل کرتے وقت بڑھی ہوئی حساسیت اور فعال تحفظ اختیار کریں۔",
+  "ageBannerElevatedMsg": "مریض کی عمر 65+ ہے — بڑھی ہوئی کمزوری؛ فعال مدد اور یاد دہانیوں پر غور کریں۔"
 }

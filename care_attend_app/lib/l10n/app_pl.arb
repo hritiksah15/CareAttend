@@ -94,13 +94,31 @@
   "batchScoring": "Ocenianie…",
   "batchPickCsv": "Wybierz CSV i oceń",
   "batchFile": "Plik: {filename}",
-  "@batchFile": { "placeholders": { "filename": { "type": "String" } } },
+  "@batchFile": {
+    "placeholders": {
+      "filename": {
+        "type": "String"
+      }
+    }
+  },
   "batchReadError": "Nie można odczytać pliku.",
   "batchPatients": "Pacjenci",
   "batchRow": "Wiersz {row}",
-  "@batchRow": { "placeholders": { "row": { "type": "String" } } },
+  "@batchRow": {
+    "placeholders": {
+      "row": {
+        "type": "String"
+      }
+    }
+  },
   "batchTopFactor": "Główny czynnik: {factor}",
-  "@batchTopFactor": { "placeholders": { "factor": { "type": "String" } } },
+  "@batchTopFactor": {
+    "placeholders": {
+      "factor": {
+        "type": "String"
+      }
+    }
+  },
   "ethicsFramework": "Ramy etyczne",
   "ethicsSubtitle": "Mapowanie sześciu zasad NHS England (2024) z dowodami.",
   "ethicsCvTitle": "Walidacja krzyżowa (5-krotna)",
@@ -113,7 +131,16 @@
   "ethicsRecall": "Czułość",
   "ethicsRocAuc": "ROC-AUC",
   "ethicsCi": "95% CI (F1): [{lo}, {hi}]",
-  "@ethicsCi": { "placeholders": { "lo": { "type": "String" }, "hi": { "type": "String" } } },
+  "@ethicsCi": {
+    "placeholders": {
+      "lo": {
+        "type": "String"
+      },
+      "hi": {
+        "type": "String"
+      }
+    }
+  },
   "nudgeTitle": "Przypomnienie pacjenta",
   "nudgeSubtitle": "Wygeneruj spersonalizowaną, niestygmatyzującą wiadomość kontaktową.",
   "nudgeName": "Imię pacjenta (opcjonalnie)",
@@ -133,7 +160,13 @@
   "adminRoleUpdated": "Rola zaktualizowana.",
   "adminDeleteTitle": "Usuń użytkownika",
   "adminDeleteConfirm": "Usunąć \"{username}\"? Tej operacji nie można cofnąć.",
-  "@adminDeleteConfirm": { "placeholders": { "username": { "type": "String" } } },
+  "@adminDeleteConfirm": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  },
   "adminCancel": "Anuluj",
   "adminDelete": "Usuń",
   "adminDeleted": "Usunięto.",
@@ -156,12 +189,27 @@
   "slotsExpectedWaste": "Oczekiwana strata",
   "slotsRecoveryPotential": "Potencjał odzyskania",
   "slotsRiskLine": "{prob}% ryzyko nieobecności · {tier}",
-  "@slotsRiskLine": { "placeholders": { "prob": { "type": "String" }, "tier": { "type": "String" } } },
+  "@slotsRiskLine": {
+    "placeholders": {
+      "prob": {
+        "type": "String"
+      },
+      "tier": {
+        "type": "String"
+      }
+    }
+  },
   "slotsCanOverbookLabel": "Można nadrezerwować:",
   "commonYes": "Tak",
   "commonNo": "Nie",
   "slotsWastedMinutes": "Oczekiwane zmarnowane minuty: {min}",
-  "@slotsWastedMinutes": { "placeholders": { "min": { "type": "String" } } },
+  "@slotsWastedMinutes": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      }
+    }
+  },
   "biasMonitorTitle": "Panel monitorowania stronniczości etycznej",
   "biasSubtitle": "Wskaźniki sprawiedliwości w grupach cech chronionych. Próg: 0,10.",
   "biasTabAge": "Wiek",
@@ -187,7 +235,13 @@
   "biasFailEo": "wyrównane szanse",
   "biasSummaryPass": "Model wykazuje akceptowalną sprawiedliwość we wszystkich grupach cech chronionych. Wszystkie wskaźniki mieszczą się w progu 0,10.",
   "biasSummaryFail": "Model wykazuje akceptowalną sprawiedliwość w większości grup wiekowych. Następujące przekraczają próg 0,10: {failures}. Może to odzwierciedlać rzeczywiste ryzyko kliniczne, a nie stronniczość algorytmiczną.",
-  "@biasSummaryFail": { "placeholders": { "failures": { "type": "String" } } },
+  "@biasSummaryFail": {
+    "placeholders": {
+      "failures": {
+        "type": "String"
+      }
+    }
+  },
   "clinicTitle": "Lista kliniki",
   "clinicSubtitle": "Oceniaj wizyty i śledź postęp działań kontaktowych.",
   "clinicNoAppointments": "Brak zaimportowanych wizyt na ten dzień.",
@@ -205,16 +259,34 @@
   "clinicNeedsAction": "Wymaga działania",
   "clinicStatus": "Status",
   "clinicActionsCount": "{count} działań",
-  "@clinicActionsCount": { "placeholders": { "count": { "type": "String" } } },
+  "@clinicActionsCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "clinicRemindersCount": "{count} przypomnień",
-  "@clinicRemindersCount": { "placeholders": { "count": { "type": "String" } } },
+  "@clinicRemindersCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "clinicNeedsOutreach": "Wymaga działania kontaktowego",
   "clinicReminder": "Przypomnienie",
   "clinicCall": "Połączenie",
   "clinicEnterPatientId": "Wprowadź ID pacjenta.",
   "clinicJsonInvalid": "JSON wizyty jest nieprawidłowy.",
   "clinicImported": "Zaimportowano {count} wizyt.",
-  "@clinicImported": { "placeholders": { "count": { "type": "String" } } },
+  "@clinicImported": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "clinicStatusUpdated": "Status wizyty zaktualizowany.",
   "clinicReminderScheduled": "Przypomnienie zaplanowane.",
   "clinicCallRecorded": "Działanie połączenia zarejestrowane.",
@@ -292,7 +364,13 @@
   "fpResetDone": "Hasło zresetowane! Zaloguj się.",
   "fpCodeSent": "Jeśli ten e-mail jest zarejestrowany, wysłano 6-cyfrowy kod.",
   "fpDevCode": "E-mail nieskonfigurowany — Twój kod testowy to {code}",
-  "@fpDevCode": { "placeholders": { "code": { "type": "String" } } },
+  "@fpDevCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
   "offlineBanner": "Jesteś offline — pociągnij, aby odświeżyć po ponownym połączeniu.",
   "chatbotTitle": "Care Attend AI",
   "chatbotHint": "Wpisz wiadomość…",
@@ -300,5 +378,11 @@
   "chatbotAssistant": "Asystent",
   "profilePhotoA11y": "Zdjęcie profilowe. Dotknij, aby zmienić.",
   "loadFailed": "Nie udało się załadować. Pociągnij w dół lub spróbuj ponownie.",
-  "commonRetry": "Spróbuj ponownie"
+  "commonRetry": "Spróbuj ponownie",
+  "resultCopy": "Kopiuj",
+  "resultCopied": "Skopiowano wynik do schowka",
+  "ageBannerEnhancedTitle": "Zwiększona wrażliwość",
+  "ageBannerElevatedTitle": "Podwyższona podatność",
+  "ageBannerEnhancedMsg": "Pacjent ma 85+ lat — zastosuj zwiększoną wrażliwość i proaktywną ochronę przy działaniu na podstawie tego wyniku.",
+  "ageBannerElevatedMsg": "Pacjent ma 65+ lat — podwyższona podatność; rozważ proaktywne wsparcie i przypomnienia."
 }

@@ -928,4 +928,24 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get commonRetry => 'دوبارہ کوشش';
+
+  @override
+  String get resultCopy => 'کاپی کریں';
+
+  @override
+  String get resultCopied => 'نتیجہ کلپ بورڈ پر کاپی ہو گیا';
+
+  @override
+  String get ageBannerEnhancedTitle => 'بڑھی ہوئی حساسیت';
+
+  @override
+  String get ageBannerElevatedTitle => 'بڑھی ہوئی کمزوری';
+
+  @override
+  String get ageBannerEnhancedMsg =>
+      'مریض کی عمر 85+ ہے — اس اسکور پر عمل کرتے وقت بڑھی ہوئی حساسیت اور فعال تحفظ اختیار کریں۔';
+
+  @override
+  String get ageBannerElevatedMsg =>
+      'مریض کی عمر 65+ ہے — بڑھی ہوئی کمزوری؛ فعال مدد اور یاد دہانیوں پر غور کریں۔';
 }

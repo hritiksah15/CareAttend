@@ -1835,6 +1835,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Retry'**
   String get commonRetry;
+
+  /// No description provided for @resultCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get resultCopy;
+
+  /// No description provided for @resultCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Result copied to clipboard'**
+  String get resultCopied;
+
+  /// No description provided for @ageBannerEnhancedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enhanced sensitivity'**
+  String get ageBannerEnhancedTitle;
+
+  /// No description provided for @ageBannerElevatedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Elevated vulnerability'**
+  String get ageBannerElevatedTitle;
+
+  /// No description provided for @ageBannerEnhancedMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'Patient is 85+ — apply enhanced sensitivity and proactive safeguarding when acting on this score.'**
+  String get ageBannerEnhancedMsg;
+
+  /// No description provided for @ageBannerElevatedMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'Patient is 65+ — elevated vulnerability; consider proactive support and reminders.'**
+  String get ageBannerElevatedMsg;
 }
 
 class _AppLocalizationsDelegate

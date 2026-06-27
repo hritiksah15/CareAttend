@@ -94,13 +94,31 @@
   "batchScoring": "Yn sgorio…",
   "batchPickCsv": "Dewis CSV a Sgorio",
   "batchFile": "Ffeil: {filename}",
-  "@batchFile": { "placeholders": { "filename": { "type": "String" } } },
+  "@batchFile": {
+    "placeholders": {
+      "filename": {
+        "type": "String"
+      }
+    }
+  },
   "batchReadError": "Methwyd darllen y ffeil.",
   "batchPatients": "Cleifion",
   "batchRow": "Rhes {row}",
-  "@batchRow": { "placeholders": { "row": { "type": "String" } } },
+  "@batchRow": {
+    "placeholders": {
+      "row": {
+        "type": "String"
+      }
+    }
+  },
   "batchTopFactor": "Prif ffactor: {factor}",
-  "@batchTopFactor": { "placeholders": { "factor": { "type": "String" } } },
+  "@batchTopFactor": {
+    "placeholders": {
+      "factor": {
+        "type": "String"
+      }
+    }
+  },
   "ethicsFramework": "Fframwaith Moeseg",
   "ethicsSubtitle": "Mapio chwe egwyddor NHS England (2024) gyda thystiolaeth.",
   "ethicsCvTitle": "Croes-Ddilysu (5-Plyg)",
@@ -113,7 +131,16 @@
   "ethicsRecall": "Dwyn i gof",
   "ethicsRocAuc": "ROC-AUC",
   "ethicsCi": "95% CI (F1): [{lo}, {hi}]",
-  "@ethicsCi": { "placeholders": { "lo": { "type": "String" }, "hi": { "type": "String" } } },
+  "@ethicsCi": {
+    "placeholders": {
+      "lo": {
+        "type": "String"
+      },
+      "hi": {
+        "type": "String"
+      }
+    }
+  },
   "nudgeTitle": "Anogiad Claf",
   "nudgeSubtitle": "Cynhyrchu neges allgymorth bersonol, anstigmateiddio.",
   "nudgeName": "Enw'r claf (dewisol)",
@@ -133,7 +160,13 @@
   "adminRoleUpdated": "Rôl wedi'i diweddaru.",
   "adminDeleteTitle": "Dileu defnyddiwr",
   "adminDeleteConfirm": "Dileu \"{username}\"? Ni ellir dadwneud hyn.",
-  "@adminDeleteConfirm": { "placeholders": { "username": { "type": "String" } } },
+  "@adminDeleteConfirm": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  },
   "adminCancel": "Canslo",
   "adminDelete": "Dileu",
   "adminDeleted": "Wedi'i ddileu.",
@@ -156,12 +189,27 @@
   "slotsExpectedWaste": "Gwastraff disgwyliedig",
   "slotsRecoveryPotential": "Potensial adfer",
   "slotsRiskLine": "{prob}% risg DNA · {tier}",
-  "@slotsRiskLine": { "placeholders": { "prob": { "type": "String" }, "tier": { "type": "String" } } },
+  "@slotsRiskLine": {
+    "placeholders": {
+      "prob": {
+        "type": "String"
+      },
+      "tier": {
+        "type": "String"
+      }
+    }
+  },
   "slotsCanOverbookLabel": "Gellir gorlenwi:",
   "commonYes": "Iawn",
   "commonNo": "Na",
   "slotsWastedMinutes": "Munudau gwastraff disgwyliedig: {min}",
-  "@slotsWastedMinutes": { "placeholders": { "min": { "type": "String" } } },
+  "@slotsWastedMinutes": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      }
+    }
+  },
   "biasMonitorTitle": "Dangosfwrdd Monitro Rhagfarn Foesegol",
   "biasSubtitle": "Metrigau tegwch ar draws grwpiau nodweddion gwarchodedig. Trothwy: 0.10.",
   "biasTabAge": "Oedran",
@@ -187,7 +235,13 @@
   "biasFailEo": "ods cyfartal",
   "biasSummaryPass": "Mae'r model yn dangos tegwch derbyniol ar draws pob grŵp priodoledd gwarchodedig. Mae pob metrig o fewn y trothwy 0.10.",
   "biasSummaryFail": "Mae'r model yn dangos tegwch derbyniol ar draws y rhan fwyaf o grwpiau oedran. Mae'r canlynol yn fwy na'r trothwy 0.10: {failures}. Gall hyn adlewyrchu risg glinigol go iawn yn hytrach na rhagfarn algorithmig.",
-  "@biasSummaryFail": { "placeholders": { "failures": { "type": "String" } } },
+  "@biasSummaryFail": {
+    "placeholders": {
+      "failures": {
+        "type": "String"
+      }
+    }
+  },
   "clinicTitle": "Rhestr Clinig",
   "clinicSubtitle": "Sgorio apwyntiadau ac olrhain cynnydd allgymorth.",
   "clinicNoAppointments": "Dim apwyntiadau wedi'u mewnforio ar gyfer y dyddiad hwn.",
@@ -205,16 +259,34 @@
   "clinicNeedsAction": "Angen gweithredu",
   "clinicStatus": "Statws",
   "clinicActionsCount": "{count} gweithred",
-  "@clinicActionsCount": { "placeholders": { "count": { "type": "String" } } },
+  "@clinicActionsCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "clinicRemindersCount": "{count} nodyn atgoffa",
-  "@clinicRemindersCount": { "placeholders": { "count": { "type": "String" } } },
+  "@clinicRemindersCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "clinicNeedsOutreach": "Angen gweithred allgymorth",
   "clinicReminder": "Nodyn atgoffa",
   "clinicCall": "Galw",
   "clinicEnterPatientId": "Rhowch ID claf.",
   "clinicJsonInvalid": "Nid yw JSON yr apwyntiad yn ddilys.",
   "clinicImported": "{count} apwyntiad wedi'u mewnforio.",
-  "@clinicImported": { "placeholders": { "count": { "type": "String" } } },
+  "@clinicImported": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "clinicStatusUpdated": "Statws apwyntiad wedi'i ddiweddaru.",
   "clinicReminderScheduled": "Nodyn atgoffa wedi'i drefnu.",
   "clinicCallRecorded": "Gweithred galw wedi'i chofnodi.",
@@ -292,7 +364,13 @@
   "fpResetDone": "Cyfrinair wedi'i ailosod! Mewngofnodwch.",
   "fpCodeSent": "Os yw'r e-bost hwnnw wedi'i gofrestru, mae cod 6 digid wedi'i anfon.",
   "fpDevCode": "E-bost heb ei ffurfweddu — eich cod prawf yw {code}",
-  "@fpDevCode": { "placeholders": { "code": { "type": "String" } } },
+  "@fpDevCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
   "offlineBanner": "Rydych chi all-lein — tynnwch i adnewyddu ar ôl ailgysylltu.",
   "chatbotTitle": "Care Attend AI",
   "chatbotHint": "Teipiwch neges…",
@@ -300,5 +378,11 @@
   "chatbotAssistant": "Cynorthwyydd",
   "profilePhotoA11y": "Llun proffil. Tapiwch i newid.",
   "loadFailed": "Methwyd llwytho. Tynnwch i lawr neu ailgynnig.",
-  "commonRetry": "Ailgynnig"
+  "commonRetry": "Ailgynnig",
+  "resultCopy": "Copïo",
+  "resultCopied": "Copïwyd y canlyniad i'r clipfwrdd",
+  "ageBannerEnhancedTitle": "Sensitifrwydd uwch",
+  "ageBannerElevatedTitle": "Bregusrwydd uwch",
+  "ageBannerEnhancedMsg": "Mae'r claf yn 85+ — defnyddiwch sensitifrwydd uwch a diogelu rhagweithiol wrth weithredu ar y sgôr hon.",
+  "ageBannerElevatedMsg": "Mae'r claf yn 65+ — bregusrwydd uwch; ystyriwch gymorth rhagweithiol ac atgoffa."
 }
