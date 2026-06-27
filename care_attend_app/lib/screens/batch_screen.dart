@@ -68,7 +68,7 @@ class _BatchScreenState extends State<BatchScreen> {
         Text(t.batchUpload,
             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
         const SizedBox(height: 4),
-        Text(t.batchUploadDesc, style: const TextStyle(color: NHSTheme.darkGrey)),
+        Text(t.batchUploadDesc, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
         const SizedBox(height: 16),
         ElevatedButton.icon(
           onPressed: _busy ? null : () => _pickAndScore(t),
@@ -79,8 +79,8 @@ class _BatchScreenState extends State<BatchScreen> {
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Text(t.batchFile(_filename!),
-                style: const TextStyle(
-                    color: NHSTheme.darkGrey, fontSize: 12)),
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 12)),
           ),
         if (_error != null)
           Card(
@@ -192,7 +192,7 @@ class _BatchScreenState extends State<BatchScreen> {
                     fontSize: 22, fontWeight: FontWeight.w800, color: color)),
             const SizedBox(height: 2),
             Text(label,
-                style: const TextStyle(fontSize: 11, color: NHSTheme.darkGrey)),
+                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ]),
         ),
       ),

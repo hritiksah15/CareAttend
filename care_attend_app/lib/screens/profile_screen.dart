@@ -338,7 +338,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final p = _profile!;
     Widget row(IconData ic, String label, String value) => ListTile(
           dense: true,
-          leading: Icon(ic, color: NHSTheme.darkGrey, size: 20),
+          leading: Icon(ic, color: Theme.of(context).colorScheme.onSurfaceVariant, size: 20),
           title: Text(label),
           trailing: Text(value,
               style: const TextStyle(fontWeight: FontWeight.w600)),
@@ -416,18 +416,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       if ((p['pronouns'] ?? '').toString().isNotEmpty) ...[
                         const SizedBox(width: 6),
                         Text('· ${p['pronouns']}',
-                            style: const TextStyle(
-                                color: NHSTheme.darkGrey, fontSize: 13)),
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
                       ],
                     ],
                   ),
                   Text('${p['email'] ?? ''}',
-                      style: const TextStyle(
-                          color: NHSTheme.darkGrey, fontSize: 13)),
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
                   if (sub.isNotEmpty)
                     Text(sub,
-                        style: const TextStyle(
-                            color: NHSTheme.darkGrey, fontSize: 13)),
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
                   const SizedBox(height: 4),
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -507,10 +507,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           PasswordField(controller: _current, label: t.profileCurrentPw),
           const SizedBox(height: 10),
           PasswordField(controller: _newPw, label: t.profileNewPw),
-          const Padding(
+          Padding(
             padding: EdgeInsets.only(top: 4),
             child: Text(passwordHint,
-                style: TextStyle(fontSize: 11, color: NHSTheme.darkGrey)),
+                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ),
           const SizedBox(height: 10),
           PasswordField(controller: _confirm, label: t.profileConfirmPw),
@@ -609,7 +609,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ]),
           const SizedBox(height: 8),
           Text(t.profile2faDesc,
-              style: const TextStyle(color: NHSTheme.darkGrey, fontSize: 13)),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
           const SizedBox(height: 12),
           if (_totpEnabled) ...[
             PasswordField(controller: _twoFaPw, label: t.profile2faPwDisable),
@@ -670,8 +670,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text(title,
                       style: const TextStyle(fontWeight: FontWeight.w700)),
                   Text(body,
-                      style: const TextStyle(
-                          color: NHSTheme.darkGrey, fontSize: 13)),
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
                 ],
               ),
             ),

@@ -64,10 +64,16 @@ class AppColors {
   static const Color warning = Color(0xFFB8860B);
   static const Color danger = riskHigh;
 
-  // Dark surface set (high-contrast slate)
-  static const Color darkBg = Color(0xFF12182B);
-  static const Color darkSurface = Color(0xFF1B2540);
-  static const Color darkSurfaceAlt = Color(0xFF243154);
+  // Dark surface set (high-contrast slate). Lightness ladder is deliberate:
+  // scaffold (darkBg) < card (darkSurface) < dialog/raised (darkSurfaceAlt).
+  static const Color darkBg = Color(0xFF0A1020);
+  static const Color darkSurface = Color(0xFF1C2942);
+  static const Color darkSurfaceAlt = Color(0xFF26354F);
+  // Secondary text on dark surfaces (≈6.7:1 on darkSurface).
+  static const Color darkOnSurfaceVariant = Color(0xFF9FB3C8);
+  // Card/field edge: ≥3:1 against darkSurface (WCAG non-text contrast) so every
+  // card boundary is unambiguous despite the subtle surface-fill ladder.
+  static const Color darkOutline = Color(0xFF5A74AB);
 
   static Color riskColor(String tier) {
     switch (tier.toLowerCase()) {

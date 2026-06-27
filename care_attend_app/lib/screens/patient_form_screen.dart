@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../nhs_theme.dart';
+import '../theme/design_tokens.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_service.dart';
+import '../widgets/ui.dart';
 
 class PatientFormScreen extends StatefulWidget {
   final void Function(Map<String, dynamic>) onResult;
@@ -149,43 +151,71 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setLocal) => AlertDialog(
           title: const Text('Carer / Family Proxy'),
-          content: SingleChildScrollView(
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
-              TextField(
-                  controller: name,
-                  decoration: const InputDecoration(labelText: 'Carer name')),
-              DropdownButtonFormField<String>(
-                initialValue: relationship,
-                decoration: const InputDecoration(labelText: 'Relationship'),
-                items: const [
-                  DropdownMenuItem(value: 'family', child: Text('Family')),
-                  DropdownMenuItem(value: 'carer', child: Text('Registered carer')),
-                  DropdownMenuItem(
-                      value: 'social_worker', child: Text('Social worker')),
-                  DropdownMenuItem(value: 'neighbour', child: Text('Neighbour')),
-                  DropdownMenuItem(value: 'volunteer', child: Text('Volunteer')),
+          insetPadding: const EdgeInsets.all(AppSpace.xl),
+          content: SizedBox(
+            width: 360,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextField(
+                      controller: name,
+                      textInputAction: TextInputAction.next,
+                      decoration:
+                          const InputDecoration(labelText: 'Carer name')),
+                  const SizedBox(height: AppSpace.lg),
+                  DropdownButtonFormField<String>(
+                    initialValue: relationship,
+                    isExpanded: true,
+                    decoration:
+                        const InputDecoration(labelText: 'Relationship'),
+                    items: const [
+                      DropdownMenuItem(value: 'family', child: Text('Family')),
+                      DropdownMenuItem(
+                          value: 'carer', child: Text('Registered carer')),
+                      DropdownMenuItem(
+                          value: 'social_worker',
+                          child: Text('Social worker')),
+                      DropdownMenuItem(
+                          value: 'neighbour', child: Text('Neighbour')),
+                      DropdownMenuItem(
+                          value: 'volunteer', child: Text('Volunteer')),
+                    ],
+                    onChanged: (v) =>
+                        setLocal(() => relationship = v ?? 'family'),
+                  ),
+                  const SizedBox(height: AppSpace.lg),
+                  TextField(
+                      controller: patientId,
+                      textInputAction: TextInputAction.next,
+                      decoration: const InputDecoration(
+                          labelText: 'Patient identifier')),
+                  const SizedBox(height: AppSpace.lg),
+                  TextField(
+                      controller: contact,
+                      textInputAction: TextInputAction.next,
+                      decoration: const InputDecoration(
+                          labelText: 'Carer contact (optional)')),
+                  const SizedBox(height: AppSpace.lg),
+                  TextField(
+                      controller: reason,
+                      maxLines: 2,
+                      decoration:
+                          const InputDecoration(labelText: 'Reason (optional)')),
                 ],
-                onChanged: (v) => setLocal(() => relationship = v ?? 'family'),
               ),
-              TextField(
-                  controller: patientId,
-                  decoration:
-                      const InputDecoration(labelText: 'Patient identifier')),
-              TextField(
-                  controller: contact,
-                  decoration:
-                      const InputDecoration(labelText: 'Carer contact (optional)')),
-              TextField(
-                  controller: reason,
-                  decoration:
-                      const InputDecoration(labelText: 'Reason (optional)')),
-            ]),
+            ),
           ),
+          actionsPadding: const EdgeInsets.fromLTRB(
+              AppSpace.xl, 0, AppSpace.xl, AppSpace.lg),
           actions: [
             TextButton(
                 onPressed: () => Navigator.pop(ctx),
                 child: const Text('Cancel')),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(120, 48)),
               onPressed: () async {
                 if (name.text.trim().isEmpty ||
                     patientId.text.trim().isEmpty) {
@@ -207,7 +237,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                         content: Text('Carer proxy registered')));
                   }
                 } catch (e) {
-                  if (context.mounted) {
+                  if (mounted) {
                     ScaffoldMessenger.of(context)
                         .showSnackBar(SnackBar(content: Text(e.toString())));
                   }
@@ -242,8 +272,8 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                           color: NHSTheme.blue)),
                   const SizedBox(height: 4),
                   Text(t.assessmentIntro,
-                      style: const TextStyle(
-                          fontSize: 14, color: NHSTheme.darkGrey)),
+                      style: TextStyle(
+                          fontSize: 14, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                   const SizedBox(height: 16),
 
                   // EHR AUTO-FILL
@@ -303,8 +333,9 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                               InputDecoration(labelText: '${t.age} *'),
                           validator: (v) {
                             final n = int.tryParse(v ?? '');
-                            if (n == null || n < 0 || n > 120)
+                            if (n == null || n < 0 || n > 120) {
                               return '0-120';
+                            }
                             return null;
                           },
                           onChanged: (_) => _updateAgeGroup(),
@@ -313,7 +344,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: DropdownButtonFormField<int>(
-                          value: _gender == -1 ? null : _gender,
+                          initialValue: _gender == -1 ? null : _gender,
                           decoration:
                               InputDecoration(labelText: '${t.gender} *'),
                           items: [
@@ -412,8 +443,8 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                       ),
                       child: Text(t.ageGroupLine(_ageGroup!),
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
-                              fontSize: 14, color: NHSTheme.darkGrey)),
+                          style: TextStyle(
+                              fontSize: 14, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                     ),
                   const SizedBox(height: 16),
 
@@ -452,13 +483,13 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                           fontWeight: FontWeight.w700, color: NHSTheme.blue)),
                   const SizedBox(height: 6),
                   Text(t.aboutToolDesc,
-                      style: const TextStyle(
-                          fontSize: 13, color: NHSTheme.darkGrey)),
+                      style: TextStyle(
+                          fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                   const SizedBox(height: 6),
                   Text(t.dataHandling,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 13,
-                          color: NHSTheme.darkGrey,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                           fontWeight: FontWeight.w600)),
                 ],
               ),
@@ -469,21 +500,8 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
     );
   }
 
-  Widget _buildCard({required Widget child}) => Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
-                blurRadius: 8,
-                offset: const Offset(0, 2))
-          ],
-        ),
-        child: child,
-      );
+  Widget _buildCard({required Widget child}) =>
+      AppCard(padding: const EdgeInsets.all(20), child: child);
 
   Widget _sectionLabel(String text) => Text(
         text,

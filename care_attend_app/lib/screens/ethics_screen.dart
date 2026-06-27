@@ -44,7 +44,7 @@ class _EthicsScreenState extends State<EthicsScreen> {
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
           Text(t.ethicsCvDesc,
-              style: const TextStyle(color: NHSTheme.darkGrey, fontSize: 13)),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
           const SizedBox(height: 10),
           ElevatedButton.icon(
             onPressed: _cvBusy ? null : _runCv,
@@ -113,7 +113,7 @@ class _EthicsScreenState extends State<EthicsScreen> {
     Widget metric(String label, String value) => Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(label,
-                style: const TextStyle(fontSize: 11, color: NHSTheme.darkGrey)),
+                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
             Text(value,
                 style:
                     const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
@@ -137,7 +137,7 @@ class _EthicsScreenState extends State<EthicsScreen> {
           ]),
           const SizedBox(height: 8),
           Text(t.ethicsCi('$ciLo', '$ciHi'),
-              style: const TextStyle(fontSize: 12, color: NHSTheme.darkGrey)),
+              style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
         ]),
       ),
     );
@@ -155,7 +155,7 @@ class _EthicsScreenState extends State<EthicsScreen> {
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
           Text(t.ethicsSubtitle,
-              style: const TextStyle(color: NHSTheme.darkGrey)),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
           const SizedBox(height: 16),
           _cvCard(),
           const SizedBox(height: 8),

@@ -64,7 +64,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
           Text(AppLocalizations.of(context).practiceOverview,
-              style: const TextStyle(color: NHSTheme.darkGrey)),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
           const SizedBox(height: 16),
           if (_loading) const SkeletonList(count: 4),
           if (_error != null)
@@ -113,7 +113,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         )),
       ]);
     }
-    if (_fb != null && (_fb!['feedback_received'] ?? 0) > 0)
+    if (_fb != null && (_fb!['feedback_received'] ?? 0) > 0) {
       widgets.add(
         Card(child: ListTile(
           leading: const Icon(Icons.fact_check_outlined, color: NHSTheme.blue),
@@ -129,6 +129,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   color: NHSTheme.riskLow)),
         )),
       );
+    }
     widgets.add(const SizedBox(height: 8));
     widgets.add(Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
@@ -175,8 +176,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Text(AppLocalizations.of(context).operationalOutcomes,
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
-              const Text('Outcome metrics are not available yet.',
-                  style: TextStyle(color: NHSTheme.darkGrey)),
+              Text('Outcome metrics are not available yet.',
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
             ],
           ),
         ),
@@ -207,7 +208,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               _metric('${appointments['completed'] ?? 0}', 'Completed', NHSTheme.blue),
               _metric(fmt(asDouble(outcomes['attended_rate'])), 'Attendance', NHSTheme.riskLow),
               _metric(fmt(asDouble(outcomes['dna_rate'])), 'DNA', NHSTheme.riskHigh),
-              _metric('${interventions['completed_actions'] ?? 0}', 'Actions', NHSTheme.darkGrey),
+              _metric('${interventions['completed_actions'] ?? 0}', 'Actions', Theme.of(context).colorScheme.onSurfaceVariant),
               _metric(
                 delta is num ? fmt(delta.toDouble()) : '--',
                 'DNA Gap (obs.)',
@@ -245,7 +246,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const SizedBox(height: 8),
           Text('${interventions['note'] ?? ''}',
-              style: const TextStyle(fontSize: 12, color: NHSTheme.darkGrey)),
+              style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
         ]),
       ),
     );
@@ -277,7 +278,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Text(value, style: TextStyle(
                 fontSize: 28, fontWeight: FontWeight.w800, color: color)),
             const SizedBox(height: 4),
-            Text(label, style: TextStyle(color: NHSTheme.darkGrey)),
+            Text(label, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ]),
         ),
       ),
@@ -302,7 +303,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Text(label,
                 textAlign: TextAlign.center,
                 style:
-                    const TextStyle(fontSize: 11, color: NHSTheme.darkGrey)),
+                    TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ]),
         ),
       ),

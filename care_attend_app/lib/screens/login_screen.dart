@@ -196,16 +196,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 6),
                     Text(t.noDataStored,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            fontSize: 13, color: NHSTheme.darkGrey)),
+                        style: TextStyle(
+                            fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                     Text(t.sessionCleared,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            fontSize: 13, color: NHSTheme.darkGrey)),
+                        style: TextStyle(
+                            fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                     Text(t.gdprCompliant,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            fontSize: 13, color: NHSTheme.darkGrey)),
+                        style: TextStyle(
+                            fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                   ],
                 ),
               ),
@@ -228,7 +228,7 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(height: 4),
         Text(t.signInDesc,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 14, color: NHSTheme.darkGrey)),
+            style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurfaceVariant)),
         const SizedBox(height: 24),
         TextField(
           controller: _loginUsername,
@@ -312,8 +312,8 @@ class _LoginScreenState extends State<LoginScreen> {
         const Text('Create Account',
             style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
         const SizedBox(height: 4),
-        const Text('Register for practice access',
-            style: TextStyle(fontSize: 14, color: NHSTheme.darkGrey)),
+        Text('Register for practice access',
+            style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurfaceVariant)),
         const SizedBox(height: 24),
         TextField(
           controller: _regUsername,
@@ -333,12 +333,12 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: 16),
         PasswordField(controller: _regPassword, label: 'Password'),
-        const Padding(
+        Padding(
           padding: EdgeInsets.only(top: 4),
           child: Align(
             alignment: Alignment.centerLeft,
             child: Text(passwordHint,
-                style: TextStyle(fontSize: 11, color: NHSTheme.darkGrey)),
+                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ),
         ),
         const SizedBox(height: 16),
