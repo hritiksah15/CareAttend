@@ -385,5 +385,14 @@
   "ageBannerElevatedTitle": "Podwyższona podatność",
   "ageBannerEnhancedMsg": "Pacjent ma 85+ lat — zastosuj zwiększoną wrażliwość i proaktywną ochronę przy działaniu na podstawie tego wyniku.",
   "ageBannerElevatedMsg": "Pacjent ma 65+ lat — podwyższona podatność; rozważ proaktywne wsparcie i przypomnienia.",
-  "navAssessment": "Ocena"
+  "navAssessment": "Ocena",
+  "notifTitle": "Powiadomienia",
+  "notifEmpty": "Brak powiadomień",
+  "notifClearAll": "Wyczyść wszystko",
+  "notifSignedIn": "Zalogowano bezpiecznie",
+  "notifSignedInBody": "Zalogowano do Care Attend.",
+  "notifAssessmentDone": "Ocena zakończona",
+  "notifAssessmentBody": "Ryzyko {tier} ({pct}%) zapisane w tej sesji.",
+  "notifIdleWarn": "Ostrzeżenie o bezczynności",
+  "notifIdleWarnBody": "Twoja sesja wkrótce się zakończy z powodu bezczynności."
 }

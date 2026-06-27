@@ -399,5 +399,24 @@
   "ageBannerElevatedTitle": "Elevated vulnerability",
   "ageBannerEnhancedMsg": "Patient is 85+ — apply enhanced sensitivity and proactive safeguarding when acting on this score.",
   "ageBannerElevatedMsg": "Patient is 65+ — elevated vulnerability; consider proactive support and reminders.",
-  "navAssessment": "Assessment"
+  "navAssessment": "Assessment",
+  "notifTitle": "Notifications",
+  "notifEmpty": "No notifications yet",
+  "notifClearAll": "Clear all",
+  "notifSignedIn": "Signed in securely",
+  "notifSignedInBody": "You signed in to Care Attend.",
+  "notifAssessmentDone": "Assessment completed",
+  "notifAssessmentBody": "{tier} risk ({pct}%) recorded this session.",
+  "notifIdleWarn": "Inactivity warning",
+  "notifIdleWarnBody": "Your session will end soon due to inactivity.",
+  "@notifAssessmentBody": {
+    "placeholders": {
+      "tier": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "String"
+      }
+    }
+  }
 }

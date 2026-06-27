@@ -385,5 +385,14 @@
   "ageBannerElevatedTitle": "Bregusrwydd uwch",
   "ageBannerEnhancedMsg": "Mae'r claf yn 85+ — defnyddiwch sensitifrwydd uwch a diogelu rhagweithiol wrth weithredu ar y sgôr hon.",
   "ageBannerElevatedMsg": "Mae'r claf yn 65+ — bregusrwydd uwch; ystyriwch gymorth rhagweithiol ac atgoffa.",
-  "navAssessment": "Asesiad"
+  "navAssessment": "Asesiad",
+  "notifTitle": "Hysbysiadau",
+  "notifEmpty": "Dim hysbysiadau eto",
+  "notifClearAll": "Clirio popeth",
+  "notifSignedIn": "Wedi mewngofnodi'n ddiogel",
+  "notifSignedInBody": "Rydych wedi mewngofnodi i Care Attend.",
+  "notifAssessmentDone": "Asesiad wedi'i gwblhau",
+  "notifAssessmentBody": "Risg {tier} ({pct}%) wedi'i chofnodi yn y sesiwn hon.",
+  "notifIdleWarn": "Rhybudd anweithgaredd",
+  "notifIdleWarnBody": "Bydd eich sesiwn yn dod i ben yn fuan oherwydd anweithgaredd."
 }
