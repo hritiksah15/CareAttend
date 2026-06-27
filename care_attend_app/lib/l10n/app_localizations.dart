@@ -1787,6 +1787,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Email not configured — your test code is {code}'**
   String fpDevCode(String code);
+
+  /// No description provided for @offlineBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re offline — pull to refresh once reconnected.'**
+  String get offlineBanner;
 }
 
 class _AppLocalizationsDelegate

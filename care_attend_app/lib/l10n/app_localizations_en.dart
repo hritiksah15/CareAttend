@@ -903,4 +903,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String fpDevCode(String code) {
     return 'Email not configured — your test code is $code';
   }
+
+  @override
+  String get offlineBanner =>
+      'You\'re offline — pull to refresh once reconnected.';
 }

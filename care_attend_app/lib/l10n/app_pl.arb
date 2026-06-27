@@ -292,5 +292,6 @@
   "fpResetDone": "Hasło zresetowane! Zaloguj się.",
   "fpCodeSent": "Jeśli ten e-mail jest zarejestrowany, wysłano 6-cyfrowy kod.",
   "fpDevCode": "E-mail nieskonfigurowany — Twój kod testowy to {code}",
-  "@fpDevCode": { "placeholders": { "code": { "type": "String" } } }
+  "@fpDevCode": { "placeholders": { "code": { "type": "String" } } },
+  "offlineBanner": "Jesteś offline — pociągnij, aby odświeżyć po ponownym połączeniu."
 }

@@ -903,4 +903,8 @@ class AppLocalizationsUr extends AppLocalizations {
   String fpDevCode(String code) {
     return 'ای میل کنفیگر نہیں — آپ کا ٹیسٹ کوڈ $code ہے';
   }
+
+  @override
+  String get offlineBanner =>
+      'آپ آف لائن ہیں — دوبارہ کنیکٹ ہونے پر ریفریش کے لیے کھینچیں۔';
 }

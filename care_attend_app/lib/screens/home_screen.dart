@@ -7,6 +7,7 @@ import '../nhs_theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_service.dart';
 import 'login_screen.dart';
+import '../widgets/offline_banner.dart';
 import 'patient_form_screen.dart';
 import 'result_screen.dart';
 import 'bias_screen.dart';
@@ -316,14 +317,24 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         drawer: _buildDrawer(),
-        body: Stack(
+        body: Column(
           children: [
-            IndexedStack(
-              index: _currentIndex,
-              children: [for (var i = 0; i < _all.length; i++) _screenFor(i)],
+            const OfflineBanner(),
+            Expanded(
+              child: Stack(
+                children: [
+                  IndexedStack(
+                    index: _currentIndex,
+                    children: [
+                      for (var i = 0; i < _all.length; i++) _screenFor(i)
+                    ],
+                  ),
+                  const Align(
+                      alignment: Alignment.bottomRight,
+                      child: ChatbotOverlay()),
+                ],
+              ),
             ),
-            const Align(
-                alignment: Alignment.bottomRight, child: ChatbotOverlay()),
           ],
         ),
         bottomNavigationBar: _buildBottomBar(),
