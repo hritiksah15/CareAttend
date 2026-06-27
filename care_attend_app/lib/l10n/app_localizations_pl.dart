@@ -952,4 +952,34 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get navAssessment => 'Ocena';
+
+  @override
+  String get notifTitle => 'Powiadomienia';
+
+  @override
+  String get notifEmpty => 'Brak powiadomień';
+
+  @override
+  String get notifClearAll => 'Wyczyść wszystko';
+
+  @override
+  String get notifSignedIn => 'Zalogowano bezpiecznie';
+
+  @override
+  String get notifSignedInBody => 'Zalogowano do Care Attend.';
+
+  @override
+  String get notifAssessmentDone => 'Ocena zakończona';
+
+  @override
+  String notifAssessmentBody(String tier, String pct) {
+    return 'Ryzyko $tier ($pct%) zapisane w tej sesji.';
+  }
+
+  @override
+  String get notifIdleWarn => 'Ostrzeżenie o bezczynności';
+
+  @override
+  String get notifIdleWarnBody =>
+      'Twoja sesja wkrótce się zakończy z powodu bezczynności.';
 }

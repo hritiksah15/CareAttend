@@ -385,5 +385,14 @@
   "ageBannerElevatedTitle": "بڑھی ہوئی کمزوری",
   "ageBannerEnhancedMsg": "مریض کی عمر 85+ ہے — اس اسکور پر عمل کرتے وقت بڑھی ہوئی حساسیت اور فعال تحفظ اختیار کریں۔",
   "ageBannerElevatedMsg": "مریض کی عمر 65+ ہے — بڑھی ہوئی کمزوری؛ فعال مدد اور یاد دہانیوں پر غور کریں۔",
-  "navAssessment": "تشخیص"
+  "navAssessment": "تشخیص",
+  "notifTitle": "اطلاعات",
+  "notifEmpty": "ابھی کوئی اطلاع نہیں",
+  "notifClearAll": "سب صاف کریں",
+  "notifSignedIn": "محفوظ طریقے سے سائن ان",
+  "notifSignedInBody": "آپ Care Attend میں سائن ان ہو گئے۔",
+  "notifAssessmentDone": "تشخیص مکمل",
+  "notifAssessmentBody": "اس سیشن میں {tier} رسک ({pct}%) ریکارڈ ہوا۔",
+  "notifIdleWarn": "غیر فعالیت کی وارننگ",
+  "notifIdleWarnBody": "غیر فعالیت کی وجہ سے آپ کا سیشن جلد ختم ہو جائے گا۔"
 }

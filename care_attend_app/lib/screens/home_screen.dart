@@ -7,6 +7,7 @@ import '../main.dart' show themeModeNotifier;
 import '../nhs_theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_service.dart';
+import '../state/notifications.dart';
 import 'login_screen.dart';
 import '../widgets/offline_banner.dart';
 import 'patient_form_screen.dart';
@@ -47,6 +48,8 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   Map<String, dynamic>? _lastResult;
   Timer? _sessionTimer;
+  Timer? _idleWarnTimer;
+  bool _loginNotified = false;
 
   // Visit counter per tab — bumping it rebuilds the screen (via its key) so
   // data screens (dashboard, bias, ethics) refresh live instead of showing stale state.
@@ -114,19 +117,36 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _resetSessionTimer();
+    // Security notification for this sign-in (once per session).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _loginNotified) return;
+      _loginNotified = true;
+      final t = AppLocalizations.of(context);
+      Notifications.push(t.notifSignedIn, t.notifSignedInBody, NotifKind.security);
+    });
   }
 
   void _resetSessionTimer() {
     _sessionTimer?.cancel();
+    _idleWarnTimer?.cancel();
     // "Remember me" keeps the session alive far longer, matching the backend.
     final timeout = widget.remember
         ? const Duration(days: 30)
         : const Duration(minutes: 30);
     _sessionTimer = Timer(timeout, _sessionExpired);
+    // Security alert ~2 min before an inactivity logout (skip for remember-me).
+    if (!widget.remember) {
+      _idleWarnTimer = Timer(timeout - const Duration(minutes: 2), () {
+        if (!mounted) return;
+        final t = AppLocalizations.of(context);
+        Notifications.push(t.notifIdleWarn, t.notifIdleWarnBody, NotifKind.security);
+      });
+    }
   }
 
   void _sessionExpired() {
     ApiService.clearSession();
+    Notifications.clear();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -146,10 +166,17 @@ class _HomeScreenState extends State<HomeScreen> {
       _currentIndex = 1;
       _visit[1] = (_visit[1] ?? 0) + 1;
     });
+    // Activity notification for the completed assessment.
+    final t = AppLocalizations.of(context);
+    final tier = '${result['risk_tier'] ?? ''}'.toUpperCase();
+    final pct = (result['percentage'] as num?)?.toStringAsFixed(0) ?? '—';
+    Notifications.push(t.notifAssessmentDone,
+        t.notifAssessmentBody(tier, pct), NotifKind.activity);
   }
 
   Future<void> _handleLogout() async {
     await ApiService.logout();
+    Notifications.clear();
     if (!mounted) return;
     Navigator.pushReplacement(
       context,
@@ -163,30 +190,76 @@ class _HomeScreenState extends State<HomeScreen> {
         : ThemeMode.dark;
   }
 
+  Color _notifColor(NotifKind k) {
+    switch (k) {
+      case NotifKind.security:
+        return NHSTheme.riskLow;
+      case NotifKind.activity:
+        return Theme.of(context).colorScheme.primary;
+      case NotifKind.info:
+        return NHSTheme.lightBlue;
+    }
+  }
+
   void _showNotifications() {
+    final t = AppLocalizations.of(context);
     showModalBottomSheet(
       context: context,
-      builder: (_) => Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Row(children: [
-            Icon(Icons.notifications, color: Theme.of(context).colorScheme.primary),
-            SizedBox(width: 8),
-            Text('Notifications',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-          ]),
-          SizedBox(height: 12),
-          ListTile(
-            leading: Icon(Icons.info_outline, color: NHSTheme.lightBlue),
-            title: Text('Session active'),
-            subtitle: Text('All data is session-scoped and not stored.'),
+      showDragHandle: true,
+      builder: (_) => SafeArea(
+        child: ValueListenableBuilder<List<AppNotification>>(
+          valueListenable: Notifications.items,
+          builder: (context, items, _) => Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 12, 12),
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Row(children: [
+                Icon(Icons.notifications,
+                    color: Theme.of(context).colorScheme.primary),
+                const SizedBox(width: 8),
+                Text(t.notifTitle,
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.w700)),
+                const Spacer(),
+                if (items.isNotEmpty)
+                  TextButton(
+                      onPressed: Notifications.clear,
+                      child: Text(t.notifClearAll)),
+              ]),
+              if (items.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 28),
+                  child: Column(children: [
+                    Icon(Icons.notifications_none,
+                        size: 40,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant),
+                    const SizedBox(height: 8),
+                    Text(t.notifEmpty,
+                        style: TextStyle(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant)),
+                  ]),
+                )
+              else
+                Flexible(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: items.length,
+                    itemBuilder: (context, i) {
+                      final n = items[i];
+                      return ListTile(
+                        leading: Icon(n.icon, color: _notifColor(n.kind)),
+                        title: Text(n.title,
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w600)),
+                        subtitle: Text(n.body),
+                        dense: true,
+                      );
+                    },
+                  ),
+                ),
+            ]),
           ),
-          ListTile(
-            leading: Icon(Icons.shield_outlined, color: NHSTheme.riskLow),
-            title: Text('Secure session'),
-            subtitle: Text('30-minute inactivity timeout is active.'),
-          ),
-        ]),
+        ),
       ),
     );
   }
@@ -194,6 +267,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _sessionTimer?.cancel();
+    _idleWarnTimer?.cancel();
     super.dispose();
   }
 
@@ -283,10 +357,17 @@ class _HomeScreenState extends State<HomeScreen> {
               tooltip: 'Toggle dark mode',
               onPressed: _toggleDarkMode,
             ),
-            IconButton(
-              icon: const Icon(Icons.notifications_outlined, size: 20),
-              tooltip: 'Notifications',
-              onPressed: _showNotifications,
+            ValueListenableBuilder<List<AppNotification>>(
+              valueListenable: Notifications.items,
+              builder: (context, items, _) => IconButton(
+                icon: Badge(
+                  isLabelVisible: items.isNotEmpty,
+                  label: Text('${items.length}'),
+                  child: const Icon(Icons.notifications_outlined, size: 20),
+                ),
+                tooltip: AppLocalizations.of(context).notifTitle,
+                onPressed: _showNotifications,
+              ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),

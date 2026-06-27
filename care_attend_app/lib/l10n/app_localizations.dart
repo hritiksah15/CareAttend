@@ -1877,6 +1877,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Assessment'**
   String get navAssessment;
+
+  /// No description provided for @notifTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifTitle;
+
+  /// No description provided for @notifEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications yet'**
+  String get notifEmpty;
+
+  /// No description provided for @notifClearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all'**
+  String get notifClearAll;
+
+  /// No description provided for @notifSignedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in securely'**
+  String get notifSignedIn;
+
+  /// No description provided for @notifSignedInBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You signed in to Care Attend.'**
+  String get notifSignedInBody;
+
+  /// No description provided for @notifAssessmentDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Assessment completed'**
+  String get notifAssessmentDone;
+
+  /// No description provided for @notifAssessmentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{tier} risk ({pct}%) recorded this session.'**
+  String notifAssessmentBody(String tier, String pct);
+
+  /// No description provided for @notifIdleWarn.
+  ///
+  /// In en, this message translates to:
+  /// **'Inactivity warning'**
+  String get notifIdleWarn;
+
+  /// No description provided for @notifIdleWarnBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session will end soon due to inactivity.'**
+  String get notifIdleWarnBody;
 }
 
 class _AppLocalizationsDelegate

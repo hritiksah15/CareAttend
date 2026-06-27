@@ -951,4 +951,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get navAssessment => 'Assessment';
+
+  @override
+  String get notifTitle => 'Notifications';
+
+  @override
+  String get notifEmpty => 'No notifications yet';
+
+  @override
+  String get notifClearAll => 'Clear all';
+
+  @override
+  String get notifSignedIn => 'Signed in securely';
+
+  @override
+  String get notifSignedInBody => 'You signed in to Care Attend.';
+
+  @override
+  String get notifAssessmentDone => 'Assessment completed';
+
+  @override
+  String notifAssessmentBody(String tier, String pct) {
+    return '$tier risk ($pct%) recorded this session.';
+  }
+
+  @override
+  String get notifIdleWarn => 'Inactivity warning';
+
+  @override
+  String get notifIdleWarnBody =>
+      'Your session will end soon due to inactivity.';
 }

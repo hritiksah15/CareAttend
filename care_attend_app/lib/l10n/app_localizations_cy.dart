@@ -954,4 +954,34 @@ class AppLocalizationsCy extends AppLocalizations {
 
   @override
   String get navAssessment => 'Asesiad';
+
+  @override
+  String get notifTitle => 'Hysbysiadau';
+
+  @override
+  String get notifEmpty => 'Dim hysbysiadau eto';
+
+  @override
+  String get notifClearAll => 'Clirio popeth';
+
+  @override
+  String get notifSignedIn => 'Wedi mewngofnodi\'n ddiogel';
+
+  @override
+  String get notifSignedInBody => 'Rydych wedi mewngofnodi i Care Attend.';
+
+  @override
+  String get notifAssessmentDone => 'Asesiad wedi\'i gwblhau';
+
+  @override
+  String notifAssessmentBody(String tier, String pct) {
+    return 'Risg $tier ($pct%) wedi\'i chofnodi yn y sesiwn hon.';
+  }
+
+  @override
+  String get notifIdleWarn => 'Rhybudd anweithgaredd';
+
+  @override
+  String get notifIdleWarnBody =>
+      'Bydd eich sesiwn yn dod i ben yn fuan oherwydd anweithgaredd.';
 }

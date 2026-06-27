@@ -951,4 +951,34 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get navAssessment => 'تشخیص';
+
+  @override
+  String get notifTitle => 'اطلاعات';
+
+  @override
+  String get notifEmpty => 'ابھی کوئی اطلاع نہیں';
+
+  @override
+  String get notifClearAll => 'سب صاف کریں';
+
+  @override
+  String get notifSignedIn => 'محفوظ طریقے سے سائن ان';
+
+  @override
+  String get notifSignedInBody => 'آپ Care Attend میں سائن ان ہو گئے۔';
+
+  @override
+  String get notifAssessmentDone => 'تشخیص مکمل';
+
+  @override
+  String notifAssessmentBody(String tier, String pct) {
+    return 'اس سیشن میں $tier رسک ($pct%) ریکارڈ ہوا۔';
+  }
+
+  @override
+  String get notifIdleWarn => 'غیر فعالیت کی وارننگ';
+
+  @override
+  String get notifIdleWarnBody =>
+      'غیر فعالیت کی وجہ سے آپ کا سیشن جلد ختم ہو جائے گا۔';
 }
