@@ -1,13 +1,14 @@
 import 'dart:async';
-import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../main.dart' show themeModeNotifier;
 import '../nhs_theme.dart';
+import '../theme/design_tokens.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_service.dart';
 import '../state/notifications.dart';
+import '../widgets/ui.dart';
 import 'login_screen.dart';
 import '../widgets/offline_banner.dart';
 import 'patient_form_screen.dart';
@@ -206,11 +207,14 @@ class _HomeScreenState extends State<HomeScreen> {
     showModalBottomSheet(
       context: context,
       showDragHandle: true,
-      builder: (_) => SafeArea(
-        child: ValueListenableBuilder<List<AppNotification>>(
-          valueListenable: Notifications.items,
-          builder: (context, items, _) => Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 12, 12),
+      backgroundColor: Colors.transparent,
+      builder: (_) => GlassPanel(
+        borderRadius: const BorderRadius.vertical(top: AppRadius.rLg),
+        child: SafeArea(
+          child: ValueListenableBuilder<List<AppNotification>>(
+            valueListenable: Notifications.items,
+            builder: (context, items, _) => Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 12, 12),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               Row(children: [
                 Icon(Icons.notifications,
@@ -258,6 +262,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
             ]),
+          ),
           ),
         ),
       ),
@@ -445,11 +450,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final dark = Theme.of(context).brightness == Brightness.dark;
     final surface = Theme.of(context).colorScheme.surface;
-    // Hybrid frost: bottom bar is translucent with a backdrop blur so content
-    // scrolling underneath reads as frosted glass, while content cards stay
-    // flat/clinical for AA contrast. Border keeps the edge crisp in dark.
+    // Always-on bar: translucent + top border, but NO backdrop blur. A
+    // persistent BackdropFilter forces a GPU readback every frame ("GPU stall
+    // due to ReadPixels") and stutters under CPU rendering — glass blur is
+    // reserved for transient panels (drawer/sheets) via GlassPanel instead.
     final bar = NavigationBar(
-      backgroundColor: surface.withValues(alpha: dark ? 0.72 : 0.82),
+      backgroundColor: surface.withValues(alpha: dark ? 0.90 : 0.94),
       elevation: 0,
       selectedIndex: selected,
       onDestinationSelected: (i) {
@@ -471,27 +477,27 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: const Icon(Icons.more_horiz), label: t.navMore),
       ],
     );
-    return ClipRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            border: Border(
-                top: BorderSide(
-                    color: Theme.of(context).dividerColor.withValues(alpha: 0.4))),
-          ),
-          child: bar,
-        ),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border(
+            top: BorderSide(
+                color: Theme.of(context).dividerColor.withValues(alpha: 0.4))),
       ),
+      child: bar,
     );
   }
 
   Widget _buildDrawer() {
     final t = AppLocalizations.of(context);
     return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      child: GlassPanel(
+        borderRadius: const BorderRadius.only(
+            topRight: AppRadius.rLg, bottomRight: AppRadius.rLg),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
           DrawerHeader(
             decoration: const BoxDecoration(color: NHSTheme.blue),
             child: Column(
@@ -532,7 +538,8 @@ class _HomeScreenState extends State<HomeScreen> {
               _handleLogout();
             },
           ),
-        ],
+          ],
+        ),
       ),
     );
   }
