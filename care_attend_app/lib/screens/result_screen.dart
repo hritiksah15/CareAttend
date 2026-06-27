@@ -2,9 +2,11 @@ import 'dart:math';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../nhs_theme.dart';
+import '../theme/design_tokens.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_service.dart';
 import '../utils/export.dart';
+import '../widgets/ui.dart';
 
 class ResultScreen extends StatelessWidget {
   final Map<String, dynamic>? result;
@@ -30,10 +32,10 @@ class ResultScreen extends StatelessWidget {
                 size: 64, color: NHSTheme.grey),
             const SizedBox(height: 16),
             Text(t.noAssessmentYet,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: NHSTheme.darkGrey)),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant)),
             const SizedBox(height: 8),
             Text(t.noAssessmentDesc,
                 textAlign: TextAlign.center,
@@ -69,14 +71,19 @@ class ResultScreen extends StatelessWidget {
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2))
-              ],
+              border: Theme.of(context).brightness == Brightness.dark
+                  ? Border.all(color: AppColors.darkOutline)
+                  : null,
+              boxShadow: Theme.of(context).brightness == Brightness.light
+                  ? [
+                      BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.06),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2))
+                    ]
+                  : null,
             ),
             clipBehavior: Clip.hardEdge,
             child: Column(
@@ -318,9 +325,9 @@ class ResultScreen extends StatelessWidget {
                                       fontWeight: FontWeight.w700,
                                       color: NHSTheme.blue)),
                               Text(iv['description'] as String,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontSize: 12,
-                                      color: NHSTheme.darkGrey)),
+                                      color: Theme.of(context).colorScheme.onSurfaceVariant)),
                             ],
                           ),
                         ),
@@ -397,7 +404,7 @@ class ResultScreen extends StatelessWidget {
                         color: NHSTheme.blue)),
                 const SizedBox(height: 4),
                 Text(t.feedbackDesc,
-                    style: const TextStyle(color: NHSTheme.darkGrey, fontSize: 13)),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
                 const SizedBox(height: 12),
                 _FeedbackButtons(predictionId: fullSessionId),
               ],
@@ -450,21 +457,8 @@ class ResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _card({required Widget child}) => Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
-                blurRadius: 8,
-                offset: const Offset(0, 2))
-          ],
-        ),
-        child: child,
-      );
+  Widget _card({required Widget child}) =>
+      AppCard(padding: const EdgeInsets.all(20), child: child);
 
   Widget _chip(String text) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
@@ -473,7 +467,7 @@ class ResultScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
         ),
         child:
-            Text(text, style: const TextStyle(fontSize: 12, color: NHSTheme.darkGrey)),
+            Text(text, style: const TextStyle(fontSize: 12, color: AppColors.darkGrey)),
       );
 }
 
@@ -555,7 +549,7 @@ class _FeedbackButtonsState extends State<_FeedbackButtons> {
     final t = AppLocalizations.of(context);
     if (_done != null) {
       return Text(t.feedbackRecorded(_done!),
-          style: const TextStyle(
+          style: TextStyle(
               color: NHSTheme.riskLow, fontWeight: FontWeight.w600));
     }
     Widget btn(String label, String outcome, Color c) => OutlinedButton(
@@ -568,7 +562,7 @@ class _FeedbackButtonsState extends State<_FeedbackButtons> {
       btn(t.feedbackAttended, 'attended', NHSTheme.riskLow),
       btn(t.feedbackDna, 'dna', NHSTheme.riskHigh),
       btn(t.feedbackCorrect, 'correct', NHSTheme.blue),
-      btn(t.feedbackIncorrect, 'incorrect', NHSTheme.darkGrey),
+      btn(t.feedbackIncorrect, 'incorrect', Theme.of(context).colorScheme.onSurfaceVariant),
     ]);
   }
 }

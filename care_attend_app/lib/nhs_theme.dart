@@ -30,20 +30,39 @@ class NHSTheme {
 
   static ThemeData _build(Brightness brightness) {
     final dark = brightness == Brightness.dark;
+    // Full surface ladder + text roles set explicitly so every Material 3
+    // component (Card, Dialog, Menu, BottomSheet) inherits an on-palette,
+    // visibly-separated surface instead of falling back to M3 defaults.
     final scheme = dark
         ? const ColorScheme.dark(
             primary: lightBlue,
-            secondary: lightBlue,
-            surface: AppColors.darkSurface,
-            error: riskHigh,
             onPrimary: AppColors.ink,
+            secondary: lightBlue,
+            onSecondary: AppColors.ink,
+            surface: AppColors.darkSurface,
+            onSurface: Color(0xFFE8EEF3),
+            onSurfaceVariant: AppColors.darkOnSurfaceVariant,
+            surfaceContainerLowest: AppColors.darkBg,
+            surfaceContainerLow: AppColors.darkSurface,
+            surfaceContainer: AppColors.darkSurface,
+            surfaceContainerHigh: AppColors.darkSurfaceAlt,
+            surfaceContainerHighest: AppColors.darkSurfaceAlt,
+            outline: AppColors.darkOutline,
+            outlineVariant: AppColors.darkOutline,
+            error: riskHigh,
           )
         : const ColorScheme.light(
             primary: blue,
             secondary: lightBlue,
             surface: white,
-            error: riskHigh,
             onSurface: AppColors.ink,
+            onSurfaceVariant: AppColors.darkGrey,
+            surfaceContainerLowest: white,
+            surfaceContainerLow: paleGrey,
+            surfaceContainerHigh: white,
+            surfaceContainerHighest: white,
+            outline: AppColors.grey,
+            error: riskHigh,
           );
 
     final textTheme = AppType.textTheme(brightness);
@@ -66,7 +85,14 @@ class NHSTheme {
       cardTheme: CardThemeData(
         color: dark ? AppColors.darkSurface : white,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.lg)),
+        // In dark mode the surface/scaffold lightness gap is subtle, so add a
+        // hairline outline border to make every card edge unambiguous.
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          side: dark
+              ? const BorderSide(color: AppColors.darkOutline, width: 1)
+              : BorderSide.none,
+        ),
         margin: const EdgeInsets.symmetric(vertical: 6),
       ),
       navigationBarTheme: NavigationBarThemeData(
@@ -104,15 +130,19 @@ class NHSTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: dark ? AppColors.darkSurfaceAlt : white,
+        // Recessed fill: darker than both card and dialog surfaces so inputs
+        // stay visible whether placed on a card or inside a raised dialog.
+        fillColor: dark ? AppColors.darkBg : white,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: const BorderSide(color: grey, width: 1.5),
+          borderSide: BorderSide(color: dark ? AppColors.darkOutline : grey, width: 1.5),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: const BorderSide(color: grey, width: 1.5),
+          borderSide: BorderSide(color: dark ? AppColors.darkOutline : grey, width: 1.5),
         ),
+        labelStyle: TextStyle(color: dark ? AppColors.darkOnSurfaceVariant : darkGrey),
+        hintStyle: TextStyle(color: dark ? AppColors.darkOnSurfaceVariant : grey),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
           borderSide: BorderSide(color: dark ? lightBlue : blue, width: 2),
@@ -126,7 +156,31 @@ class NHSTheme {
         side: BorderSide.none,
       ),
       dialogTheme: DialogThemeData(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.lg)),
+        // Raised surface so dialogs clearly float above the dimmed content.
+        backgroundColor: dark ? AppColors.darkSurfaceAlt : white,
+        surfaceTintColor: Colors.transparent,
+        elevation: dark ? 0 : 3,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          side: dark
+              ? const BorderSide(color: AppColors.darkOutline, width: 1)
+              : BorderSide.none,
+        ),
+      ),
+      dropdownMenuTheme: DropdownMenuThemeData(
+        menuStyle: MenuStyle(
+          backgroundColor: WidgetStatePropertyAll(
+              dark ? AppColors.darkSurfaceAlt : white),
+          surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
+        ),
+      ),
+      popupMenuTheme: PopupMenuThemeData(
+        color: dark ? AppColors.darkSurfaceAlt : white,
+        surfaceTintColor: Colors.transparent,
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: dark ? AppColors.darkSurfaceAlt : white,
+        surfaceTintColor: Colors.transparent,
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,

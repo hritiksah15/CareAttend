@@ -98,7 +98,7 @@ class _AdminScreenState extends State<AdminScreen> {
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
           Text(t.adminSubtitle,
-              style: const TextStyle(color: NHSTheme.darkGrey)),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
           const SizedBox(height: 16),
           if (_loading) const SkeletonList(),
           if (_error != null) ErrorView(t.loadFailed, onRetry: _load),
@@ -186,8 +186,8 @@ class _AdminScreenState extends State<AdminScreen> {
                 style: const TextStyle(
                     fontWeight: FontWeight.w700, fontSize: 16)),
             Text(email,
-                style: const TextStyle(
-                    color: NHSTheme.darkGrey, fontSize: 13)),
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
             const SizedBox(height: 8),
             Row(
               children: [

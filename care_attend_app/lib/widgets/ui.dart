@@ -45,7 +45,7 @@ class ScreenHeader extends StatelessWidget {
       Text(title, style: t.titleLarge),
       if (subtitle != null) ...[
         const SizedBox(height: AppSpace.xs),
-        Text(subtitle!, style: t.bodyMedium?.copyWith(color: AppColors.darkGrey)),
+        Text(subtitle!, style: t.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
       ],
     ]);
   }
@@ -101,7 +101,7 @@ class StatTile extends StatelessWidget {
           const SizedBox(height: 2),
           Text(label,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 12, color: AppColors.darkGrey)),
+              style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
         ]),
       ),
     );
@@ -126,7 +126,7 @@ class EmptyState extends StatelessWidget {
         Text(title, textAlign: TextAlign.center, style: t.titleMedium),
         if (message != null) ...[
           const SizedBox(height: AppSpace.xs),
-          Text(message!, textAlign: TextAlign.center, style: t.bodySmall?.copyWith(color: AppColors.darkGrey)),
+          Text(message!, textAlign: TextAlign.center, style: t.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
         ],
         if (action != null) ...[const SizedBox(height: AppSpace.lg), action!],
       ]),

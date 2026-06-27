@@ -100,7 +100,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         padding: const EdgeInsets.all(20),
         children: [
           Text(t.fpSubtitle,
-              style: const TextStyle(color: NHSTheme.darkGrey)),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
           const SizedBox(height: 20),
           TextField(
             controller: _email,
@@ -123,10 +123,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ),
             const SizedBox(height: 8),
             PasswordField(controller: _newPw, label: t.profileNewPw),
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(top: 4),
               child: Text(passwordHint,
-                  style: TextStyle(fontSize: 11, color: NHSTheme.darkGrey)),
+                  style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
             ),
             const SizedBox(height: 14),
             ElevatedButton(

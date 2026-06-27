@@ -99,7 +99,7 @@ class _NudgeScreenState extends State<NudgeScreen> {
             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
         const SizedBox(height: 4),
         Text(t.nudgeSubtitle,
-            style: const TextStyle(color: NHSTheme.darkGrey)),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
         const SizedBox(height: 16),
         Card(child: Padding(
           padding: const EdgeInsets.all(14),

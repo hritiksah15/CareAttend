@@ -208,7 +208,7 @@ class _ClinicScreenState extends State<ClinicScreen> {
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
           Text(t.clinicSubtitle,
-              style: const TextStyle(color: NHSTheme.darkGrey)),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
           const SizedBox(height: 16),
           _buildImportCard(),
           if (_error != null)
@@ -292,7 +292,7 @@ class _ClinicScreenState extends State<ClinicScreen> {
               const SizedBox(height: 10),
               OutlinedButton.icon(
                 onPressed: _loading ? null : _importJson,
-                icon: const Icon(Icons.upload_file),
+                icon: Icon(Icons.upload_file),
                 label: Text(t.clinicImportJson),
               ),
             ],
@@ -314,7 +314,7 @@ class _ClinicScreenState extends State<ClinicScreen> {
           _metric('${s['high_risk'] ?? 0}', t.statHigh, NHSTheme.riskHigh),
           _metric('${s['medium_risk'] ?? 0}', t.statMedium, NHSTheme.riskMedium),
           _metric('${s['actioned'] ?? 0}', t.clinicActioned, NHSTheme.riskLow),
-          _metric('${s['needs_action'] ?? 0}', t.clinicNeedsAction, NHSTheme.darkGrey),
+          _metric('${s['needs_action'] ?? 0}', t.clinicNeedsAction, Theme.of(context).colorScheme.onSurfaceVariant),
         ],
       ),
     );
@@ -338,7 +338,7 @@ class _ClinicScreenState extends State<ClinicScreen> {
             Text(label,
                 textAlign: TextAlign.center,
                 style:
-                    const TextStyle(fontSize: 11, color: NHSTheme.darkGrey)),
+                    TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ]),
         ),
       ),
@@ -386,7 +386,7 @@ class _ClinicScreenState extends State<ClinicScreen> {
                             fontSize: 17, fontWeight: FontWeight.w800)),
                     const SizedBox(height: 2),
                     Text('${appt['clinic'] ?? ''}',
-                        style: const TextStyle(color: NHSTheme.darkGrey)),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                   ]),
             ),
             Chip(
@@ -415,8 +415,8 @@ class _ClinicScreenState extends State<ClinicScreen> {
               child: Text(
                 '${t.clinicActionsCount('${appt['action_count'] ?? 0}')}\n'
                 '${t.clinicRemindersCount('${appt['notification_count'] ?? 0}')}',
-                style: const TextStyle(
-                    color: NHSTheme.darkGrey, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600),
               ),
             ),
           ]),

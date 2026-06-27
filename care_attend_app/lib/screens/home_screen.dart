@@ -165,22 +165,22 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showNotifications() {
     showModalBottomSheet(
       context: context,
-      builder: (_) => Padding(
-        padding: const EdgeInsets.all(20),
+      builder: (_) => const Padding(
+        padding: EdgeInsets.all(20),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Row(children: const [
+          Row(children: [
             Icon(Icons.notifications, color: NHSTheme.blue),
             SizedBox(width: 8),
             Text('Notifications',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
           ]),
-          const SizedBox(height: 12),
-          const ListTile(
+          SizedBox(height: 12),
+          ListTile(
             leading: Icon(Icons.info_outline, color: NHSTheme.lightBlue),
             title: Text('Session active'),
             subtitle: Text('All data is session-scoped and not stored.'),
           ),
-          const ListTile(
+          ListTile(
             leading: Icon(Icons.shield_outlined, color: NHSTheme.riskLow),
             title: Text('Secure session'),
             subtitle: Text('30-minute inactivity timeout is active.'),
@@ -399,7 +399,7 @@ class _HomeScreenState extends State<HomeScreen> {
               leading: Icon(item.icon,
                   color: _currentIndex == item.index
                       ? NHSTheme.blue
-                      : NHSTheme.darkGrey),
+                      : Theme.of(context).colorScheme.onSurfaceVariant),
               title: Text(_navLabel(t, item)),
               selected: _currentIndex == item.index,
               onTap: () {

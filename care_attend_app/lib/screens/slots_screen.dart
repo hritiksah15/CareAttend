@@ -59,7 +59,7 @@ class _SlotsScreenState extends State<SlotsScreen> {
             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
         const SizedBox(height: 4),
         Text(t.slotsSubtitle,
-            style: const TextStyle(color: NHSTheme.darkGrey)),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
         const SizedBox(height: 16),
         Card(child: Padding(
           padding: const EdgeInsets.all(14),
@@ -130,8 +130,8 @@ class _SlotsScreenState extends State<SlotsScreen> {
             const SizedBox(height: 2),
             Text(label,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                    fontSize: 11, color: NHSTheme.darkGrey)),
+                style: TextStyle(
+                    fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ]),
         ),
       );

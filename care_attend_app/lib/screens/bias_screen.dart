@@ -3,6 +3,7 @@ import '../l10n/app_localizations.dart';
 import '../nhs_theme.dart';
 import '../services/api_service.dart';
 import '../utils/export.dart';
+import '../widgets/ui.dart';
 
 class BiasScreen extends StatefulWidget {
   const BiasScreen({super.key});
@@ -62,8 +63,8 @@ class _BiasScreenState extends State<BiasScreen>
                         color: NHSTheme.blue)),
                 const SizedBox(height: 4),
                 Text(t.biasSubtitle,
-                    style: const TextStyle(
-                        fontSize: 14, color: NHSTheme.darkGrey)),
+                    style: TextStyle(
+                        fontSize: 14, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                 const SizedBox(height: 16),
 
                 // Tab bar (Age / Gender / IMD)
@@ -183,8 +184,8 @@ class _BiasScreenState extends State<BiasScreen>
                           fontWeight: FontWeight.w700, color: NHSTheme.blue)),
                   const SizedBox(height: 6),
                   Text(_generateSummary(),
-                      style: const TextStyle(
-                          fontSize: 13, color: NHSTheme.darkGrey)),
+                      style: TextStyle(
+                          fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                 ],
               ),
             ),
@@ -224,7 +225,7 @@ class _BiasScreenState extends State<BiasScreen>
                     color: NHSTheme.blue)),
             Text(label,
                 style:
-                    const TextStyle(fontSize: 11, color: NHSTheme.darkGrey)),
+                    TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ],
         ),
       );
@@ -251,10 +252,10 @@ class _BiasScreenState extends State<BiasScreen>
 
             // Demographic Parity bars
             Text(t.biasDpDiff,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: NHSTheme.darkGrey,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     letterSpacing: 0.5)),
             const SizedBox(height: 8),
             ...groups.entries.map((e) {
@@ -306,7 +307,7 @@ class _BiasScreenState extends State<BiasScreen>
             width: 60,
             child: Text(label,
                 style:
-                    const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                    TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
                 textAlign: TextAlign.right),
           ),
           const SizedBox(width: 8),
@@ -325,7 +326,7 @@ class _BiasScreenState extends State<BiasScreen>
                   child: Container(
                     height: 24,
                     decoration: BoxDecoration(
-                      color: NHSTheme.darkGrey,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -407,21 +408,8 @@ class _BiasScreenState extends State<BiasScreen>
     return t.biasSummaryFail(failures.join(', '));
   }
 
-  Widget _card({required Widget child}) => Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
-                blurRadius: 8,
-                offset: const Offset(0, 2))
-          ],
-        ),
-        child: child,
-      );
+  Widget _card({required Widget child}) =>
+      AppCard(padding: const EdgeInsets.all(20), child: child);
 
   @override
   void dispose() {
