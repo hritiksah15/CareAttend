@@ -396,7 +396,7 @@ class ResultScreen extends StatelessWidget {
                   OutlinedButton.icon(
                     onPressed: () => _copyResult(context),
                     icon: const Icon(Icons.copy, size: 18),
-                    label: const Text('Copy'),
+                    label: Text(t.resultCopy),
                   ),
                 ]),
               ],
@@ -479,15 +479,12 @@ class ResultScreen extends StatelessWidget {
   /// 65-84 flags elevated vulnerability (amber). Risk-coloured text stays
   /// legible on the pastel/dark-tinted surface in both themes.
   Widget _ageBanner(BuildContext context, int age) {
+    final t = AppLocalizations.of(context);
     final severe = age >= 85;
     final accent = severe ? AppColors.riskHigh : AppColors.riskMedium;
     final bg = NHSTheme.calloutBg(
         context, severe ? AppColors.riskHighBg : AppColors.riskMediumBg);
-    final msg = severe
-        ? 'Patient is 85+ — apply enhanced sensitivity and proactive '
-            'safeguarding when acting on this score.'
-        : 'Patient is 65+ — elevated vulnerability; consider proactive '
-            'support and reminders.';
+    final msg = severe ? t.ageBannerEnhancedMsg : t.ageBannerElevatedMsg;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpace.lg),
@@ -502,7 +499,10 @@ class ResultScreen extends StatelessWidget {
         const SizedBox(width: AppSpace.md),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(severe ? 'Enhanced sensitivity' : 'Elevated vulnerability',
+            Text(
+                severe
+                    ? t.ageBannerEnhancedTitle
+                    : t.ageBannerElevatedTitle,
                 style: TextStyle(fontWeight: FontWeight.w700, color: accent)),
             const SizedBox(height: 2),
             Text(msg,
@@ -517,6 +517,7 @@ class ResultScreen extends StatelessWidget {
 
   Future<void> _copyResult(BuildContext context) async {
     final messenger = ScaffoldMessenger.of(context);
+    final copiedMsg = AppLocalizations.of(context).resultCopied;
     final tier = (result!['risk_tier'] as String).toUpperCase();
     final pct = (result!['percentage'] as num).toStringAsFixed(0);
     final nl = result!['nl_summary'] as String?;
@@ -525,8 +526,7 @@ class ResultScreen extends StatelessWidget {
         '${nl != null ? '$nl\n' : ''}'
         '(Decision-support only — not a clinical diagnosis.)';
     await Clipboard.setData(ClipboardData(text: text));
-    messenger.showSnackBar(
-        const SnackBar(content: Text('Result copied to clipboard')));
+    messenger.showSnackBar(SnackBar(content: Text(copiedMsg)));
   }
 
   Widget _chip(String text) => Container(

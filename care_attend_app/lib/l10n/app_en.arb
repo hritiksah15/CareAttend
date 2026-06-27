@@ -65,7 +65,13 @@
   "female": "Female",
   "male": "Male",
   "ageGroupLine": "Age Group: {group} (auto-calculated)",
-  "@ageGroupLine": { "placeholders": { "group": { "type": "String" } } },
+  "@ageGroupLine": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
   "aboutTool": "About This Tool",
   "aboutToolDesc": "Care Attend uses machine learning to predict DNA risk. Predictions explained via SHAP. System monitors for demographic bias.",
   "dataHandling": "Data Handling: No patient data stored. Session-scoped only. GDPR Art 5(1)(c) compliant.",
@@ -81,7 +87,13 @@
   "feedbackCorrect": "Correct",
   "feedbackIncorrect": "Incorrect",
   "feedbackRecorded": "Feedback recorded: {outcome}",
-  "@feedbackRecorded": { "placeholders": { "outcome": { "type": "String" } } },
+  "@feedbackRecorded": {
+    "placeholders": {
+      "outcome": {
+        "type": "String"
+      }
+    }
+  },
   "practiceDashboard": "Practice Dashboard",
   "practiceOverview": "Practice-wide overview of assessments and outcomes.",
   "statTotal": "Total",
@@ -96,13 +108,31 @@
   "batchScoring": "Scoring…",
   "batchPickCsv": "Pick CSV & Score",
   "batchFile": "File: {filename}",
-  "@batchFile": { "placeholders": { "filename": { "type": "String" } } },
+  "@batchFile": {
+    "placeholders": {
+      "filename": {
+        "type": "String"
+      }
+    }
+  },
   "batchReadError": "Could not read the file.",
   "batchPatients": "Patients",
   "batchRow": "Row {row}",
-  "@batchRow": { "placeholders": { "row": { "type": "String" } } },
+  "@batchRow": {
+    "placeholders": {
+      "row": {
+        "type": "String"
+      }
+    }
+  },
   "batchTopFactor": "Top factor: {factor}",
-  "@batchTopFactor": { "placeholders": { "factor": { "type": "String" } } },
+  "@batchTopFactor": {
+    "placeholders": {
+      "factor": {
+        "type": "String"
+      }
+    }
+  },
   "ethicsFramework": "Ethics Framework",
   "ethicsSubtitle": "NHS England (2024) six-principle mapping with evidence.",
   "ethicsCvTitle": "Cross-Validation (5-Fold)",
@@ -115,7 +145,16 @@
   "ethicsRecall": "Recall",
   "ethicsRocAuc": "ROC-AUC",
   "ethicsCi": "95% CI (F1): [{lo}, {hi}]",
-  "@ethicsCi": { "placeholders": { "lo": { "type": "String" }, "hi": { "type": "String" } } },
+  "@ethicsCi": {
+    "placeholders": {
+      "lo": {
+        "type": "String"
+      },
+      "hi": {
+        "type": "String"
+      }
+    }
+  },
   "nudgeTitle": "Patient Nudge",
   "nudgeSubtitle": "Generate a personalised, non-stigmatising outreach message.",
   "nudgeName": "Patient name (optional)",
@@ -135,7 +174,13 @@
   "adminRoleUpdated": "Role updated.",
   "adminDeleteTitle": "Delete user",
   "adminDeleteConfirm": "Delete \"{username}\"? This cannot be undone.",
-  "@adminDeleteConfirm": { "placeholders": { "username": { "type": "String" } } },
+  "@adminDeleteConfirm": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  },
   "adminCancel": "Cancel",
   "adminDelete": "Delete",
   "adminDeleted": "Deleted.",
@@ -158,12 +203,27 @@
   "slotsExpectedWaste": "Expected waste",
   "slotsRecoveryPotential": "Recovery potential",
   "slotsRiskLine": "{prob}% DNA risk · {tier}",
-  "@slotsRiskLine": { "placeholders": { "prob": { "type": "String" }, "tier": { "type": "String" } } },
+  "@slotsRiskLine": {
+    "placeholders": {
+      "prob": {
+        "type": "String"
+      },
+      "tier": {
+        "type": "String"
+      }
+    }
+  },
   "slotsCanOverbookLabel": "Can overbook:",
   "commonYes": "Yes",
   "commonNo": "No",
   "slotsWastedMinutes": "Expected wasted minutes: {min}",
-  "@slotsWastedMinutes": { "placeholders": { "min": { "type": "String" } } },
+  "@slotsWastedMinutes": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      }
+    }
+  },
   "biasMonitorTitle": "Ethical Bias Monitoring Dashboard",
   "biasSubtitle": "Fairness metrics across protected characteristic groups. Threshold: 0.10.",
   "biasTabAge": "Age",
@@ -189,7 +249,13 @@
   "biasFailEo": "equalised odds",
   "biasSummaryPass": "Model shows acceptable fairness across all protected attribute groups. All metrics within the 0.10 threshold.",
   "biasSummaryFail": "Model shows acceptable fairness across most age groups. The following exceed the 0.10 threshold: {failures}. This may reflect genuine clinical risk rather than algorithmic bias.",
-  "@biasSummaryFail": { "placeholders": { "failures": { "type": "String" } } },
+  "@biasSummaryFail": {
+    "placeholders": {
+      "failures": {
+        "type": "String"
+      }
+    }
+  },
   "clinicTitle": "Clinic List",
   "clinicSubtitle": "Score appointments and track outreach progress.",
   "clinicNoAppointments": "No appointments imported for this date.",
@@ -207,16 +273,34 @@
   "clinicNeedsAction": "Needs action",
   "clinicStatus": "Status",
   "clinicActionsCount": "{count} action(s)",
-  "@clinicActionsCount": { "placeholders": { "count": { "type": "String" } } },
+  "@clinicActionsCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "clinicRemindersCount": "{count} reminder(s)",
-  "@clinicRemindersCount": { "placeholders": { "count": { "type": "String" } } },
+  "@clinicRemindersCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "clinicNeedsOutreach": "Needs outreach action",
   "clinicReminder": "Reminder",
   "clinicCall": "Call",
   "clinicEnterPatientId": "Enter a patient ID.",
   "clinicJsonInvalid": "Appointment JSON is not valid.",
   "clinicImported": "{count} appointment(s) imported.",
-  "@clinicImported": { "placeholders": { "count": { "type": "String" } } },
+  "@clinicImported": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "clinicStatusUpdated": "Appointment status updated.",
   "clinicReminderScheduled": "Reminder scheduled.",
   "clinicCallRecorded": "Call action recorded.",
@@ -294,7 +378,13 @@
   "fpResetDone": "Password reset! Please log in.",
   "fpCodeSent": "If that email is registered, a 6-digit code has been sent.",
   "fpDevCode": "Email not configured — your test code is {code}",
-  "@fpDevCode": { "placeholders": { "code": { "type": "String" } } },
+  "@fpDevCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
   "offlineBanner": "You're offline — pull to refresh once reconnected.",
   "chatbotTitle": "Care Attend AI",
   "chatbotHint": "Type a message…",
@@ -302,5 +392,11 @@
   "chatbotAssistant": "Assistant",
   "profilePhotoA11y": "Profile photo. Tap to change.",
   "loadFailed": "Couldn't load. Pull down or retry.",
-  "commonRetry": "Retry"
+  "commonRetry": "Retry",
+  "resultCopy": "Copy",
+  "resultCopied": "Result copied to clipboard",
+  "ageBannerEnhancedTitle": "Enhanced sensitivity",
+  "ageBannerElevatedTitle": "Elevated vulnerability",
+  "ageBannerEnhancedMsg": "Patient is 85+ — apply enhanced sensitivity and proactive safeguarding when acting on this score.",
+  "ageBannerElevatedMsg": "Patient is 65+ — elevated vulnerability; consider proactive support and reminders."
 }

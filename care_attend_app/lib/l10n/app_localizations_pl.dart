@@ -929,4 +929,24 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get commonRetry => 'Spróbuj ponownie';
+
+  @override
+  String get resultCopy => 'Kopiuj';
+
+  @override
+  String get resultCopied => 'Skopiowano wynik do schowka';
+
+  @override
+  String get ageBannerEnhancedTitle => 'Zwiększona wrażliwość';
+
+  @override
+  String get ageBannerElevatedTitle => 'Podwyższona podatność';
+
+  @override
+  String get ageBannerEnhancedMsg =>
+      'Pacjent ma 85+ lat — zastosuj zwiększoną wrażliwość i proaktywną ochronę przy działaniu na podstawie tego wyniku.';
+
+  @override
+  String get ageBannerElevatedMsg =>
+      'Pacjent ma 65+ lat — podwyższona podatność; rozważ proaktywne wsparcie i przypomnienia.';
 }

@@ -931,4 +931,24 @@ class AppLocalizationsCy extends AppLocalizations {
 
   @override
   String get commonRetry => 'Ailgynnig';
+
+  @override
+  String get resultCopy => 'Copïo';
+
+  @override
+  String get resultCopied => 'Copïwyd y canlyniad i\'r clipfwrdd';
+
+  @override
+  String get ageBannerEnhancedTitle => 'Sensitifrwydd uwch';
+
+  @override
+  String get ageBannerElevatedTitle => 'Bregusrwydd uwch';
+
+  @override
+  String get ageBannerEnhancedMsg =>
+      'Mae\'r claf yn 85+ — defnyddiwch sensitifrwydd uwch a diogelu rhagweithiol wrth weithredu ar y sgôr hon.';
+
+  @override
+  String get ageBannerElevatedMsg =>
+      'Mae\'r claf yn 65+ — bregusrwydd uwch; ystyriwch gymorth rhagweithiol ac atgoffa.';
 }

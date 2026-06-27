@@ -928,4 +928,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commonRetry => 'Retry';
+
+  @override
+  String get resultCopy => 'Copy';
+
+  @override
+  String get resultCopied => 'Result copied to clipboard';
+
+  @override
+  String get ageBannerEnhancedTitle => 'Enhanced sensitivity';
+
+  @override
+  String get ageBannerElevatedTitle => 'Elevated vulnerability';
+
+  @override
+  String get ageBannerEnhancedMsg =>
+      'Patient is 85+ — apply enhanced sensitivity and proactive safeguarding when acting on this score.';
+
+  @override
+  String get ageBannerElevatedMsg =>
+      'Patient is 65+ — elevated vulnerability; consider proactive support and reminders.';
 }
