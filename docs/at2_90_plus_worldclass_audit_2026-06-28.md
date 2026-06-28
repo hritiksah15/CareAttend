@@ -55,7 +55,7 @@ validity.
 | UAT evidence for export/admin/session-log | Some frontend features are verified by build/tests but not human scenario evidence. | Capture a short scenario table: login, admin session log, assessment, result export, bias/ethics, mobile nav. |
 | Requirement wording drift | Older docs had stale counts and old NFR-01 wording. Some FR numbering differs between report/table. | Before submission, align exact FR/NFR wording in the report and RTM. Keep 241 backend tests / Flutter test count consistent. |
 | App visual evidence missing from report | The app has been fixed, but markers cannot infer that from code. | Include screenshots of app home, results, admin session log, ethics/bias color, mobile bottom-nav spacing. |
-| Production hardening not complete | External pentest, DPIA/DCB0129, FHIR connectors are not expected for AT2 but matter for "real NHS product". | Frame as future work, not missing AT2 scope. |
+| Production hardening not complete | External pentest, signed DPIA/DCB0129, live EHR connector approval, and real-world validation are not expected for AT2 but matter for "real NHS product". | Frame as production gates, not missing AT2 scope. |
 
 ## App Version Audit
 
@@ -109,7 +109,7 @@ Priority 1: improves robustness but not required for AT2.
 
 | # | Work | Why it matters | Done when |
 |---:|---|---|---|
-| 7 | Session write throttling | Reduces DB write amplification. | `last_activity` only persists when stale by configured interval. |
+| 7 | Session write throttling | Reduces DB write amplification. | Complete: `auth.py` throttles `last_activity` writes via `SESSION_ACTIVITY_WRITE_INTERVAL`; covered by `test_auth.py::test_session_activity_write_throttled`. |
 | 8 | Visual regression/golden tests | Protects world-class styling. | Golden tests for app cards/results/admin or Playwright snapshots for web. |
 
 Priority 2: real NHS product path, outside AT2.

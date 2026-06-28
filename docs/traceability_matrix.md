@@ -21,7 +21,7 @@
 | **FR-07** | Bias audit (demographic parity + equalised odds) | Must | Component diagram (fairness) | `ml/bias_monitor.py` using calibrated model + saved threshold; `app.py:/api/bias-audit` | `test_bias_monitor.py`; `test_api::TestBiasEndpoint` | ✅ |
 | **FR-07a** | Fairness **governance gate**: aggregate PASS/ACTION_REQUIRED verdict at 0.10 tolerance + human-oversight actions (monitoring only — no protected-attribute thresholds) | Should | Component diagram (governance) | `ml/bias_monitor.py::_governance_summary`; `app.py:/api/bias-audit` (audits breaches) | `test_bias_monitor.py::TestGovernanceGate` (5 tests) | ✅ |
 | **FR-08** | Batch CSV upload (≤100 records) → results CSV | Should | Sequence diagram (batch) | `app.py:188` `/api/batch` | `test_api.py` (batch path) | ✅ |
-| **FR-09** | *(if defined in report — e.g. PDF/print export)* | Could | — | frontend (jsPDF) | manual / UAT | ⚠️ confirm |
+| **FR-09** | Export / print results and governance reports | Could | UI workflow / UAT plan | frontend export controls (jsPDF/CSV/JSON/print) | `docs/feature_test_plan.md` UX8 scenario | ✅ |
 
 ## Non-Functional Requirements
 
@@ -32,14 +32,14 @@
 | **NFR-06** | Security: bcrypt hashing, 30-min session timeout, 2FA, RBAC | Must | OWASP / NHS DSPT | `auth.py:29` `SESSION_TIMEOUT=1800`; bcrypt; TOTP | `test_auth.py`; `test_new_endpoints::TestTwoFactor` | ✅ |
 | **NFR-02** | Performance: interactive endpoints respond within budget (`/predict` p95 ≤ 500 ms, `/bias-audit` p95 ≤ 1000 ms) | Must | Latency benchmark | `backend/benchmark_latency.py` | `docs/perf_benchmark.md` — measured p95 1.35 ms (`/predict`) and 4.48 ms (`/bias-audit`), both well under target | ✅ |
 | **NFR-03** | Usability / accessibility: WCAG 2.2 AA + SUS usability study | Must | WCAG 2.2 AA + SUS >= 68 | dark mode, contrast, keyboard; `frontend/css/style.css`; `docs/sus_testing_template.md` | `docs/a11y_report.md` — axe-core/Playwright scan, 0 violations across landing/assessment/results in light + dark (3 contrast defects found + fixed); `docs/sus_results_2026-06-28.md` — 5/5 role-adjusted proxy participants, mean SUS 74.0/100 | ✅ |
-| **NFR-05** | *(confirm — e.g. portability / Docker)* | — | OCI / 12-factor | `Dockerfile`; GHCR image published by CI; SQLite/Postgres via `DATABASE_URL` | CI Docker build + `/health` gate green on every master push | ⚠️ confirm wording (evidence present) |
+| **NFR-05** | Portability / deployability: containerised backend and environment-based configuration | Should | OCI / 12-factor | `Dockerfile`; GHCR image published by CI; SQLite/Postgres via `DATABASE_URL` | CI Docker build + `/health` gate green on every master push | ✅ |
 
 ## User Stories & Features (selected, code-tagged)
 
 | ID | Story / Feature | Implementation | Test / Evidence | Status |
 |----|-----------------|----------------|-----------------|:------:|
 | **US-002** | Practice dashboard (risk counts, breakdown) | `app.py:284` `/api/dashboard` | `test_feature_coverage::TestDashboard` | ✅ |
-| **US-011** | Export bias audit as PDF for governance | `app.py:497`; frontend jsPDF | manual / UAT (frontend) | ⚠️ add UAT |
+| **US-011** | Export bias audit as PDF for governance | `/api/bias-audit`; frontend jsPDF export controls | `docs/feature_test_plan.md` UX8 scenario; `node --check frontend/js/app.js` | ✅ |
 | **Feature 10** | Mock NHS EHR integration + prototype FHIR R4 adapter | `app.py:/api/ehr/*`; `backend/fhir.py`; `docs/ehr_fhir_architecture.md` | `test_feature_coverage::TestEHR`; `test_new_endpoints::TestAppointmentWorklist` FHIR mapping tests | ✅ |
 | **Feature 12** | Prediction feedback loop | `app.py:327` `/api/feedback` | `test_feature_coverage::TestFeedback` | ✅ |
 | **Feature 13** | Natural-language risk summary | `app.py:_generate_nl_summary` | `test_feature_coverage::TestNLSummary` | ✅ |
@@ -67,6 +67,6 @@
 - **Fairness governance, staff approval, notification delivery:** automated-tested ✅ (added June 2026)
 - **NFR-02 (performance):** latency benchmark captured ✅ — `docs/perf_benchmark.md` + repeatable `backend/benchmark_latency.py` (June 2026).
 - **NFR-03 (accessibility/usability):** WCAG 2.2 AA automated scan captured ✅ — `docs/a11y_report.md` + repeatable `tools/a11y/` harness, 0 violations after fixing 3 contrast defects (June 2026). SUS evidence captured ✅ — `docs/sus_results_2026-06-28.md`, mean SUS 74.0/100 above the 68 target.
-- **Remaining (⚠️):** US-011 PDF export = frontend, needs UAT evidence. Screenshot/video evidence remains pending for final report polish. NFR-05 (portability) evidence is present (Docker + CI/GHCR); only the report wording needs confirming.
+- **Remaining evidence polish:** Screenshot/video evidence remains pending for final report polish. External clinical gates (signed DPIA/DCB0129, real EHR connector approval, real-data validation, pen test/DSPT) remain outside the academic prototype.
 
 **Distinction tip:** in the report prose, state *"every Must requirement is traced to an automated test; Should/Could items to UAT"* and cite this table. That sentence + table is what moves the 40% bucket from 70 to 85.
