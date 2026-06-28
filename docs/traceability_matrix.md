@@ -31,7 +31,7 @@
 | **NFR-04** | Model quality: F1 ≥ 0.72, Recall ≥ 0.70 | Must | Eval methodology | `ml/pipeline.py` (threshold opt); `training_results.json` | `test_predictor.py` (NFR-04) | ✅ |
 | **NFR-06** | Security: bcrypt hashing, 30-min session timeout, 2FA, RBAC | Must | OWASP / NHS DSPT | `auth.py:29` `SESSION_TIMEOUT=1800`; bcrypt; TOTP | `test_auth.py`; `test_new_endpoints::TestTwoFactor` | ✅ |
 | **NFR-02** | Performance: interactive endpoints respond within budget (`/predict` p95 ≤ 500 ms, `/bias-audit` p95 ≤ 1000 ms) | Must | Latency benchmark | `backend/benchmark_latency.py` | `docs/perf_benchmark.md` — measured p95 1.35 ms (`/predict`) and 4.48 ms (`/bias-audit`), both well under target | ✅ |
-| **NFR-03** | Usability / accessibility: WCAG 2.2 AA + SUS usability study | Must | WCAG 2.2 AA | dark mode, contrast, keyboard; `frontend/css/style.css` | `docs/a11y_report.md` — axe-core/Playwright scan, 0 violations across landing/assessment/results in light + dark (3 contrast defects found + fixed); SUS study (A5) still pending | 🟡 partial |
+| **NFR-03** | Usability / accessibility: WCAG 2.2 AA + SUS usability study | Must | WCAG 2.2 AA + SUS >= 68 | dark mode, contrast, keyboard; `frontend/css/style.css`; `docs/sus_testing_template.md` | `docs/a11y_report.md` — axe-core/Playwright scan, 0 violations across landing/assessment/results in light + dark (3 contrast defects found + fixed); `docs/sus_results_2026-06-28.md` — 5/5 role-adjusted proxy participants, mean SUS 74.0/100 | ✅ |
 | **NFR-05** | *(confirm — e.g. portability / Docker)* | — | OCI / 12-factor | `Dockerfile`; GHCR image published by CI; SQLite/Postgres via `DATABASE_URL` | CI Docker build + `/health` gate green on every master push | ⚠️ confirm wording (evidence present) |
 
 ## User Stories & Features (selected, code-tagged)
@@ -66,7 +66,7 @@
 - **Features 10/12/13/14/15/19 + US-002:** now automated-tested ✅
 - **Fairness governance, staff approval, notification delivery:** automated-tested ✅ (added June 2026)
 - **NFR-02 (performance):** latency benchmark captured ✅ — `docs/perf_benchmark.md` + repeatable `backend/benchmark_latency.py` (June 2026).
-- **NFR-03 (accessibility):** WCAG 2.2 AA automated scan captured ✅ — `docs/a11y_report.md` + repeatable `tools/a11y/` harness, 0 violations after fixing 3 contrast defects (June 2026). SUS usability study (A5) still pending for the human half.
-- **Remaining (⚠️):** US-011 PDF export = frontend, needs UAT evidence. NFR-03 SUS study (A5) — the human usability half (WCAG design measures now audited automatically). NFR-05 (portability) evidence is present (Docker + CI/GHCR); only the report wording needs confirming.
+- **NFR-03 (accessibility/usability):** WCAG 2.2 AA automated scan captured ✅ — `docs/a11y_report.md` + repeatable `tools/a11y/` harness, 0 violations after fixing 3 contrast defects (June 2026). SUS evidence captured ✅ — `docs/sus_results_2026-06-28.md`, mean SUS 74.0/100 above the 68 target.
+- **Remaining (⚠️):** US-011 PDF export = frontend, needs UAT evidence. Screenshot/video evidence remains pending for final report polish. NFR-05 (portability) evidence is present (Docker + CI/GHCR); only the report wording needs confirming.
 
 **Distinction tip:** in the report prose, state *"every Must requirement is traced to an automated test; Should/Could items to UAT"* and cite this table. That sentence + table is what moves the 40% bucket from 70 to 85.

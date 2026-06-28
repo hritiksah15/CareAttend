@@ -7,8 +7,7 @@ let currentRole = 'user';
 
 // RBAC (frontend): which roles may *operate* each tab. Mirrors backend
 // role_required gating, which stays the real enforcement (403 = "handover"
-// belongs to that role). Every role can still SEE and OPEN all 8 feature tabs;
-// unauthorized roles get a read-only lock notice instead of the tab being hidden.
+// belongs to that role). Non-permitted tabs and shortcuts are hidden entirely.
 const TAB_ROLES = {
     assessment: ['user', 'staff', 'admin'],
     results: ['user', 'staff', 'admin'],
@@ -51,6 +50,9 @@ function applyRoleAccess(role) {
     currentRole = role || 'user';
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.style.display = isTabVisible(btn.dataset.tab) ? '' : 'none';
+    });
+    document.querySelectorAll('[data-role-action="bias"]').forEach(el => {
+        el.style.display = canOperateTab('bias') ? '' : 'none';
     });
     // Hide the Risk Results export row from read-only users.
     document.querySelectorAll('.export-row').forEach(el => {
@@ -680,7 +682,10 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 });
 
 function switchTab(tabName) {
-    if (!isTabVisible(tabName)) return;  // only the Admin tab is hidden (non-admins)
+    if (!isTabVisible(tabName)) {
+        if (typeof showToast === 'function') showToast('You do not have access to that area.', 'warning');
+        return;
+    }
     document.querySelectorAll('.tab-btn').forEach(b => {
         b.classList.remove('active');
         b.setAttribute('aria-selected', 'false');
@@ -950,15 +955,19 @@ const PRIORITY_COLORS = {
 
 function renderInterventions(interventions) {
     const container = document.getElementById('interventions-list');
-    container.innerHTML = interventions.map((iv, i) => `
-        <div class="intervention-card priority-${iv.priority}">
-            <div class="intervention-number" style="background:${PRIORITY_COLORS[iv.priority] || '#003087'}">${i + 1}</div>
+    container.innerHTML = interventions.map((iv) => {
+        const priority = Number(iv.priority) || 3;
+        const icon = ICONS[iv.icon] || ICONS.message;
+        return `
+        <div class="intervention-card priority-${priority}">
+            <div class="intervention-icon" style="background:${PRIORITY_COLORS[priority] || '#003087'}" aria-hidden="true">${icon}</div>
             <div class="intervention-text">
-                <h4>${iv.title}</h4>
-                <p>${iv.description}</p>
+                <h4>${escapeHtml(iv.title || 'Recommended action')}</h4>
+                <p>${escapeHtml(iv.description || '')}</p>
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
 // ── Bias Audit ──

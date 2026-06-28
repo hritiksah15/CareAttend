@@ -29,8 +29,12 @@ Aligned to: NFR-03, FR-01, US-001 (Asha Patel persona)
 - What are the top two reasons for this score?
 - What intervention would you prioritise?"
 
-### Task 4: Bias Monitoring
+### Task 4: Bias Monitoring (admin/governance users only)
 "Navigate to the Bias Monitor and run an audit. Does the model show any fairness concerns?"
+
+Do not assign this task to staff/receptionist participants. Bias Monitoring is
+admin-only in the app and backend; leave `task4_bias_pass` and `task4_seconds`
+blank for staff users.
 
 ### Task 5: Dark Mode
 "Switch the application to dark mode."

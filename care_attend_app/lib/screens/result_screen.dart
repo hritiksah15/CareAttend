@@ -12,14 +12,37 @@ import '../widgets/ui.dart';
 class ResultScreen extends StatelessWidget {
   final Map<String, dynamic>? result;
   final VoidCallback onNewAssessment;
-  final VoidCallback onBiasDashboard;
+  final VoidCallback? onBiasDashboard;
 
   const ResultScreen({
     super.key,
     required this.result,
     required this.onNewAssessment,
-    required this.onBiasDashboard,
+    this.onBiasDashboard,
   });
+
+  static IconData _interventionIcon(String? icon) {
+    switch (icon) {
+      case 'phone':
+        return Icons.local_phone_outlined;
+      case 'car':
+        return Icons.directions_car_outlined;
+      case 'users':
+        return Icons.groups_outlined;
+      case 'alert':
+        return Icons.warning_amber_rounded;
+      case 'message':
+        return Icons.message_outlined;
+      case 'accessibility':
+        return Icons.accessible_forward;
+      case 'heart':
+        return Icons.favorite_border;
+      case 'calendar':
+        return Icons.event_outlined;
+      default:
+        return Icons.tips_and_updates_outlined;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,8 +67,7 @@ class ResultScreen extends StatelessWidget {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: onNewAssessment,
-              style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(200, 44)),
+              style: ElevatedButton.styleFrom(minimumSize: const Size(200, 44)),
               child: Text(t.goToAssessment),
             ),
           ],
@@ -262,7 +284,8 @@ class ResultScreen extends StatelessWidget {
                           isRisk ? t.increasesRisk : t.reducesRisk,
                           style: TextStyle(
                             fontSize: 11,
-                            color: isRisk ? NHSTheme.riskHigh : NHSTheme.riskLow,
+                            color:
+                                isRisk ? NHSTheme.riskHigh : NHSTheme.riskLow,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -286,10 +309,9 @@ class ResultScreen extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                         color: Theme.of(context).colorScheme.primary)),
                 const SizedBox(height: 12),
-                ...interventions.asMap().entries.map((entry) {
-                  final i = entry.key;
-                  final iv = entry.value as Map<String, dynamic>;
-                  final priority = iv['priority'] as int;
+                ...interventions.map((entry) {
+                  final iv = entry as Map<String, dynamic>;
+                  final priority = (iv['priority'] as num?)?.toInt() ?? 3;
                   final color = priority == 1
                       ? NHSTheme.riskHigh
                       : priority == 2
@@ -317,26 +339,30 @@ class ResultScreen extends StatelessWidget {
                         CircleAvatar(
                           radius: 14,
                           backgroundColor: color,
-                          child: Text('${i + 1}',
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700)),
+                          child: Icon(
+                            _interventionIcon(iv['icon'] as String?),
+                            color: Colors.white,
+                            size: 16,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(iv['title'] as String,
+                              Text('${iv['title'] ?? 'Recommended action'}',
                                   style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w700,
-                                      color: Theme.of(context).colorScheme.primary)),
-                              Text(iv['description'] as String,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary)),
+                              Text('${iv['description'] ?? ''}',
                                   style: TextStyle(
                                       fontSize: 12,
-                                      color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant)),
                             ],
                           ),
                         ),
@@ -418,7 +444,9 @@ class ResultScreen extends StatelessWidget {
                         color: Theme.of(context).colorScheme.primary)),
                 const SizedBox(height: 4),
                 Text(t.feedbackDesc,
-                    style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontSize: 13)),
                 const SizedBox(height: 12),
                 _FeedbackButtons(predictionId: fullSessionId),
               ],
@@ -454,15 +482,17 @@ class ResultScreen extends StatelessWidget {
                   child: Text(t.newAssessment),
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: onBiasDashboard,
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: NHSTheme.darkBlue),
-                  child: Text(t.biasDashboard),
+              if (onBiasDashboard != null) ...[
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: onBiasDashboard,
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: NHSTheme.darkBlue),
+                    child: Text(t.biasDashboard),
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
           const SizedBox(height: 24),
@@ -500,11 +530,9 @@ class ResultScreen extends StatelessWidget {
             color: accent, size: 22),
         const SizedBox(width: AppSpace.md),
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(
-                severe
-                    ? t.ageBannerEnhancedTitle
-                    : t.ageBannerElevatedTitle,
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(severe ? t.ageBannerEnhancedTitle : t.ageBannerElevatedTitle,
                 style: TextStyle(fontWeight: FontWeight.w700, color: accent)),
             const SizedBox(height: 2),
             Text(msg,
@@ -537,8 +565,8 @@ class ResultScreen extends StatelessWidget {
           color: NHSTheme.paleGrey,
           borderRadius: BorderRadius.circular(12),
         ),
-        child:
-            Text(text, style: const TextStyle(fontSize: 12, color: AppColors.darkGrey)),
+        child: Text(text,
+            style: const TextStyle(fontSize: 12, color: AppColors.darkGrey)),
       );
 }
 
@@ -562,12 +590,8 @@ class _GaugePainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 14
       ..strokeCap = StrokeCap.round;
-    canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
-        startAngle,
-        sweepTotal,
-        false,
-        bgPaint);
+    canvas.drawArc(Rect.fromCircle(center: center, radius: radius), startAngle,
+        sweepTotal, false, bgPaint);
 
     // Value arc
     final valuePaint = Paint()
@@ -575,12 +599,8 @@ class _GaugePainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 14
       ..strokeCap = StrokeCap.round;
-    canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
-        startAngle,
-        sweepValue,
-        false,
-        valuePaint);
+    canvas.drawArc(Rect.fromCircle(center: center, radius: radius), startAngle,
+        sweepValue, false, valuePaint);
   }
 
   @override
@@ -633,7 +653,8 @@ class _FeedbackButtonsState extends State<_FeedbackButtons> {
       btn(t.feedbackAttended, 'attended', NHSTheme.riskLow),
       btn(t.feedbackDna, 'dna', NHSTheme.riskHigh),
       btn(t.feedbackCorrect, 'correct', Theme.of(context).colorScheme.primary),
-      btn(t.feedbackIncorrect, 'incorrect', Theme.of(context).colorScheme.onSurfaceVariant),
+      btn(t.feedbackIncorrect, 'incorrect',
+          Theme.of(context).colorScheme.onSurfaceVariant),
     ]);
   }
 }

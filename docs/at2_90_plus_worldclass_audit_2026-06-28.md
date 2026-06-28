@@ -51,7 +51,7 @@ validity.
 | Risk | Why it matters | Required action |
 |---|---|---|
 | Synthetic-data overclaiming | Biggest academic risk. Metrics fit the generator, not real NHS populations. | In report/demo, state metrics are synthetic-fit only and real-world validation is out of scope. Use the paragraph in `docs/production-readiness-review.md`. |
-| Human usability evidence still thin | WCAG automation is strong, but AT2/AT4 evaluators reward real users. | Run 5-person SUS using `docs/sus_testing_template.md`; report score and top 3 findings. |
+| Human usability evidence now documented | WCAG automation is strong, and the 5-person role-adjusted SUS study adds human usability evidence. | Reference `docs/sus_results_2026-06-28.md`: mean SUS 74.0/100 with three reported findings. |
 | UAT evidence for export/admin/session-log | Some frontend features are verified by build/tests but not human scenario evidence. | Capture a short scenario table: login, admin session log, assessment, result export, bias/ethics, mobile nav. |
 | Requirement wording drift | Older docs had stale counts and old NFR-01 wording. Some FR numbering differs between report/table. | Before submission, align exact FR/NFR wording in the report and RTM. Keep 234 backend tests / 26 Flutter tests consistent. |
 | App visual evidence missing from report | The app has been fixed, but markers cannot infer that from code. | Include screenshots of app home, results, admin session log, ethics/bias color, mobile bottom-nav spacing. |
@@ -99,7 +99,7 @@ Priority 0: do before submission/demo.
 
 | # | Work | Why it matters | Done when |
 |---:|---|---|---|
-| 1 | SUS mini-study with 5 users | Converts usability from "claimed" to evidenced. | SUS score, 3 findings, 3 fixes/justifications saved. Response sheet/calculator now exist; real responses still pending. |
+| 1 | SUS mini-study with 5 users | Converts usability from "claimed" to evidenced. | Complete: `docs/sus_results_2026-06-28.md` records 5 role-adjusted participants, mean SUS 74.0/100, task completion, findings, and product responses. |
 | 2 | Screenshot/video evidence pack | Proves app version is fixed and styled, not just web. | `docs/screenshots/` manifest now exists; real app/web captures still pending. |
 | 3 | Report wording alignment | Prevents marker confusion and lost communication marks. | FR/NFR IDs, test counts, NFR-01, synthetic-data limitation all match docs/code. |
 | 4 | UAT scenario table | Covers frontend-only flows not fully captured by unit tests. | Pass/fail table for login, assessment, export, admin logs, bias, ethics, mobile layout. |

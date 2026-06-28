@@ -311,7 +311,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return ResultScreen(
           result: _lastResult,
           onNewAssessment: () => _go(0),
-          onBiasDashboard: () => _go(3),
+          onBiasDashboard: ApiService.canBias ? () => _go(3) : null,
         );
       case 2:
         return DashboardScreen(key: ValueKey('dash-${_visit[2] ?? 0}'));

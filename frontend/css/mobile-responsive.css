@@ -35,7 +35,7 @@
     .shap-legend { flex-direction: column; gap: 6px; align-items: center; }
 
     .intervention-card { padding: 10px 12px; }
-    .intervention-number { width: 28px; height: 28px; font-size: 12px; }
+    .intervention-number, .intervention-icon { width: 28px; height: 28px; font-size: 12px; }
     .intervention-text h4 { font-size: 13px; }
     .intervention-text p { font-size: 12px; }
 
