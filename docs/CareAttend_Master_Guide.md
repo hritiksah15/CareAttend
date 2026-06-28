@@ -48,11 +48,11 @@ You currently train 4 models then select one. Examiners ask "why these / why thi
 
 **The examiner-winning sentence:** *"We deliberately selected the interpretable Logistic Regression over higher-capacity models because in a clinical decision-support context, the ability to audit and explain every prediction (DCB0129, GDPR Art 22, NHSX principle 'explainability') outweighs marginal accuracy — a justified engineering trade-off, not a limitation."*
 
-### What's missing on the ML side to be "top-notch" (build later)
-- **Probability calibration** (`CalibratedClassifierCV`) — a "70% risk" should mean 70 of 100 such patients actually DNA. Currently unproven. **High value, low effort.**
-- **Fairness mitigation, not just detection** — you *detect* bias; reweighing / threshold-per-group would let you *fix* it. (`fairlearn`).
-- **Temporal validation** — train on older data, test on newer, to prove it survives drift.
-- **Model card** (Mitchell et al. 2019) — one-page standardised model documentation. Cheap, very "production-grade".
+### ML production status and remaining gates
+- **Probability calibration:** complete. `ml/calibration.py` fits sigmoid/isotonic calibration, saves `model_calibrated.joblib`, re-derives `threshold_calibrated.joblib`, and records Brier/reliability evidence in `docs/model_card.md`.
+- **Model card:** complete in `docs/model_card.md`.
+- **Fairness governance:** complete for monitoring. `ml/bias_monitor.py` returns PASS/ACTION_REQUIRED governance verdicts, recommended review actions, and audit-log entries. Model-level mitigation such as reweighing remains a production research gate because it requires retraining, recalibration, threshold re-derivation, and re-audit.
+- **Temporal/geographic validation:** protocol documented in `docs/external_validation_plan.md`; real external validation still requires representative NHS datasets.
 
 ---
 
@@ -132,13 +132,13 @@ Two tracks. **Track A** = things that raise your COM668 grade now (do before AT3
 > Rule: finish Track A before AT3 (demo, due 7 Jul). Each step has a clear "done = " test.
 
 - [ ] **STEP 1 — Lock the narrative.** Re-read PART 0 aloud. Write your AT3 intro script (1 min) from the 60-second user story. *Done = you can explain the app to a non-technical person in 3 sentences.*
-- [ ] **STEP 2 — Automated tests for new endpoints (A1).** Cover carer-proxy, slot-optimiser, nudge generator, 2FA enable/verify, audit-log write. *Done = `pytest` green, test count > 90, new endpoints covered.*
-- [ ] **STEP 3 — Traceability matrix (A2).** One row per objective → FR/NFR → UML artefact → test id. *Done = every objective traces to a test.*
-- [ ] **STEP 4 — Probability calibration + model card (A3).** Wrap selected LR in `CalibratedClassifierCV`, add reliability curve, write 1-page model card. *Done = calibration plot saved, card committed.*
+- [x] **STEP 2 — Automated tests for new endpoints (A1).** Cover carer-proxy, slot-optimiser, nudge generator, 2FA enable/verify, audit-log write. *Done = `pytest` green, test count > 90, new endpoints covered.*
+- [x] **STEP 3 — Traceability matrix (A2).** One row per objective → FR/NFR → UML artefact → test id. *Done = every objective traces to a test.*
+- [x] **STEP 4 — Probability calibration + model card (A3).** Wrap selected LR in `CalibratedClassifierCV`, add reliability curve, write 1-page model card. *Done = calibration plot saved, card committed.*
 - [ ] **STEP 5 — C4 architecture + verified ERD (A4).** Mermaid Context+Container+Component; diff ERD against real Alembic schema. *Done = diagram matches `models.py` exactly.*
-- [ ] **STEP 6 — SUS usability test (A5).** 5 testers, 10-question SUS, compute score. *Done = a number (e.g. 82/100) + 3 findings.*
-- [ ] **STEP 7 — Robustness pass (A6).** Add `/health`, consistent JSON errors, request logging, input validation on every endpoint. *Done = no unhandled 500s on bad input.*
-- [ ] **STEP 8 — OpenAPI spec (A7).** Document all endpoints. *Done = spec loads in Swagger UI.*
+- [x] **STEP 6 — SUS usability test (A5).** 5 testers, 10-question SUS, compute score. *Done = a number (e.g. 82/100) + 3 findings.*
+- [x] **STEP 7 — Robustness pass (A6).** Add `/health`, consistent JSON errors, request logging, input validation on every endpoint. *Done = no unhandled 500s on bad input.*
+- [x] **STEP 8 — OpenAPI spec (A7).** Document all endpoints. *Done = spec loads in Swagger UI.*
 - [ ] **STEP 9 — Record AT3 demo** following the script in `CareAttend_Project_Summary.md` §AT3.
 - [ ] **STEP 10 — Write AT4** using QA evidence from steps 2–8.
 - [ ] **STEP 11+ — Track B** for the real product.

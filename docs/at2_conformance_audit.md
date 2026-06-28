@@ -47,10 +47,10 @@ persists carer name+contact+patient identifier (real PII), and appointments/noti
 outreach persist a `patient_id` label + dates. **Resolved via Option A** — see
 `docs/nfr01_persistence_justification.md` for the full table + AT4 re-framing narrative.
 
-## Defects / TODO (fix order)
+## Resolved defects / remaining polish
 
-1. **[HIGH] NFR-01 architecture vs report mismatch.** Decide: (a) document persistence as justified AT4 deviation, or (b) gate/remove non-essential persistence. Update §3.3.2 narrative.
-2. **[MED] Model mislabel bug.** Predict response sets `model_used` default `"Random Forest"` (app.py:322) but loaded model is **LogisticRegression**. predictor returns `model_source`, not `model_used`, so the wrong label always shows. Fix: propagate real model name. Undercuts FR-02/auditability claim.
+1. **[RESOLVED] NFR-01 architecture vs report mismatch.** Persistence is documented as a justified AT4 evolution in `docs/nfr01_persistence_justification.md`; raw prediction feature vectors are still not persisted on the predict path.
+2. **[RESOLVED] Model mislabel bug.** Live prediction now reports Logistic Regression / calibrated model evidence consistently.
 3. **[RESOLVED] Flutter app runtime.** `flutter analyze` 0 errors; `flutter test` passes (boots to login). Toolchain `~/development/flutter`. Optional: on-camera `flutter run -d chrome` for AT3 demo.
 4. **[LOW] FR ID numbering inconsistent in the PDF itself** (Table 3.3: FR-03=SHAP, FR-04=auth; MoSCoW p41: FR-03=traffic-light, FR-04=SHAP). Doc-level; align IDs in AT4 RTM.
 
@@ -65,4 +65,4 @@ Platform: web frontend (Flask-served), i18n, dark theme, guided tour, chatbot, C
 
 ## Bottom line
 Every AT2 fundamental (FR-01..09, NFR-01..06) is **implemented and backend-verified**.
-Two real defects (model mislabel, NFR-01 drift) + one verification gap (Flutter runtime). No missing core feature.
+Resolved defects are documented above. No missing core feature remains; final polish is screenshot/video evidence and exact report wording alignment.
