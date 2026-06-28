@@ -421,6 +421,25 @@ class TestAuditLog:
         assert res.status_code == 200
         assert "logs" in json.loads(res.data)
 
+    def test_login_success_is_audited(self, client):
+        token = login(client, username="boss", role="admin")
+        res = client.get("/api/audit-log", headers=auth(token))
+        logs = json.loads(res.data)["logs"]
+        assert any(
+            log["action"] == "login_success" and log["username"] == "boss" and "signed in" in (log["detail"] or "")
+            for log in logs
+        )
+
+    def test_logout_is_audited(self, client, app):
+        token = login(client, username="boss", role="admin")
+        res = client.post("/auth/logout", headers=auth(token))
+        assert res.status_code == 200
+        with app.app_context():
+            log = AuditLog.query.filter_by(action="logout").first()
+            assert log is not None
+            assert log.user.username == "boss"
+            assert "signed out" in (log.detail or "")
+
     def test_admin_sees_proxy_events(self, client):
         staff = login(client, username="clerk", role="staff")
         client.post(
