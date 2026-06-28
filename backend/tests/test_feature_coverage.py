@@ -21,7 +21,7 @@ pytestmark = pytest.mark.skipif(
     reason="Models not trained yet",
 )
 
-from app import app as flask_app, load_models  # noqa: E402
+from app import BATCH_REQUIRED_COLUMNS, app as flask_app, load_models  # noqa: E402
 from models import db, User, AssessmentSummary, AuditLog  # noqa: E402
 
 
@@ -344,7 +344,7 @@ class TestRBAC:
         import io
 
         token = login(client, username="bom1", role="staff")
-        csv_bom = ("﻿Age,Gender,AppointmentLeadTimeDays,SMSReceived," "PriorDNACount,IMDDecile\n78,0,21,0,4,2\n").encode(
+        csv_bom = ("﻿Age,Gender,AppointmentLeadTimeDays,SMSReceived,PriorDNACount,IMDDecile\n78,0,21,0,4,2\n").encode(
             "utf-8"
         )
         res = client.post(
@@ -391,6 +391,49 @@ class TestRBAC:
         )
         assert res.status_code == 200
         assert "risk_tier" in res.data.decode()
+
+    def test_batch_wide_csv_happy_path(self, client):
+        token = login(client, username="wide1", role="staff")
+        res = self._post_csv(
+            client,
+            token,
+            "Age,Gender,AppointmentLeadTimeDays,SMSReceived,PriorDNACount,IMDDecile\n78,0,21,0,4,2\n45,1,7,1,0,8\n",
+        )
+        assert res.status_code == 200
+        body = res.data.decode()
+        assert "risk_tier" in body
+        assert "top_risk_factor" in body
+
+    def test_batch_accepts_single_assessment_export_csv(self, client):
+        token = login(client, username="exportcsv1", role="staff")
+        res = self._post_csv(
+            client,
+            token,
+            ("Age,Gender,AppointmentLeadTimeDays,SMSReceived,PriorDNACount,IMDDecile\n78,0,21,0,4,2\n"),
+        )
+        assert res.status_code == 200
+        body = res.data.decode()
+        assert "risk_tier" in body
+        assert "High" in body
+
+    def test_batch_rejects_field_value_report_with_targeted_hint(self, client):
+        token = login(client, username="oldreport1", role="staff")
+        res = self._post_csv(
+            client,
+            token,
+            "Field,Value\nRisk Score,98.2\nRisk Tier,High\nAge Group,75-84\nFactor: Previous Missed Appointments,+3.0272\n",
+        )
+        assert res.status_code == 400
+        error = res.get_json()["error"]
+        assert "Expected header: Age,Gender,AppointmentLeadTimeDays,SMSReceived,PriorDNACount,IMDDecile" in error
+        assert "single-patient report" in error
+        assert "download the batch template" in error
+
+    def test_sample_batch_template_has_exact_required_columns(self):
+        template = os.path.join(os.path.dirname(__file__), "..", "..", "docs", "sample_batch_upload.csv")
+        with open(template, encoding="utf-8") as f:
+            header = f.readline().strip().split(",")
+        assert header == list(BATCH_REQUIRED_COLUMNS)
 
     def test_batch_wrong_columns_gives_clear_error(self, client):
         token = login(client, username="wc1", role="staff")

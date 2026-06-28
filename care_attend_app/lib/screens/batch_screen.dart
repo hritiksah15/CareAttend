@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../nhs_theme.dart';
 import '../services/api_service.dart';
+import '../utils/export.dart';
 import '../widgets/ui.dart';
 
 /// Batch CSV scoring — pick a CSV of up to 100 patients, score them via
@@ -78,6 +79,12 @@ class _BatchScreenState extends State<BatchScreen> {
           onPressed: _busy ? null : () => _pickAndScore(t),
           icon: const Icon(Icons.upload_file),
           label: Text(_busy ? t.batchScoring : t.batchPickCsv),
+        ),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          onPressed: Exporter.batchTemplateCsv,
+          icon: const Icon(Icons.download),
+          label: const Text('Download template CSV'),
         ),
         if (_filename != null)
           Padding(

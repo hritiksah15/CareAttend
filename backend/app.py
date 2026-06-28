@@ -396,6 +396,23 @@ def predict():
 # ── Batch CSV Endpoint (FR-08) ──
 
 
+BATCH_REQUIRED_COLUMNS = ("Age", "Gender", "AppointmentLeadTimeDays", "SMSReceived", "PriorDNACount", "IMDDecile")
+
+
+@app.route("/api/batch/template", methods=["GET"])
+def batch_template():
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(BATCH_REQUIRED_COLUMNS)
+    writer.writerow([78, 0, 21, 0, 4, 2])
+    writer.writerow([45, 1, 7, 1, 0, 8])
+    writer.writerow([66, 0, 35, 0, 2, 4])
+    response = make_response(output.getvalue())
+    response.headers["Content-Type"] = "text/csv"
+    response.headers["Content-Disposition"] = "attachment; filename=sample_batch_upload.csv"
+    return response
+
+
 @app.route("/api/batch", methods=["POST"])
 @token_required
 @role_required("staff", "admin")
@@ -431,7 +448,8 @@ def batch_predict():
 
     # Normalise headers/values: strip surrounding whitespace (and stray BOM) so a
     # header like " Age" or a value like " 72 " is accepted. Skip fully blank rows.
-    required_cols = {"Age", "Gender", "AppointmentLeadTimeDays", "SMSReceived", "PriorDNACount", "IMDDecile"}
+    required_cols = set(BATCH_REQUIRED_COLUMNS)
+    expected_header = ",".join(BATCH_REQUIRED_COLUMNS)
     cleaned = []
     for row in rows:
         norm = {(k or "").strip().lstrip("﻿"): (v or "").strip() for k, v in row.items() if k is not None}
@@ -444,12 +462,17 @@ def batch_predict():
     if rows:
         missing_cols = required_cols - set(rows[0].keys())
         if missing_cols:
-            return jsonify(
-                {
-                    "error": f"CSV missing required column(s): {', '.join(sorted(missing_cols))}. "
-                    f"Found columns: {', '.join(rows[0].keys())}"
-                }
-            ), 400
+            found_columns = ", ".join(rows[0].keys())
+            message = (
+                f"CSV missing required column(s): {', '.join(sorted(missing_cols))}. "
+                f"Expected header: {expected_header}. Found columns: {found_columns}."
+            )
+            if {"Field", "Value"}.issubset(set(rows[0].keys())):
+                message += (
+                    " This looks like a single-patient report, not a batch file. "
+                    "Use the 'Export assessment CSV' file, or download the batch template."
+                )
+            return jsonify({"error": message}), 400
 
     results = []
     for i, row in enumerate(rows):
@@ -1073,7 +1096,7 @@ NHSX_ETHICS_MAPPING = {
             "evidence": [
                 "F1 >= 0.72 and Recall >= 0.70 validated on held-out test set (NFR-04)",
                 "4-model comparison (LR, RF, XGBoost, LightGBM) with threshold optimisation",
-                "199 automated pytest tests covering all modules",
+                "238 automated pytest tests covering all modules",
                 "SMOTE applied to training partition only - no data leakage",
             ],
         },

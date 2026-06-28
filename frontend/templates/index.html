@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Care Attend - NHS Predictive Risk Assessment</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-    <link rel="stylesheet" href="/static/css/custom.css">
-    <link rel="stylesheet" href="/static/css/skeleton.css">
-    <link rel="stylesheet" href="/static/css/driver.css">
-    <link rel="stylesheet" href="/static/css/plotly-dark-theme.css">
-    <link rel="stylesheet" href="/static/css/mobile-responsive.css">
+    <link rel="stylesheet" href="/static/css/style.css?v=20260628-csv-batch">
+    <link rel="stylesheet" href="/static/css/custom.css?v=20260628-csv-batch">
+    <link rel="stylesheet" href="/static/css/skeleton.css?v=20260628-csv-batch">
+    <link rel="stylesheet" href="/static/css/driver.css?v=20260628-csv-batch">
+    <link rel="stylesheet" href="/static/css/plotly-dark-theme.css?v=20260628-csv-batch">
+    <link rel="stylesheet" href="/static/css/mobile-responsive.css?v=20260628-csv-batch">
     <script defer src="/static/vendor/chart.umd.min.js"></script>
     <script defer src="/static/vendor/jspdf.umd.min.js"></script>
     <script defer src="/static/vendor/jspdf.plugin.autotable.min.js"></script>
@@ -536,6 +536,7 @@
                 <div class="card">
                     <h2 class="card-title">Batch Patient Upload</h2>
                     <p class="card-description">Upload a CSV of up to 100 patient records for bulk risk assessment. Results returned as downloadable CSV.</p>
+                    <button class="btn-secondary" type="button" onclick="downloadBatchTemplate()">Download template CSV</button>
 
                     <div class="batch-upload-area" id="batch-upload-area">
                         <div class="upload-icon">&#128196;</div>
@@ -1065,7 +1066,7 @@
         </div>
     </div>
 
-    <script defer src="/static/js/i18n.js"></script>
-    <script defer src="/static/js/app.js"></script>
+    <script defer src="/static/js/i18n.js?v=20260628-csv-batch"></script>
+    <script defer src="/static/js/app.js?v=20260628-csv-batch"></script>
 </body>
 </html>
