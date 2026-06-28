@@ -123,7 +123,8 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted || _loginNotified) return;
       _loginNotified = true;
       final t = AppLocalizations.of(context);
-      Notifications.push(t.notifSignedIn, t.notifSignedInBody, NotifKind.security);
+      Notifications.push(
+          t.notifSignedIn, t.notifSignedInBody, NotifKind.security);
     });
   }
 
@@ -140,7 +141,8 @@ class _HomeScreenState extends State<HomeScreen> {
       _idleWarnTimer = Timer(timeout - const Duration(minutes: 2), () {
         if (!mounted) return;
         final t = AppLocalizations.of(context);
-        Notifications.push(t.notifIdleWarn, t.notifIdleWarnBody, NotifKind.security);
+        Notifications.push(
+            t.notifIdleWarn, t.notifIdleWarnBody, NotifKind.security);
       });
     }
   }
@@ -171,8 +173,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final t = AppLocalizations.of(context);
     final tier = '${result['risk_tier'] ?? ''}'.toUpperCase();
     final pct = (result['percentage'] as num?)?.toStringAsFixed(0) ?? '—';
-    Notifications.push(t.notifAssessmentDone,
-        t.notifAssessmentBody(tier, pct), NotifKind.activity);
+    Notifications.push(t.notifAssessmentDone, t.notifAssessmentBody(tier, pct),
+        NotifKind.activity);
   }
 
   Future<void> _handleLogout() async {
@@ -215,54 +217,56 @@ class _HomeScreenState extends State<HomeScreen> {
             valueListenable: Notifications.items,
             builder: (context, items, _) => Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 12, 12),
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
-              Row(children: [
-                Icon(Icons.notifications,
-                    color: Theme.of(context).colorScheme.primary),
-                const SizedBox(width: 8),
-                Text(t.notifTitle,
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.w700)),
-                const Spacer(),
-                if (items.isNotEmpty)
-                  TextButton(
-                      onPressed: Notifications.clear,
-                      child: Text(t.notifClearAll)),
-              ]),
-              if (items.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 28),
-                  child: Column(children: [
-                    Icon(Icons.notifications_none,
-                        size: 40,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant),
-                    const SizedBox(height: 8),
-                    Text(t.notifEmpty,
-                        style: TextStyle(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant)),
-                  ]),
-                )
-              else
-                Flexible(
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: items.length,
-                    itemBuilder: (context, i) {
-                      final n = items[i];
-                      return ListTile(
-                        leading: Icon(n.icon, color: _notifColor(n.kind)),
-                        title: Text(n.title,
-                            style:
-                                const TextStyle(fontWeight: FontWeight.w600)),
-                        subtitle: Text(n.body),
-                        dense: true,
-                      );
-                    },
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                Row(children: [
+                  Icon(Icons.notifications,
+                      color: Theme.of(context).colorScheme.primary),
+                  const SizedBox(width: 8),
+                  Text(t.notifTitle,
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.w700)),
+                  const Spacer(),
+                  if (items.isNotEmpty)
+                    TextButton(
+                        onPressed: Notifications.clear,
+                        child: Text(t.notifClearAll)),
+                ]),
+                if (items.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 28),
+                    child: Column(children: [
+                      Icon(Icons.notifications_none,
+                          size: 40,
+                          color:
+                              Theme.of(context).colorScheme.onSurfaceVariant),
+                      const SizedBox(height: 8),
+                      Text(t.notifEmpty,
+                          style: TextStyle(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant)),
+                    ]),
+                  )
+                else
+                  Flexible(
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: items.length,
+                      itemBuilder: (context, i) {
+                        final n = items[i];
+                        return ListTile(
+                          leading: Icon(n.icon, color: _notifColor(n.kind)),
+                          title: Text(n.title,
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w600)),
+                          subtitle: Text(n.body),
+                          dense: true,
+                        );
+                      },
+                    ),
                   ),
-                ),
-            ]),
-          ),
+              ]),
+            ),
           ),
         ),
       ),
@@ -340,9 +344,8 @@ class _HomeScreenState extends State<HomeScreen> {
       onPanDown: (_) => _onUserActivity(),
       child: Scaffold(
         key: _scaffoldKey,
-        // Body flows under the translucent bottom bar so the backdrop blur has
-        // content to frost. Screens scroll, so trailing content reads fine.
-        extendBody: true,
+        // Keep the scaffold body above the bottom navigation so content and
+        // floating helpers never sit underneath the nav rail on mobile web.
         appBar: AppBar(
           // Left-align so the title isn't squeezed out by the trailing icons on
           // narrow (≤360px) screens; theme centres it by default.
@@ -354,8 +357,7 @@ class _HomeScreenState extends State<HomeScreen> {
             IconButton(
               icon: const Icon(Icons.help_outline, size: 20),
               tooltip: 'Guided tour',
-              onPressed: () => GuidedTour.start(
-                  context, (i) => _go(i)),
+              onPressed: () => GuidedTour.start(context, (i) => _go(i)),
             ),
             IconButton(
               icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode, size: 20),
@@ -498,46 +500,46 @@ class _HomeScreenState extends State<HomeScreen> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-          DrawerHeader(
-            decoration: const BoxDecoration(color: NHSTheme.blue),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                const Icon(Icons.favorite, color: Colors.white, size: 32),
-                const SizedBox(height: 8),
-                Text(t.appTitle,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700)),
-                Text(widget.username,
-                    style: const TextStyle(color: Colors.white70)),
-              ],
+            DrawerHeader(
+              decoration: const BoxDecoration(color: NHSTheme.blue),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  const Icon(Icons.favorite, color: Colors.white, size: 32),
+                  const SizedBox(height: 8),
+                  Text(t.appTitle,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700)),
+                  Text(widget.username,
+                      style: const TextStyle(color: Colors.white70)),
+                ],
+              ),
             ),
-          ),
-          for (final item in _visibleItems)
+            for (final item in _visibleItems)
+              ListTile(
+                leading: Icon(item.icon,
+                    color: _currentIndex == item.index
+                        ? NHSTheme.blue
+                        : Theme.of(context).colorScheme.onSurfaceVariant),
+                title: Text(_navLabel(t, item)),
+                selected: _currentIndex == item.index,
+                onTap: () {
+                  _go(item.index);
+                  Navigator.pop(context);
+                },
+              ),
+            const Divider(),
             ListTile(
-              leading: Icon(item.icon,
-                  color: _currentIndex == item.index
-                      ? NHSTheme.blue
-                      : Theme.of(context).colorScheme.onSurfaceVariant),
-              title: Text(_navLabel(t, item)),
-              selected: _currentIndex == item.index,
+              leading: const Icon(Icons.logout, color: NHSTheme.riskHigh),
+              title: Text(t.logout),
               onTap: () {
-                _go(item.index);
                 Navigator.pop(context);
+                _handleLogout();
               },
             ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.logout, color: NHSTheme.riskHigh),
-            title: Text(t.logout),
-            onTap: () {
-              Navigator.pop(context);
-              _handleLogout();
-            },
-          ),
           ],
         ),
       ),

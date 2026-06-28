@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../nhs_theme.dart';
 import '../services/api_service.dart';
+import '../widgets/ui.dart';
 
 /// Batch CSV scoring — pick a CSV of up to 100 patients, score them via
 /// /api/batch, and show the returned results table. (Staff/admin)
@@ -55,7 +56,8 @@ class _BatchScreenState extends State<BatchScreen> {
     return csv
         .trim()
         .split('\n')
-        .map((line) => line.split(',').map((c) => c.replaceAll('"', '').trim()).toList())
+        .map((line) =>
+            line.split(',').map((c) => c.replaceAll('"', '').trim()).toList())
         .toList();
   }
 
@@ -68,7 +70,9 @@ class _BatchScreenState extends State<BatchScreen> {
         Text(t.batchUpload,
             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
         const SizedBox(height: 4),
-        Text(t.batchUploadDesc, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+        Text(t.batchUploadDesc,
+            style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant)),
         const SizedBox(height: 16),
         ElevatedButton.icon(
           onPressed: _busy ? null : () => _pickAndScore(t),
@@ -80,14 +84,14 @@ class _BatchScreenState extends State<BatchScreen> {
             padding: const EdgeInsets.only(top: 8),
             child: Text(t.batchFile(_filename!),
                 style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 12)),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontSize: 12)),
           ),
         if (_error != null)
-          Card(
-              child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(_error!,
-                      style: const TextStyle(color: NHSTheme.riskHigh)))),
+          AppCard(
+              padding: const EdgeInsets.all(16),
+              child: Text(_error!,
+                  style: const TextStyle(color: NHSTheme.riskHigh))),
         if (_rows.isNotEmpty) ..._buildResults(t),
       ],
     );
@@ -114,7 +118,8 @@ class _BatchScreenState extends State<BatchScreen> {
   List<Widget> _buildResults(AppLocalizations t) {
     final header = _rows.first.map((h) => h.trim().toLowerCase()).toList();
     int col(String name) => header.indexOf(name);
-    final dataRows = _rows.skip(1).where((r) => r.length == header.length).toList();
+    final dataRows =
+        _rows.skip(1).where((r) => r.length == header.length).toList();
 
     final iTier = col('risk_tier');
     final iProb = col('risk_probability');
@@ -144,7 +149,8 @@ class _BatchScreenState extends State<BatchScreen> {
     return [
       const SizedBox(height: 16),
       Row(children: [
-        _summary('${dataRows.length}', t.batchPatients, Theme.of(context).colorScheme.primary),
+        _summary('${dataRows.length}', t.batchPatients,
+            Theme.of(context).colorScheme.primary),
         _summary('$high', t.statHigh, NHSTheme.riskHigh),
         _summary('$med', t.statMedium, NHSTheme.riskMedium),
         _summary('$low', t.statLow, NHSTheme.riskLow),
@@ -152,16 +158,19 @@ class _BatchScreenState extends State<BatchScreen> {
       const SizedBox(height: 12),
       ...dataRows.map((r) {
         if (iErr >= 0 && r[iErr].trim().isNotEmpty) {
-          return Card(
+          return AppCard(
+            padding: EdgeInsets.zero,
             child: ListTile(
-              leading: const Icon(Icons.error_outline, color: NHSTheme.riskHigh),
+              leading:
+                  const Icon(Icons.error_outline, color: NHSTheme.riskHigh),
               title: Text(t.batchRow(iRow >= 0 ? r[iRow] : '?')),
               subtitle: Text(r[iErr]),
             ),
           );
         }
         final tier = iTier >= 0 ? r[iTier] : '';
-        return Card(
+        return AppCard(
+          padding: EdgeInsets.zero,
           child: ListTile(
             leading: CircleAvatar(
               backgroundColor: NHSTheme.riskColor(tier.isEmpty ? 'Low' : tier),
@@ -174,7 +183,8 @@ class _BatchScreenState extends State<BatchScreen> {
                 ? Text(t.batchTopFactor(r[iTop]))
                 : null,
             trailing: Text(iProb >= 0 ? '${r[iProb]}%' : '',
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                style:
+                    const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
           ),
         );
       }),
@@ -183,18 +193,18 @@ class _BatchScreenState extends State<BatchScreen> {
 
   Widget _summary(String value, String label, Color color) {
     return Expanded(
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
-          child: Column(children: [
-            Text(value,
-                style: TextStyle(
-                    fontSize: 22, fontWeight: FontWeight.w800, color: color)),
-            const SizedBox(height: 2),
-            Text(label,
-                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-          ]),
-        ),
+      child: AppCard(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
+        child: Column(children: [
+          Text(value,
+              style: TextStyle(
+                  fontSize: 22, fontWeight: FontWeight.w800, color: color)),
+          const SizedBox(height: 2),
+          Text(label,
+              style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant)),
+        ]),
       ),
     );
   }

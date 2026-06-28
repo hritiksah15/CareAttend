@@ -458,6 +458,25 @@ class AppLocalizationsUr extends AppLocalizations {
   String get adminRoleLabel => 'کردار:';
 
   @override
+  String get adminSessionLogTitle => 'لاگ اِن سیشن لاگ';
+
+  @override
+  String get adminSessionLogSubtitle =>
+      'کامیاب سائن اِن اور سائن آؤٹ کا مستقل ریکارڈ۔';
+
+  @override
+  String get adminSessionEmpty => 'ابھی کوئی لاگ اِن سیشن واقعہ نہیں۔';
+
+  @override
+  String get adminSessionLogin => 'لاگ اِن';
+
+  @override
+  String get adminSessionLogout => 'لاگ آؤٹ';
+
+  @override
+  String get adminSessionUnknownUser => 'نامعلوم صارف';
+
+  @override
   String get slotsTitle => 'سلاٹ کی اصلاح';
 
   @override

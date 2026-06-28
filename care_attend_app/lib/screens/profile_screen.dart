@@ -8,6 +8,7 @@ import '../nhs_theme.dart';
 import '../services/api_service.dart';
 import '../utils/validators.dart';
 import '../widgets/password_field.dart';
+import '../widgets/ui.dart';
 import 'login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -103,7 +104,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             if (hasPhoto)
               ListTile(
-                leading: Icon(Icons.visibility, color: Theme.of(context).colorScheme.primary),
+                leading: Icon(Icons.visibility,
+                    color: Theme.of(context).colorScheme.primary),
                 title: Text(t.profileViewPhoto),
                 onTap: () {
                   Navigator.pop(context);
@@ -111,7 +113,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 },
               ),
             ListTile(
-              leading: Icon(Icons.photo_camera, color: Theme.of(context).colorScheme.primary),
+              leading: Icon(Icons.photo_camera,
+                  color: Theme.of(context).colorScheme.primary),
               title: Text(hasPhoto ? t.profileChangePhoto : t.profileAddPhoto),
               onTap: () {
                 Navigator.pop(context);
@@ -120,8 +123,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             if (hasPhoto)
               ListTile(
-                leading: const Icon(Icons.delete_outline,
-                    color: NHSTheme.riskHigh),
+                leading:
+                    const Icon(Icons.delete_outline, color: NHSTheme.riskHigh),
                 title: Text(t.profileRemovePhoto),
                 onTap: () {
                   Navigator.pop(context);
@@ -283,11 +286,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   padding: EdgeInsets.all(24),
                   child: CircularProgressIndicator())),
         if (_error != null)
-          Card(
-              child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(_error!,
-                      style: const TextStyle(color: NHSTheme.riskHigh)))),
+          AppCard(
+              padding: const EdgeInsets.all(16),
+              child: Text(_error!,
+                  style: const TextStyle(color: NHSTheme.riskHigh))),
         if (_profile != null) ...[
           _headerCard(),
           const SizedBox(height: 8),
@@ -328,8 +330,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   String _fmtDate(dynamic epoch) {
     if (epoch == null) return '—';
-    final d = DateTime.fromMillisecondsSinceEpoch(
-        (epoch as num).round() * 1000);
+    final d =
+        DateTime.fromMillisecondsSinceEpoch((epoch as num).round() * 1000);
     return '${d.day}/${d.month}/${d.year}';
   }
 
@@ -338,20 +340,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final p = _profile!;
     Widget row(IconData ic, String label, String value) => ListTile(
           dense: true,
-          leading: Icon(ic, color: Theme.of(context).colorScheme.onSurfaceVariant, size: 20),
+          leading: Icon(ic,
+              color: Theme.of(context).colorScheme.onSurfaceVariant, size: 20),
           title: Text(label),
-          trailing: Text(value,
-              style: const TextStyle(fontWeight: FontWeight.w600)),
+          trailing:
+              Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
         );
-    return Card(
+    return AppCard(
+      padding: EdgeInsets.zero,
       child: Column(children: [
         row(Icons.person_outline, t.profileUsername, '${p['username'] ?? '—'}'),
         const Divider(height: 1),
-        row(Icons.badge_outlined, t.profileRole, '${p['role'] ?? '—'}'.toUpperCase()),
+        row(Icons.badge_outlined, t.profileRole,
+            '${p['role'] ?? '—'}'.toUpperCase()),
         const Divider(height: 1),
-        row(Icons.event_outlined, t.profileMemberSince, _fmtDate(p['createdAt'])),
+        row(Icons.event_outlined, t.profileMemberSince,
+            _fmtDate(p['createdAt'])),
         const Divider(height: 1),
-        row(Icons.lock_clock_outlined, t.profilePasswordChanged,
+        row(
+            Icons.lock_clock_outlined,
+            t.profilePasswordChanged,
             p['lastPasswordChange'] == null
                 ? t.profileNever
                 : _fmtDate(p['lastPasswordChange'])),
@@ -365,15 +373,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final sub = [p['jobTitle'], p['department']]
         .where((e) => e != null && e.toString().isNotEmpty)
         .join(' · ');
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Semantics(
-              button: true,
-              label: t.profilePhotoA11y,
-              child: GestureDetector(
+    return AppCard(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Semantics(
+            button: true,
+            label: t.profilePhotoA11y,
+            child: GestureDetector(
               onTap: _avatarOptions,
               child: Stack(
                 children: [
@@ -382,7 +389,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     backgroundColor: NHSTheme.blue,
                     backgroundImage: _avatarProvider,
                     child: _avatarProvider == null
-                        ? const Icon(Icons.person, color: Colors.white, size: 30)
+                        ? const Icon(Icons.person,
+                            color: Colors.white, size: 30)
                         : null,
                   ),
                   const Positioned(
@@ -391,89 +399,91 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: CircleAvatar(
                       radius: 12,
                       backgroundColor: NHSTheme.blue,
-                      child: Icon(Icons.camera_alt,
-                          size: 12, color: Colors.white),
+                      child:
+                          Icon(Icons.camera_alt, size: 12, color: Colors.white),
                     ),
                   ),
                 ],
               ),
             ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          (p['displayName'] ?? p['username'] ?? '-').toString(),
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w700, fontSize: 18),
-                        ),
-                      ),
-                      if ((p['pronouns'] ?? '').toString().isNotEmpty) ...[
-                        const SizedBox(width: 6),
-                        Text('· ${p['pronouns']}',
-                            style: TextStyle(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
-                      ],
-                    ],
-                  ),
-                  Text('${p['email'] ?? ''}',
-                      style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
-                  if (sub.isNotEmpty)
-                    Text(sub,
-                        style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
-                  const SizedBox(height: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: NHSTheme.riskLowBg,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text('${p['role'] ?? '-'}'.toUpperCase(),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        (p['displayName'] ?? p['username'] ?? '-').toString(),
                         style: const TextStyle(
-                            color: NHSTheme.riskLow,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700)),
+                            fontWeight: FontWeight.w700, fontSize: 18),
+                      ),
+                    ),
+                    if ((p['pronouns'] ?? '').toString().isNotEmpty) ...[
+                      const SizedBox(width: 6),
+                      Text('· ${p['pronouns']}',
+                          style: TextStyle(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                              fontSize: 13)),
+                    ],
+                  ],
+                ),
+                Text('${p['email'] ?? ''}',
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontSize: 13)),
+                if (sub.isNotEmpty)
+                  Text(sub,
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          fontSize: 13)),
+                const SizedBox(height: 4),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: NHSTheme.riskLowBg,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                ],
-              ),
+                  child: Text('${p['role'] ?? '-'}'.toUpperCase(),
+                      style: const TextStyle(
+                          color: NHSTheme.riskLow,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700)),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _editCard() {
     final t = AppLocalizations.of(context);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(t.profileEdit,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 12),
-          _field(_displayName, t.profileDisplayName, 100),
-          _field(_jobTitle, t.profileJobTitle, 100),
-          _field(_department, t.profileDepartment, 100),
-          _field(_pronouns, t.profilePronouns, 30),
-          _field(_phone, t.profilePhone, 30, keyboard: TextInputType.phone),
-          _field(_bio, t.profileBio, 300, maxLines: 3),
-          const SizedBox(height: 12),
-          ElevatedButton.icon(
-            onPressed: _savingProfile ? null : _saveProfile,
-            icon: const Icon(Icons.save),
-            label: Text(_savingProfile ? t.profileSaving : t.profileSaveBtn),
-          ),
-        ]),
-      ),
+    return AppCard(
+      padding: const EdgeInsets.all(16),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(t.profileEdit,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 12),
+        _field(_displayName, t.profileDisplayName, 100),
+        _field(_jobTitle, t.profileJobTitle, 100),
+        _field(_department, t.profileDepartment, 100),
+        _field(_pronouns, t.profilePronouns, 30),
+        _field(_phone, t.profilePhone, 30, keyboard: TextInputType.phone),
+        _field(_bio, t.profileBio, 300, maxLines: 3),
+        const SizedBox(height: 12),
+        ElevatedButton.icon(
+          onPressed: _savingProfile ? null : _saveProfile,
+          icon: const Icon(Icons.save),
+          label: Text(_savingProfile ? t.profileSaving : t.profileSaveBtn),
+        ),
+      ]),
     );
   }
 
@@ -497,31 +507,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _passwordCard() {
     final t = AppLocalizations.of(context);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(t.profileChangePassword,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 12),
-          PasswordField(controller: _current, label: t.profileCurrentPw),
-          const SizedBox(height: 10),
-          PasswordField(controller: _newPw, label: t.profileNewPw),
-          Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Text(passwordHint,
-                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-          ),
-          const SizedBox(height: 10),
-          PasswordField(controller: _confirm, label: t.profileConfirmPw),
-          const SizedBox(height: 14),
-          ElevatedButton.icon(
-            onPressed: _saving ? null : _changePassword,
-            icon: const Icon(Icons.lock_reset),
-            label: Text(_saving ? t.profileSaving : t.profileUpdatePw),
-          ),
-        ]),
-      ),
+    return AppCard(
+      padding: const EdgeInsets.all(16),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(t.profileChangePassword,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 12),
+        PasswordField(controller: _current, label: t.profileCurrentPw),
+        const SizedBox(height: 10),
+        PasswordField(controller: _newPw, label: t.profileNewPw),
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(passwordHint,
+              style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant)),
+        ),
+        const SizedBox(height: 10),
+        PasswordField(controller: _confirm, label: t.profileConfirmPw),
+        const SizedBox(height: 14),
+        ElevatedButton.icon(
+          onPressed: _saving ? null : _changePassword,
+          icon: const Icon(Icons.lock_reset),
+          label: Text(_saving ? t.profileSaving : t.profileUpdatePw),
+        ),
+      ]),
     );
   }
 
@@ -580,79 +590,78 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _twoFactorCard() {
     final t = AppLocalizations.of(context);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            Text(t.profile2faTitle,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-            const Spacer(),
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-              decoration: BoxDecoration(
-                color: _totpEnabled ? NHSTheme.riskLowBg : NHSTheme.riskHighBg,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                  _totpEnabled
-                      ? t.profile2faEnabledBadge
-                      : t.profile2faDisabledBadge,
-                  style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: _totpEnabled
-                          ? NHSTheme.riskLow
-                          : NHSTheme.riskHigh)),
+    return AppCard(
+      padding: const EdgeInsets.all(16),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Text(t.profile2faTitle,
+              style:
+                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+          const Spacer(),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+            decoration: BoxDecoration(
+              color: _totpEnabled ? NHSTheme.riskLowBg : NHSTheme.riskHighBg,
+              borderRadius: BorderRadius.circular(12),
             ),
-          ]),
-          const SizedBox(height: 8),
-          Text(t.profile2faDesc,
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
-          const SizedBox(height: 12),
-          if (_totpEnabled) ...[
-            PasswordField(controller: _twoFaPw, label: t.profile2faPwDisable),
-            const SizedBox(height: 10),
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(backgroundColor: NHSTheme.riskHigh),
-              onPressed: _twoFaBusy ? null : _disable2FA,
-              icon: const Icon(Icons.lock_open),
-              label: Text(t.profile2faDisableBtn),
-            ),
-          ] else if (_twoFaSecret == null) ...[
-            ElevatedButton.icon(
-              onPressed: _twoFaBusy ? null : _start2FA,
-              icon: const Icon(Icons.shield_outlined),
-              label: Text(_twoFaBusy ? t.profile2faWait : t.profile2faEnableBtn),
-            ),
-          ] else ...[
-            Text(t.profile2faStep1, style: const TextStyle(fontSize: 13)),
-            const SizedBox(height: 6),
-            SelectableText(_twoFaSecret!,
-                style: const TextStyle(
-                    fontFamily: 'monospace',
+            child: Text(
+                _totpEnabled
+                    ? t.profile2faEnabledBadge
+                    : t.profile2faDisabledBadge,
+                style: TextStyle(
+                    fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    fontSize: 15)),
-            const SizedBox(height: 12),
-            Text(t.profile2faStep2, style: const TextStyle(fontSize: 13)),
-            const SizedBox(height: 6),
-            TextField(
-              controller: _twoFaCode,
-              keyboardType: TextInputType.number,
-              maxLength: 6,
-              decoration: const InputDecoration(
-                  labelText: '000000', counterText: ''),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton.icon(
-              onPressed: _twoFaBusy ? null : _enable2FA,
-              icon: const Icon(Icons.check),
-              label: Text(t.profile2faVerify),
-            ),
-          ],
+                    color:
+                        _totpEnabled ? NHSTheme.riskLow : NHSTheme.riskHigh)),
+          ),
         ]),
-      ),
+        const SizedBox(height: 8),
+        Text(t.profile2faDesc,
+            style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: 13)),
+        const SizedBox(height: 12),
+        if (_totpEnabled) ...[
+          PasswordField(controller: _twoFaPw, label: t.profile2faPwDisable),
+          const SizedBox(height: 10),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(backgroundColor: NHSTheme.riskHigh),
+            onPressed: _twoFaBusy ? null : _disable2FA,
+            icon: const Icon(Icons.lock_open),
+            label: Text(t.profile2faDisableBtn),
+          ),
+        ] else if (_twoFaSecret == null) ...[
+          ElevatedButton.icon(
+            onPressed: _twoFaBusy ? null : _start2FA,
+            icon: const Icon(Icons.shield_outlined),
+            label: Text(_twoFaBusy ? t.profile2faWait : t.profile2faEnableBtn),
+          ),
+        ] else ...[
+          Text(t.profile2faStep1, style: const TextStyle(fontSize: 13)),
+          const SizedBox(height: 6),
+          SelectableText(_twoFaSecret!,
+              style: const TextStyle(
+                  fontFamily: 'monospace',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15)),
+          const SizedBox(height: 12),
+          Text(t.profile2faStep2, style: const TextStyle(fontSize: 13)),
+          const SizedBox(height: 6),
+          TextField(
+            controller: _twoFaCode,
+            keyboardType: TextInputType.number,
+            maxLength: 6,
+            decoration:
+                const InputDecoration(labelText: '000000', counterText: ''),
+          ),
+          const SizedBox(height: 10),
+          ElevatedButton.icon(
+            onPressed: _twoFaBusy ? null : _enable2FA,
+            icon: const Icon(Icons.check),
+            label: Text(t.profile2faVerify),
+          ),
+        ],
+      ]),
     );
   }
 
@@ -660,8 +669,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Widget item(String title, String body) => Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Icon(Icons.check_circle,
-                color: NHSTheme.riskLow, size: 18),
+            const Icon(Icons.check_circle, color: NHSTheme.riskLow, size: 18),
             const SizedBox(width: 8),
             Expanded(
               child: Column(
@@ -671,26 +679,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       style: const TextStyle(fontWeight: FontWeight.w700)),
                   Text(body,
                       style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          fontSize: 13)),
                 ],
               ),
             ),
           ]),
         );
     final t = AppLocalizations.of(context);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(t.profilePrivacy,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 12),
-          item(t.profilePrivGdprT, t.profilePrivGdprB),
-          item(t.profilePrivSessionT, t.profilePrivSessionB),
-          item(t.profilePrivEncT, t.profilePrivEncB),
-          item(t.profilePrivShareT, t.profilePrivShareB),
-        ]),
-      ),
+    return AppCard(
+      padding: const EdgeInsets.all(16),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(t.profilePrivacy,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 12),
+        item(t.profilePrivGdprT, t.profilePrivGdprB),
+        item(t.profilePrivSessionT, t.profilePrivSessionB),
+        item(t.profilePrivEncT, t.profilePrivEncB),
+        item(t.profilePrivShareT, t.profilePrivShareB),
+      ]),
     );
   }
 }

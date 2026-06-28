@@ -47,13 +47,18 @@ class GlassPanel extends StatelessWidget {
 
 /// Elevated surface card with consistent radius/padding/shadow.
 ///
-/// Lifts subtly on pointer hover (web/desktop) for an interactive, polished
-/// feel; no-op on touch devices.
+/// Lifts on pointer hover (web/desktop) and gives touch users a short pressed
+/// state. Mobile browsers/emulators do not emit hover, so touch feedback is
+/// handled separately.
 class AppCard extends StatefulWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
   final Color? color;
-  const AppCard({super.key, required this.child, this.padding = AppSpace.card, this.color});
+  const AppCard(
+      {super.key,
+      required this.child,
+      this.padding = AppSpace.card,
+      this.color});
 
   @override
   State<AppCard> createState() => _AppCardState();
@@ -61,38 +66,78 @@ class AppCard extends StatefulWidget {
 
 class _AppCardState extends State<AppCard> {
   bool _hover = false;
+  bool _pressed = false;
+
+  void _setHover(bool value) {
+    if (_hover == value || !mounted) return;
+    setState(() => _hover = value);
+  }
+
+  void _setPressed(bool value) {
+    if (_pressed == value || !mounted) return;
+    setState(() => _pressed = value);
+  }
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final dark = Theme.of(context).brightness == Brightness.dark;
+    final active = _hover || _pressed;
     final borderColor = dark
-        ? (_hover ? cs.primary.withValues(alpha: 0.55) : AppColors.darkOutline)
-        : (_hover ? cs.primary.withValues(alpha: 0.35) : Colors.transparent);
+        ? (active ? cs.primary.withValues(alpha: 0.72) : AppColors.darkOutline)
+        : (active
+            ? cs.primary.withValues(alpha: 0.42)
+            : Colors.black.withValues(alpha: 0.04));
+    final shadows = active
+        ? [
+            BoxShadow(
+              color: (dark ? cs.primary : Colors.black)
+                  .withValues(alpha: dark ? 0.22 : 0.14),
+              blurRadius: dark ? 20 : 18,
+              spreadRadius: dark ? 0 : 1,
+              offset: const Offset(0, 8),
+            ),
+          ]
+        : (dark
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.22),
+                  blurRadius: 12,
+                  offset: const Offset(0, 3),
+                ),
+              ]
+            : AppShadow.card);
     return MouseRegion(
-      onEnter: (_) => setState(() => _hover = true),
-      onExit: (_) => setState(() => _hover = false),
-      child: AnimatedContainer(
-        duration: AppMotion.fast,
-        curve: AppMotion.curve,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: widget.color ?? cs.surface,
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          boxShadow: !dark
-              ? (_hover
-                  ? [
-                      BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.12),
-                          blurRadius: 16,
-                          offset: const Offset(0, 4)),
-                    ]
-                  : AppShadow.card)
-              : null,
-          border: Border.all(color: borderColor, width: 1),
+      onEnter: (_) => _setHover(true),
+      onExit: (_) {
+        _setHover(false);
+        _setPressed(false);
+      },
+      child: Listener(
+        onPointerDown: (_) => _setPressed(true),
+        onPointerUp: (_) => _setPressed(false),
+        onPointerCancel: (_) => _setPressed(false),
+        child: AnimatedScale(
+          scale: _pressed ? 0.992 : (_hover ? 1.006 : 1),
+          duration: AppMotion.fast,
+          curve: AppMotion.curve,
+          child: AnimatedContainer(
+            duration: AppMotion.fast,
+            curve: AppMotion.curve,
+            width: double.infinity,
+            transform:
+                Matrix4.translationValues(0, active && !_pressed ? -3 : 0, 0),
+            transformAlignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: widget.color ?? cs.surface,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              boxShadow: shadows,
+              border: Border.all(color: borderColor, width: active ? 1.25 : 1),
+            ),
+            padding: widget.padding,
+            child: widget.child,
+          ),
         ),
-        padding: widget.padding,
-        child: widget.child,
       ),
     );
   }
@@ -111,7 +156,9 @@ class ScreenHeader extends StatelessWidget {
       Text(title, style: t.titleLarge),
       if (subtitle != null) ...[
         const SizedBox(height: AppSpace.xs),
-        Text(subtitle!, style: t.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+        Text(subtitle!,
+            style: t.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant)),
       ],
     ]);
   }
@@ -123,10 +170,9 @@ class SectionHeader extends StatelessWidget {
   const SectionHeader(this.text, {super.key});
   @override
   Widget build(BuildContext context) => Text(text,
-      style: Theme.of(context)
-          .textTheme
-          .titleMedium
-          ?.copyWith(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w700));
+      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          color: Theme.of(context).colorScheme.primary,
+          fontWeight: FontWeight.w700));
 }
 
 /// Risk tier pill.
@@ -139,7 +185,8 @@ class RiskBadge extends StatelessWidget {
     final c = AppColors.riskColor(tier);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-      decoration: BoxDecoration(color: c, borderRadius: BorderRadius.circular(AppRadius.sm)),
+      decoration: BoxDecoration(
+          color: c, borderRadius: BorderRadius.circular(AppRadius.sm)),
       child: Text('${tier.toUpperCase()} RISK',
           style: TextStyle(
               color: Colors.white,
@@ -163,11 +210,14 @@ class StatTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
         child: Column(children: [
           Text(value,
-              style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: color)),
+              style: TextStyle(
+                  fontSize: 26, fontWeight: FontWeight.w800, color: color)),
           const SizedBox(height: 2),
           Text(label,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant)),
         ]),
       ),
     );
@@ -180,7 +230,12 @@ class EmptyState extends StatelessWidget {
   final String title;
   final String? message;
   final Widget? action;
-  const EmptyState({super.key, required this.icon, required this.title, this.message, this.action});
+  const EmptyState(
+      {super.key,
+      required this.icon,
+      required this.title,
+      this.message,
+      this.action});
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
@@ -192,7 +247,10 @@ class EmptyState extends StatelessWidget {
         Text(title, textAlign: TextAlign.center, style: t.titleMedium),
         if (message != null) ...[
           const SizedBox(height: AppSpace.xs),
-          Text(message!, textAlign: TextAlign.center, style: t.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          Text(message!,
+              textAlign: TextAlign.center,
+              style: t.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant)),
         ],
         if (action != null) ...[const SizedBox(height: AppSpace.lg), action!],
       ]),
@@ -212,7 +270,9 @@ class ErrorView extends StatelessWidget {
       child: Row(children: [
         const Icon(Icons.error_outline, color: AppColors.riskHigh),
         const SizedBox(width: AppSpace.md),
-        Expanded(child: Text(message, style: const TextStyle(color: AppColors.riskHigh))),
+        Expanded(
+            child: Text(message,
+                style: const TextStyle(color: AppColors.riskHigh))),
         if (onRetry != null)
           TextButton(
               onPressed: onRetry,
@@ -231,9 +291,11 @@ class SkeletonList extends StatefulWidget {
   State<SkeletonList> createState() => _SkeletonListState();
 }
 
-class _SkeletonListState extends State<SkeletonList> with SingleTickerProviderStateMixin {
-  late final AnimationController _c =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 1100))..repeat();
+class _SkeletonListState extends State<SkeletonList>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+      vsync: this, duration: const Duration(milliseconds: 1100))
+    ..repeat();
   @override
   void dispose() {
     _c.dispose();
@@ -249,25 +311,27 @@ class _SkeletonListState extends State<SkeletonList> with SingleTickerProviderSt
         ? AppColors.darkSurface
         : const Color(0xFFF4F7F8);
     return Column(
-      children: List.generate(widget.count, (_) => Padding(
-            padding: const EdgeInsets.only(bottom: AppSpace.md),
-            child: AnimatedBuilder(
-              animation: _c,
-              builder: (context, _) {
-                return Container(
-                  height: widget.height,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(AppRadius.lg),
-                    gradient: LinearGradient(
-                      begin: Alignment(-1 - _c.value * 2, 0),
-                      end: Alignment(1 - _c.value * 2, 0),
-                      colors: [base, hi, base],
-                    ),
-                  ),
-                );
-              },
-            ),
-          )),
+      children: List.generate(
+          widget.count,
+          (_) => Padding(
+                padding: const EdgeInsets.only(bottom: AppSpace.md),
+                child: AnimatedBuilder(
+                  animation: _c,
+                  builder: (context, _) {
+                    return Container(
+                      height: widget.height,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(AppRadius.lg),
+                        gradient: LinearGradient(
+                          begin: Alignment(-1 - _c.value * 2, 0),
+                          end: Alignment(1 - _c.value * 2, 0),
+                          colors: [base, hi, base],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              )),
     );
   }
 }

@@ -61,10 +61,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         padding: const EdgeInsets.all(12),
         children: [
           Text(AppLocalizations.of(context).practiceDashboard,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
+              style:
+                  const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
           Text(AppLocalizations.of(context).practiceOverview,
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant)),
           const SizedBox(height: 16),
           if (_loading) const SkeletonList(count: 4),
           if (_error != null)
@@ -81,53 +83,63 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final total = d['total'] ?? 0;
     final widgets = <Widget>[];
     if (total == 0) {
-      widgets.add(Card(
-          child: Padding(
+      widgets.add(AppCard(
         padding: const EdgeInsets.all(20),
         child: Column(children: [
           const Icon(Icons.bar_chart, size: 48, color: NHSTheme.grey),
           const SizedBox(height: 8),
           Text(t.noAssessmentsYet, textAlign: TextAlign.center),
         ]),
-      )));
+      ));
     } else {
       widgets.addAll([
         Row(children: [
-          _statCard(t.statTotal, '$total', Theme.of(context).colorScheme.primary),
+          _statCard(
+              t.statTotal, '$total', Theme.of(context).colorScheme.primary),
           const SizedBox(width: 10),
           _statCard(t.statHigh, '${d['high_risk'] ?? 0}', NHSTheme.riskHigh),
         ]),
         const SizedBox(height: 10),
         Row(children: [
-          _statCard(t.statMedium, '${d['medium_risk'] ?? 0}', NHSTheme.riskMedium),
+          _statCard(
+              t.statMedium, '${d['medium_risk'] ?? 0}', NHSTheme.riskMedium),
           const SizedBox(width: 10),
           _statCard(t.statLow, '${d['low_risk'] ?? 0}', NHSTheme.riskLow),
         ]),
         const SizedBox(height: 8),
-        Card(child: ListTile(
-          leading: Icon(Icons.percent, color: Theme.of(context).colorScheme.primary),
-          title: Text(t.averageRisk),
-          trailing: Text(
-              '${(((d['average_risk'] ?? 0) as num) * 100).toStringAsFixed(1)}%',
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-        )),
+        AppCard(
+          padding: EdgeInsets.zero,
+          child: ListTile(
+            leading: Icon(Icons.percent,
+                color: Theme.of(context).colorScheme.primary),
+            title: Text(t.averageRisk),
+            trailing: Text(
+                '${(((d['average_risk'] ?? 0) as num) * 100).toStringAsFixed(1)}%',
+                style:
+                    const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+          ),
+        ),
       ]);
     }
     if (_fb != null && (_fb!['feedback_received'] ?? 0) > 0) {
       widgets.add(
-        Card(child: ListTile(
-          leading: Icon(Icons.fact_check_outlined, color: Theme.of(context).colorScheme.primary),
-          title: Text('Feedback: ${_fb!['feedback_received']} of '
-              '${_fb!['total_predictions']}'),
-          trailing: Text(
-              _fb!['accuracy'] == null
-                  ? '—'
-                  : '${((_fb!['accuracy'] as num) * 100).toStringAsFixed(0)}% acc',
-              style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
-                  color: NHSTheme.riskLow)),
-        )),
+        AppCard(
+          padding: EdgeInsets.zero,
+          child: ListTile(
+            leading: Icon(Icons.fact_check_outlined,
+                color: Theme.of(context).colorScheme.primary),
+            title: Text('Feedback: ${_fb!['feedback_received']} of '
+                '${_fb!['total_predictions']}'),
+            trailing: Text(
+                _fb!['accuracy'] == null
+                    ? '—'
+                    : '${((_fb!['accuracy'] as num) * 100).toStringAsFixed(0)}% acc',
+                style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                    color: NHSTheme.riskLow)),
+          ),
+        ),
       );
     }
     widgets.add(const SizedBox(height: 8));
@@ -137,7 +149,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
     ));
     widgets.addAll(
-      ((d['recent_assessments'] as List?) ?? []).map((r) => Card(
+      ((d['recent_assessments'] as List?) ?? []).map((r) => AppCard(
+            padding: EdgeInsets.zero,
             child: ListTile(
               leading: CircleAvatar(
                 backgroundColor: NHSTheme.riskColor(r['risk_tier'] ?? 'Low'),
@@ -167,19 +180,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildOutcomesCard() {
     final o = _outcomes;
     if (o == null || o['appointments'] == null) {
-      return Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(AppLocalizations.of(context).operationalOutcomes,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-              const SizedBox(height: 8),
-              Text('Outcome metrics are not available yet.',
-                  style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
-            ],
-          ),
+      return AppCard(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(AppLocalizations.of(context).operationalOutcomes,
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 8),
+            Text('Outcome metrics are not available yet.',
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          ],
         ),
       );
     }
@@ -187,68 +200,78 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final appointments = o['appointments'] as Map<String, dynamic>;
     final outcomes = (o['outcomes'] as Map<String, dynamic>?) ?? {};
     final interventions = (o['interventions'] as Map<String, dynamic>?) ?? {};
-    final actioned = (interventions['actioned_completed_appointments'] as Map<String, dynamic>?) ?? {};
-    final unactioned = (interventions['unactioned_completed_appointments'] as Map<String, dynamic>?) ?? {};
+    final actioned = (interventions['actioned_completed_appointments']
+            as Map<String, dynamic>?) ??
+        {};
+    final unactioned = (interventions['unactioned_completed_appointments']
+            as Map<String, dynamic>?) ??
+        {};
     final delta = interventions['actioned_vs_unactioned_dna_gap'];
 
     double? asDouble(dynamic value) => value is num ? value.toDouble() : null;
-    String fmt(double? value) => value == null ? '--' : '${(value * 100).toStringAsFixed(1)}%';
+    String fmt(double? value) =>
+        value == null ? '--' : '${(value * 100).toStringAsFixed(1)}%';
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Operational Outcomes',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _metric('${appointments['completed'] ?? 0}', 'Completed', Theme.of(context).colorScheme.primary),
-              _metric(fmt(asDouble(outcomes['attended_rate'])), 'Attendance', NHSTheme.riskLow),
-              _metric(fmt(asDouble(outcomes['dna_rate'])), 'DNA', NHSTheme.riskHigh),
-              _metric('${interventions['completed_actions'] ?? 0}', 'Actions', Theme.of(context).colorScheme.onSurfaceVariant),
-              _metric(
-                delta is num ? fmt(delta.toDouble()) : '--',
-                'DNA Gap (obs.)',
-                Theme.of(context).colorScheme.primary,
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Table(
-            border: TableBorder.all(color: Colors.black12),
-            columnWidths: const {
-              0: FlexColumnWidth(1.2),
-              1: FlexColumnWidth(0.8),
-              2: FlexColumnWidth(0.8),
-              3: FlexColumnWidth(0.8),
-              4: FlexColumnWidth(0.8),
-            },
-            children: [
-              _tableRow(['Cohort', 'Done', 'Att.', 'DNA', 'DNA Rate'], header: true),
-              _tableRow([
-                'Actioned',
-                '${actioned['total'] ?? 0}',
-                '${actioned['attended'] ?? 0}',
-                '${actioned['dna'] ?? 0}',
-                fmt(asDouble(actioned['dna_rate'])),
-              ]),
-              _tableRow([
-                'Unactioned',
-                '${unactioned['total'] ?? 0}',
-                '${unactioned['attended'] ?? 0}',
-                '${unactioned['dna'] ?? 0}',
-                fmt(asDouble(unactioned['dna_rate'])),
-              ]),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text('${interventions['note'] ?? ''}',
-              style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-        ]),
-      ),
+    return AppCard(
+      padding: const EdgeInsets.all(16),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const Text('Operational Outcomes',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _metric('${appointments['completed'] ?? 0}', 'Completed',
+                Theme.of(context).colorScheme.primary),
+            _metric(fmt(asDouble(outcomes['attended_rate'])), 'Attendance',
+                NHSTheme.riskLow),
+            _metric(
+                fmt(asDouble(outcomes['dna_rate'])), 'DNA', NHSTheme.riskHigh),
+            _metric('${interventions['completed_actions'] ?? 0}', 'Actions',
+                Theme.of(context).colorScheme.onSurfaceVariant),
+            _metric(
+              delta is num ? fmt(delta.toDouble()) : '--',
+              'DNA Gap (obs.)',
+              Theme.of(context).colorScheme.primary,
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Table(
+          border: TableBorder.all(color: Colors.black12),
+          columnWidths: const {
+            0: FlexColumnWidth(1.2),
+            1: FlexColumnWidth(0.8),
+            2: FlexColumnWidth(0.8),
+            3: FlexColumnWidth(0.8),
+            4: FlexColumnWidth(0.8),
+          },
+          children: [
+            _tableRow(['Cohort', 'Done', 'Att.', 'DNA', 'DNA Rate'],
+                header: true),
+            _tableRow([
+              'Actioned',
+              '${actioned['total'] ?? 0}',
+              '${actioned['attended'] ?? 0}',
+              '${actioned['dna'] ?? 0}',
+              fmt(asDouble(actioned['dna_rate'])),
+            ]),
+            _tableRow([
+              'Unactioned',
+              '${unactioned['total'] ?? 0}',
+              '${unactioned['attended'] ?? 0}',
+              '${unactioned['dna'] ?? 0}',
+              fmt(asDouble(unactioned['dna_rate'])),
+            ]),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text('${interventions['note'] ?? ''}',
+            style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.onSurfaceVariant)),
+      ]),
     );
   }
 
@@ -271,16 +294,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _statCard(String label, String value, Color color) {
     return Expanded(
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
-          child: Column(children: [
-            Text(value, style: TextStyle(
-                fontSize: 28, fontWeight: FontWeight.w800, color: color)),
-            const SizedBox(height: 4),
-            Text(label, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
-          ]),
-        ),
+      child: AppCard(
+        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
+        child: Column(children: [
+          Text(value,
+              style: TextStyle(
+                  fontSize: 28, fontWeight: FontWeight.w800, color: color)),
+          const SizedBox(height: 4),
+          Text(label,
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant)),
+        ]),
       ),
     );
   }
@@ -302,8 +326,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     color: color, fontSize: 18, fontWeight: FontWeight.w800)),
             Text(label,
                 textAlign: TextAlign.center,
-                style:
-                    TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                style: TextStyle(
+                    fontSize: 11,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ]),
         ),
       ),

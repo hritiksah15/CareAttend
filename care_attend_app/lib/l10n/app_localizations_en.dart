@@ -461,6 +461,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminRoleLabel => 'Role:';
 
   @override
+  String get adminSessionLogTitle => 'Login Session Log';
+
+  @override
+  String get adminSessionLogSubtitle =>
+      'Persistent record of successful sign-ins and sign-outs.';
+
+  @override
+  String get adminSessionEmpty => 'No login session events yet.';
+
+  @override
+  String get adminSessionLogin => 'Login';
+
+  @override
+  String get adminSessionLogout => 'Logout';
+
+  @override
+  String get adminSessionUnknownUser => 'Unknown user';
+
+  @override
   String get slotsTitle => 'Slot Optimisation';
 
   @override
