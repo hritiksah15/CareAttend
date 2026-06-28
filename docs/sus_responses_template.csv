@@ -1,0 +1,6 @@
+participant_id,role,device,task1_login_pass,task1_seconds,task2_assessment_pass,task2_seconds,task3_results_pass,task3_seconds,task4_bias_pass,task4_seconds,task5_dark_mode_pass,task5_seconds,q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,most_useful,confusing,would_use,shap_helpful,interventions_relevant,notes
+P1,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+P2,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+P3,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+P4,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+P5,,,,,,,,,,,,,,,,,,,,,,,,,,,,

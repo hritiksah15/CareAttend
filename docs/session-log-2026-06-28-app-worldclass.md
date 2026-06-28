@@ -1,7 +1,7 @@
 # Session Log — App Worldclass Pass (2026-06-27 → 28)
 
 Branch: `app-worldclass-phase1` · Pushed: `2ffac0b..ab2cdd2` (12 commits) ·
-Verified: `flutter analyze` clean (0 issues), 22 tests pass, web build OK,
+Verified: `flutter analyze` clean (0 issues), 26 tests pass, web build OK,
 live Playwright screenshots on `:8090`.
 
 ## Goal
@@ -59,3 +59,80 @@ glassmorphism on transient panels, notifications, branding, i18n, tests.
 ## Deferred / optional next
 - Motion (tab transitions) — skipped until WebGL/`--wasm` (jank under CPU).
 - Golden tests; richer empty-state illustrations.
+
+## Follow-up parity pass — 2026-06-28
+- Fixed mobile/web content hiding under the Flutter bottom navigation by
+  removing body extension behind the nav surface.
+- Migrated remaining Flutter app cards to the shared `AppCard`, so hover/lift,
+  dark-mode borders, spacing, and surface treatment now apply consistently in
+  the app version rather than only the website.
+- Reworked Flutter ethics and bias screens with colored metric bars/cards; web
+  bias pass/warn/fail bars now use semantic gradients instead of black/white.
+- Added persistent backend audit rows for successful login and logout events,
+  including username, timestamp, source IP, action, and detail.
+- Added an audit username snapshot migration so login history survives later
+  account deletion without breaking foreign-key integrity.
+- Added a Flutter admin “Login Session Log” panel and a matching web admin
+  panel so admins can review recent sign-in/sign-out activity in both clients.
+
+## AT2 / 90%+ audit pass — 2026-06-28
+- Added `docs/at2_90_plus_worldclass_audit_2026-06-28.md` with a weighted
+  AT2 judgement, satisfied-vs-gap tables, and world-class build order.
+- Replaced the scaffold Flutter README with a project-specific app README.
+- Updated stale evidence counts in README/traceability/audit/readiness docs to
+  233 backend tests and 26 Flutter tests.
+- Hardened Flutter API response handling so non-JSON proxy/server errors become
+  controlled `ApiException` messages instead of raw decode failures.
+- Verified: full backend `pytest -q` passed, `flutter analyze` clean,
+  `flutter test` passed, `flutter build web` succeeded.
+
+## Flutter hover/rendering fix — 2026-06-28
+- Root cause: Flutter hover only fires with a real mouse/trackpad pointer; Chrome
+  mobile emulation/native mobile uses touch, so the old `MouseRegion` state did
+  not activate. The visual delta was also too subtle, especially in dark mode.
+- Updated shared `AppCard` rendering to use stronger hover elevation/border,
+  dark-mode shadow, slight lift/scale, and separate touch press feedback via
+  pointer events.
+- Added Flutter widget tests for mouse hover lift and touch press feedback.
+- Verified: `flutter analyze` clean, `flutter test` passed, `flutter build web`
+  succeeded.
+
+## OpenAPI + UAT evidence pass — 2026-06-28
+- Updated `docs/openapi.yaml` for login/logout audit writes, admin Login Session
+  Log usage, and the `AuditLogEntry` schema with username snapshots and nullable
+  deleted-user `userId`.
+- Added a screenshot/UAT evidence checklist and session-log curl proof to
+  `docs/feature_test_plan.md`.
+- Validated the OpenAPI YAML loads successfully.
+
+## Login rate-limit hardening — 2026-06-28
+- Added failed-login throttling for `/auth/login`: repeated failures are counted
+  per IP + identifier, successful login clears the bucket, and the sixth failed
+  attempt returns `429` with `Retry-After`.
+- Added API coverage for the rate-limit path; backend collection is now 233
+  tests.
+- Verified: Python compile passed, OpenAPI YAML valid, full backend `pytest -q`
+  passed.
+
+## Admin session-log widget coverage — 2026-06-28
+- Extracted the Flutter admin Login Session Log into `AdminSessionLogCard` so it
+  can be rendered independently in tests.
+- Added widget coverage for login/logout rows and filtering of unrelated audit
+  actions.
+- Verified: `flutter analyze` clean, `flutter test` passed with 26 tests,
+  `flutter build web` succeeded.
+
+## Screenshot evidence pack setup — 2026-06-28
+- Attempted to connect to the supported in-app browser for automated screenshot
+  capture; no browser backend was available in this Codex session.
+- Added `docs/screenshots/README.md` with required filenames, viewport sizes,
+  capture setup, acceptance rules, and pending sign-off rows for UX1-UX9.
+- Screenshot evidence remains pending and must be filled with real captures from
+  the app/web runtime before submission.
+
+## SUS evidence setup — 2026-06-28
+- Added `docs/sus_responses_template.csv` for five anonymised participant rows.
+- Added `docs/sus_results_2026-06-28.md` as the pending results/write-up file.
+- Added `tools/sus/calculate_sus.py` to calculate per-participant SUS scores,
+  mean score, benchmark interpretation, and task-completion rates.
+- The SUS study remains pending until five real responses are collected.

@@ -5,10 +5,10 @@ Verified against backend (`backend/`), Flutter app (`care_attend_app/`), web fro
 
 ## Method
 - Read full AT2 report (49pp): reqs, RTM (App B), MoSCoW (App A), testing methodology, plan.
-- Backend: 227 pytest tests run → **all pass**.
+- Backend: 233 pytest tests run → **all pass**.
 - Models inspected directly: base = LogisticRegression, calibrated = CalibratedClassifierCV.
 - Perf + a11y: read actual result numbers, not just file presence.
-- Flutter: `flutter analyze` → **0 errors** (40 info-level lints only, CI ignores); `flutter test` → **passes, app boots to login screen**. Toolchain at `~/development/flutter`. Full browser E2E not run (optional: `flutter run -d chrome`).
+- Flutter: `flutter analyze` → **no issues**; `flutter test` → **26 tests pass, including AppCard hover/press and admin session-log rendering coverage**. Toolchain at `~/development/flutter`. Full browser E2E not run (optional: `flutter run -d chrome`).
 
 ## Functional Requirements (by feature, IDs vary between Table 3.3 and MoSCoW p41)
 
@@ -33,7 +33,7 @@ Verified against backend (`backend/`), Flutter app (`care_attend_app/`), web fro
 | NFR-03 | WCAG 2.1 AA | ✅ EXCEEDS | a11y_report.md: 0 violations at WCAG 2.2 AA |
 | NFR-04 | F1≥0.72, Recall≥0.70 | ✅ | model_card: F1 0.721, Recall 0.735 |
 | NFR-05 | Documented for extension | ✅ | docstrings, README, openapi.yaml, model_card |
-| NFR-06 | bcrypt, no plaintext, session expiry | ✅ | auth.py bcrypt + JWT |
+| NFR-06 | bcrypt, no plaintext, session expiry | ✅ | `auth.py` bcrypt + opaque DB-backed sessions |
 
 ### NFR-01 drift (highest-stakes finding)
 AT2 §3.3.2 + ERD + both DFDs + NFR-01 describe a **DB-less, session-scoped** design,

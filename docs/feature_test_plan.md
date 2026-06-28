@@ -157,7 +157,8 @@ Pre: admin must approve staff1 first (see §4 A3). Then re-login staff1 to refre
 | A9 | Cross-validation | `POST /api/evaluation/cross-validation` | CV folds, CIs, McNemar |
 | A10 | Ethics framework | `GET /api/ethics-framework` | NHSX/ethics mapping |
 | A11 | Export model | `GET /api/export-model` | model artefact/metadata download |
-| A12 | Audit log | `GET /api/audit-log` | staff actions w/ IP, timestamps |
+| A12 | Audit log | `GET /api/audit-log` | staff actions + login/logout session events w/ username, IP, timestamps |
+| A12b | Login Session Log UI | web Admin tab + Flutter Admin screen | recent `login_success`/`logout` rows render with time, user, event, IP/detail |
 | A13 | Inherits all staff features | repeat §3 S1–S16 with $TOKEN_ADMIN | all 200 |
 
 Approve curl (A3):
@@ -182,6 +183,7 @@ curl -s -XPOST localhost:5000/api/admin/users/$PID/approve $(auth $TOKEN_ADMIN)
 | X7 | Register duplicate email | 400 |
 | X8 | Self-register with `role:admin` in body | ignored → role=user (no escalation) |
 | X9 | NFR-01 check | after predict, confirm no Age/Gender/IMD row in DB (only AssessmentSummary prob/tier/age_group, age="Not stored") |
+| X10 | Six repeated bad logins for same identifier/IP | first five 401, sixth **429** with `Retry-After` |
 
 NFR-01 DB check:
 ```bash
@@ -205,13 +207,49 @@ Fill while testing — one row per test ID:
 
 Mark any FAIL → file as defect. Known item to confirm: predict open to `user` role (matrix note §1).
 
+### 6.1 App/web screenshot evidence checklist
+
+Use this checklist for the report appendix / demo evidence pack. Store captures
+under `docs/screenshots/` or paste them into the submission document with
+caption, date, role, and device width.
+
+| Evidence ID | Surface | Role | Screen / action | Expected evidence |
+|---|---|---|---|---|
+| UX1 | Flutter app | admin | Admin tab → Login Session Log | Login/logout rows visible; no content hidden behind bottom nav |
+| UX2 | Web | admin | Admin tab → Login Session Log | Same login/logout events visible as app |
+| UX3 | Flutter app | admin | Bias screen | Color-coded pass/warn/fail bars; readable in light/dark |
+| UX4 | Flutter app | admin | Ethics screen | Colorful metrics/cards; no black-and-white graph issue |
+| UX5 | Flutter app | staff/admin | Results screen after prediction | Risk card, SHAP, interventions, chatbot/button area not hidden by nav |
+| UX6 | Flutter web desktop | any | Hover over an `AppCard` with mouse | Card lifts/shadow/border change visibly |
+| UX7 | Flutter mobile/emulator | any | Tap an `AppCard` | Press feedback appears; true hover is not expected on touch |
+| UX8 | Web | staff/admin | Results export row | PDF/CSV/JSON/print controls visible and operable |
+| UX9 | Flutter app 320-390px width | any | Bottom navigation | Labels fit; body content remains above nav |
+
+### 6.2 Admin session-log curl evidence
+
+```bash
+# create login_success
+TOKEN_ADMIN=$(curl -s -XPOST localhost:5000/auth/login -H 'Content-Type: application/json' \
+  -d '{"username":"admin1","password":"Admin#2026pw"}' | python3 -c 'import sys,json;print(json.load(sys.stdin)["token"])')  # pragma: allowlist secret
+
+# create logout
+curl -s -XPOST localhost:5000/auth/logout -H "Authorization: Bearer $TOKEN_ADMIN"
+
+# inspect both rows
+TOKEN_ADMIN=$(curl -s -XPOST localhost:5000/auth/login -H 'Content-Type: application/json' \
+  -d '{"username":"admin1","password":"Admin#2026pw"}' | python3 -c 'import sys,json;print(json.load(sys.stdin)["token"])')  # pragma: allowlist secret
+curl -s localhost:5000/api/audit-log -H "Authorization: Bearer $TOKEN_ADMIN" \
+  | python3 -m json.tool
+# expect rows with action = login_success and logout, username, ipAddress, createdAt
+```
+
 ---
 
 ## 7. Headless run results — 2026-06-24 (v1.2.0, fresh server)
 
 Automated curl harness, all 3 roles seeded (admin via CLI, staff via approval, user unapproved).
 
-**30 / 30 functional + role-gate checks PASS.** Backend `pytest`: **227 passed**.
+**30 / 30 functional + role-gate checks PASS.** Backend `pytest`: **233 passed**.
 
 | Group | Result |
 |---|---|

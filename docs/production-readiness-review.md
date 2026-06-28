@@ -8,7 +8,7 @@ real NHS data out of scope per AT2 §1.3.
 standing between this and "world-class" is **evidential validity of the ML claims**, which
 — for a synthetic-data prototype — is an honesty-of-framing fix, not an engineering defect.
 
-**Baseline at review:** `230 backend tests pass` (`pytest`), CI + CodeQL + GHCR image
+**Baseline at review:** `233 backend tests pass` (`pytest`), CI + CodeQL + GHCR image
 publish configured. (The NHSX mapping in `app.py` still cites "199 tests" — stale; see §5.)
 
 ---
@@ -89,10 +89,10 @@ These are not student-grade; they are the reasons this system is close to produc
   sessions with sliding (30-min) + absolute (30-day "remember") expiry; RBAC enforced
   server-side *and* mirrored client-side; privilege-escalation guard (self-registration
   forced to lowest role); admin self-lockout/self-delete guards; Werkzeug debug off by
-  default; `SECRET_KEY`/`CORS` env-gated; audit log on every privileged mutation.
+  default; `SECRET_KEY`/`CORS` env-gated; audit log on privileged mutations and login/logout.
 - **Operability.** `/health` readiness probe (model + DB), structured request logging,
   uniform JSON error handlers (400/404/405/500 + catch-all), Alembic migrations,
-  CI + CodeQL + GHCR image build, 230 automated tests.
+  CI + CodeQL + GHCR image build, 233 automated tests.
 
 ## 4. The crown-jewel gap — ML evaluation circularity
 
@@ -134,10 +134,10 @@ quote metrics as *fit-to-generator on synthetic data*, and state the limitation 
 | 1 | High | **Risk-tier computed 3 ways** | **FIXED** |
 | 2 | Med | False "JWT" claim in `app.py` docstring | **FIXED** |
 | 3 | Med | "CTGAN" naming overstates method | **FIXED (docstring)** |
-| 4 | Med | NHSX doc claims "199 tests" (actual 230) | Documented (below) |
+| 4 | Med | NHSX doc claims "199 tests" (actual 233) | Documented (below) |
 | 5 | Med | Per-request double DB write in `validate_token` | Documented (scale ceiling) |
-| 6 | Low | No login rate-limit (brute-force surface) | Documented (next hardening) |
-| 7 | Low | Flutter `_handleResponse` assumes JSON body | Documented |
+| 6 | Low | No login rate-limit (brute-force surface) | **FIXED** |
+| 7 | Low | Flutter `_handleResponse` assumes JSON body | **FIXED** |
 
 **Finding 1 (fixed) — tier single source of truth.** Three definitions existed:
 predictor (calibrated-threshold tier, High ≥ 0.375), `interventions._get_risk_tier`
@@ -151,14 +151,14 @@ fallback. Verified against the real predictor (deployed calibrated threshold = e
 0.375): a mid-probability patient (prob ≈ 0.55) returns tier "High" from the predictor and
 that same tier now propagates into the intervention list, so `/api/predict` and `/api/batch`
 agree. `grep` confirms all three production callers (`predict`, `batch_predict`,
-`create_appointments`) were updated. `230/230` tests still pass.
+`create_appointments`) were updated. Tests still pass.
 Note: `clinical_triage` gating (`tier == "High" and age >= 75`) now keys off the predictor
 tier, so the intervention *will* fire for more mid-probability elderly patients — this is
 the intended consequence of the unification. `slot_optimisation`'s bands are intentionally
 left alone: they model slot economics (overbooking), a different question from clinical risk.
 
 **Finding 4 — test-count drift.** `NHSX_ETHICS_MAPPING` (P1 evidence) says "199 automated
-pytest tests"; the suite now has **230**. Update that string when the dissertation numbers
+pytest tests"; the suite now has **233**. Update that string when the dissertation numbers
 are finalised, or — better — generate it from a `pytest --collect-only` count so it can't
 drift again.
 
@@ -167,22 +167,24 @@ drift again.
 worker scale; at production concurrency this is a write hotspot. Mitigation when it matters:
 throttle the write (only persist if last_activity is > ~60s stale) or move sessions to Redis.
 
-**Finding 6 — login rate-limit.** `/auth/login` has no attempt throttling; combined with
-bcrypt this is slow-but-unbounded brute force. Add `flask-limiter` (per-IP + per-account)
-before any real deployment. Left out of this pass per agreed safe-fix scope.
+**Finding 6 — login rate-limit (fixed).** `/auth/login` now throttles repeated failed
+attempts by IP + identifier and returns `429` with `Retry-After` after five failures in the
+configured window. Successful login clears the failure bucket. This is in-process and
+adequate for the prototype; production multi-worker deployments should move the counter to
+Redis or use a shared limiter.
 
-**Finding 7 — Flutter error parsing.** `ApiService._handleResponse` (`api_service.dart:461`)
-calls `jsonDecode(res.body)` unconditionally; a non-JSON error response (e.g. a 502 from a
-proxy) throws a `FormatException` instead of surfacing a clean message. Guard the decode.
+**Finding 7 — Flutter error parsing (fixed).** `ApiService._handleResponse` now guards
+`jsonDecode(res.body)` and turns non-JSON 401/4xx/5xx/proxy failures into controlled
+`ApiException` messages instead of leaking a raw `FormatException`.
 
 ## 6. Production-readiness scorecard
 
 | Dimension | Rating | Justification |
 |-----------|--------|---------------|
-| Security (authn/z) | 🟢 Green | bcrypt, TOTP, revocable DB sessions, server+client RBAC, escalation guards, audit log. (🟡 add login rate-limit.) |
+| Security (authn/z) | 🟢 Green | bcrypt, TOTP, revocable DB sessions, server+client RBAC, escalation guards, audit log, failed-login throttling. |
 | Observability | 🟢 Green | `/health`, structured logs, uniform JSON errors. |
 | CI/CD | 🟢 Green | CI + CodeQL + GHCR image publish; Alembic migrations. |
-| Testing | 🟢 Green | 230 passing tests across ML, API, auth, bias, robustness. |
+| Testing | 🟢 Green | 233 passing tests across ML, API, auth, bias, robustness. |
 | Data & ML validity | 🔴 Red | Metrics measure fit-to-generator, not generalisation; no real-world validation possible at this scope. **Honesty of framing is the deliverable.** |
 | Scalability | 🟡 Amber | Per-request session write; in-process model load is fine for one worker, needs care under concurrency. |
 
@@ -195,4 +197,4 @@ synthetic-fit, not generalisation. World-class is one honest paragraph away.
 ---
 *Code fixes applied in this review: tier single-source-of-truth (`ml/interventions.py`,
 `app.py` ×3 call sites); docstring accuracy (`app.py` module docstring, `data_generator.py`
-CTGAN note). All verified against `pytest` (230 passed before and after).*
+CTGAN note). Current suite collects 233 tests.*
