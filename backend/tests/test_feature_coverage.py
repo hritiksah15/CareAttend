@@ -21,7 +21,7 @@ pytestmark = pytest.mark.skipif(
     reason="Models not trained yet",
 )
 
-from app import BATCH_REQUIRED_COLUMNS, app as flask_app, load_models  # noqa: E402
+from app import BATCH_REQUIRED_COLUMNS, BATCH_OPTIONAL_COLUMNS, BATCH_TEMPLATE_COLUMNS, app as flask_app, load_models  # noqa: E402
 from models import db, User, AssessmentSummary, AuditLog  # noqa: E402
 
 
@@ -404,36 +404,77 @@ class TestRBAC:
         assert "risk_tier" in body
         assert "top_risk_factor" in body
 
-    def test_batch_accepts_single_assessment_export_csv(self, client):
+    def test_batch_accepts_single_assessment_batch_export_csv(self, client):
         token = login(client, username="exportcsv1", role="staff")
         res = self._post_csv(
             client,
             token,
-            ("Age,Gender,AppointmentLeadTimeDays,SMSReceived,PriorDNACount,IMDDecile\n78,0,21,0,4,2\n"),
+            (
+                "Age,Gender,AppointmentLeadTimeDays,SMSReceived,PriorDNACount,IMDDecile,"
+                "Hypertension,Diabetes,Alcoholism,Disability\n"
+                "78,0,21,0,4,2,1,1,0,0\n"
+            ),
         )
         assert res.status_code == 200
         body = res.data.decode()
         assert "risk_tier" in body
         assert "High" in body
 
-    def test_batch_rejects_field_value_report_with_targeted_hint(self, client):
+    def test_batch_converts_field_value_patient_inputs(self, client):
+        token = login(client, username="fieldvalue1", role="staff")
+        res = self._post_csv(
+            client,
+            token,
+            (
+                "Field,Value\n"
+                "Age,78\n"
+                "Gender,Female\n"
+                "AppointmentLeadTimeDays,21\n"
+                "SMSReceived,No\n"
+                "PriorDNACount,4\n"
+                "IMDDecile,2\n"
+                "Hypertension,Yes\n"
+                "Diabetes,Yes\n"
+                "Alcoholism,No\n"
+                "Disability,No\n"
+            ),
+        )
+        assert res.status_code == 200
+        body = res.data.decode()
+        assert "risk_tier" in body
+        assert "top_risk_factor" in body
+
+    def test_batch_rejects_field_value_report_without_inputs(self, client):
         token = login(client, username="oldreport1", role="staff")
         res = self._post_csv(
             client,
             token,
-            "Field,Value\nRisk Score,98.2\nRisk Tier,High\nAge Group,75-84\nFactor: Previous Missed Appointments,+3.0272\n",
+            (
+                "Field,Value\n"
+                "Risk Score,41.5\n"
+                "Risk Tier,High\n"
+                "Age Group,18-64\n"
+                "Model,Logistic Regression (calibrated)\n"
+                "Factor: Previous Missed Appointments,1.8401 (risk-increasing)\n"
+                "Factor: Alcohol Dependency,1.6280 (risk-increasing)\n"
+                "Summary,This 55-year-old male patient (18-64 age group) has a 41.5% risk of missing their appointment "
+                "(High risk). The main contributing factors are that the patient has missed 3 previous appointments "
+                "and has alcohol dependency.\n"
+            ),
         )
         assert res.status_code == 400
         error = res.get_json()["error"]
-        assert "Expected header: Age,Gender,AppointmentLeadTimeDays,SMSReceived,PriorDNACount,IMDDecile" in error
         assert "single-patient report" in error
-        assert "download the batch template" in error
+        assert "Missing reconstructed field(s): AppointmentLeadTimeDays, SMSReceived, IMDDecile" in error
+        assert "do not upload the PDF/report CSV" in error
 
-    def test_sample_batch_template_has_exact_required_columns(self):
+    def test_sample_batch_template_has_required_then_optional_columns(self):
         template = os.path.join(os.path.dirname(__file__), "..", "..", "docs", "sample_batch_upload.csv")
         with open(template, encoding="utf-8") as f:
             header = f.readline().strip().split(",")
-        assert header == list(BATCH_REQUIRED_COLUMNS)
+        assert header[: len(BATCH_REQUIRED_COLUMNS)] == list(BATCH_REQUIRED_COLUMNS)
+        assert header[len(BATCH_REQUIRED_COLUMNS) :] == list(BATCH_OPTIONAL_COLUMNS)
+        assert header == list(BATCH_TEMPLATE_COLUMNS)
 
     def test_batch_wrong_columns_gives_clear_error(self, client):
         token = login(client, username="wc1", role="staff")

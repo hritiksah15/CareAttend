@@ -12,6 +12,7 @@ import io
 import json
 import logging
 import os
+import re
 import time
 import uuid
 from datetime import date, datetime, timedelta
@@ -397,16 +398,150 @@ def predict():
 
 
 BATCH_REQUIRED_COLUMNS = ("Age", "Gender", "AppointmentLeadTimeDays", "SMSReceived", "PriorDNACount", "IMDDecile")
+BATCH_OPTIONAL_COLUMNS = ("Hypertension", "Diabetes", "Alcoholism", "Disability")
+BATCH_TEMPLATE_COLUMNS = BATCH_REQUIRED_COLUMNS + BATCH_OPTIONAL_COLUMNS
+
+_FIELD_HEADER_ALIASES = {"field", "ield"}
+_VALUE_HEADER_ALIASES = {"value"}
+
+
+def _csv_has_value(value):
+    return value is not None and str(value).strip() != ""
+
+
+def _casefold_row_lookup(row, names):
+    wanted = {name.casefold() for name in names}
+    for key, value in row.items():
+        if key.casefold() in wanted:
+            return value
+    return None
+
+
+def _field_value_columns(row):
+    field_col = None
+    value_col = None
+    for col in row.keys():
+        lowered = col.casefold()
+        if lowered in _FIELD_HEADER_ALIASES:
+            field_col = col
+        elif lowered in _VALUE_HEADER_ALIASES:
+            value_col = col
+    return field_col, value_col
+
+
+def _is_field_value_report(rows):
+    if not rows:
+        return False
+    field_col, value_col = _field_value_columns(rows[0])
+    return bool(field_col and value_col)
+
+
+def _normalise_binary_value(value):
+    lowered = str(value).strip().casefold()
+    if lowered in {"1", "true", "yes", "y", "on"}:
+        return "1"
+    if lowered in {"0", "false", "no", "n", "off"}:
+        return "0"
+    return value
+
+
+def _patient_rows_from_field_value_report(rows):
+    field_col, value_col = _field_value_columns(rows[0])
+    report = {}
+    for row in rows:
+        field = (row.get(field_col) or "").strip()
+        value = (row.get(value_col) or "").strip()
+        if field:
+            report[field] = value
+
+    aliases = {
+        "Age": ("Age",),
+        "Gender": ("Gender", "Sex"),
+        "AppointmentLeadTimeDays": ("AppointmentLeadTimeDays", "Appointment Lead Time Days", "Lead Time Days"),
+        "SMSReceived": ("SMSReceived", "SMS Received", "SMS Reminder Sent"),
+        "PriorDNACount": ("PriorDNACount", "Prior DNA Count", "Previous Missed Appointments"),
+        "IMDDecile": ("IMDDecile", "IMD Decile"),
+        "Hypertension": ("Hypertension",),
+        "Diabetes": ("Diabetes",),
+        "Alcoholism": ("Alcoholism", "Alcohol Dependency"),
+        "Disability": ("Disability", "Registered Disability"),
+    }
+
+    patient = {}
+    for field, field_aliases in aliases.items():
+        value = _casefold_row_lookup(report, field_aliases)
+        if not _csv_has_value(value):
+            continue
+        if field == "Gender":
+            lowered = str(value).strip().casefold()
+            if lowered == "male":
+                value = "1"
+            elif lowered == "female":
+                value = "0"
+        elif field in {"SMSReceived", *BATCH_OPTIONAL_COLUMNS}:
+            value = _normalise_binary_value(value)
+        patient[field] = value
+
+    summary = report.get("Summary", "")
+    if summary:
+        if not _csv_has_value(patient.get("Age")):
+            match = re.search(r"\b(\d{1,3})-year-old\b", summary, re.IGNORECASE)
+            if match:
+                patient["Age"] = match.group(1)
+        if not _csv_has_value(patient.get("Gender")):
+            match = re.search(r"\b(male|female)\b", summary, re.IGNORECASE)
+            if match:
+                patient["Gender"] = "1" if match.group(1).casefold() == "male" else "0"
+        if not _csv_has_value(patient.get("PriorDNACount")):
+            match = re.search(r"\bmissed\s+(\d+)\s+previous appointment", summary, re.IGNORECASE)
+            if match:
+                patient["PriorDNACount"] = match.group(1)
+        if not _csv_has_value(patient.get("AppointmentLeadTimeDays")):
+            match = re.search(r"\b(\d+)[ -]?day wait\b", summary, re.IGNORECASE)
+            if match:
+                patient["AppointmentLeadTimeDays"] = match.group(1)
+        if not _csv_has_value(patient.get("IMDDecile")):
+            match = re.search(r"\bIMD(?:\s+decile)?\s+(\d{1,2})\b", summary, re.IGNORECASE)
+            if match:
+                patient["IMDDecile"] = match.group(1)
+        lowered_summary = summary.casefold()
+        if not _csv_has_value(patient.get("SMSReceived")):
+            if "not received an sms" in lowered_summary or "no sms" in lowered_summary:
+                patient["SMSReceived"] = "0"
+            elif "received an sms" in lowered_summary or "sms reminder" in lowered_summary:
+                patient["SMSReceived"] = "1"
+        if "alcohol dependency" in lowered_summary or "alcohol dependent" in lowered_summary:
+            patient.setdefault("Alcoholism", "1")
+        if "hypertension" in lowered_summary:
+            patient.setdefault("Hypertension", "1")
+        if "diabetes" in lowered_summary:
+            patient.setdefault("Diabetes", "1")
+        if "registered disability" in lowered_summary:
+            patient.setdefault("Disability", "1")
+
+    for field in BATCH_OPTIONAL_COLUMNS:
+        patient.setdefault(field, "0")
+
+    missing = [field for field in BATCH_REQUIRED_COLUMNS if not _csv_has_value(patient.get(field))]
+    if missing:
+        return None, (
+            "This looks like a single-patient report, not a batch file. "
+            "Batch upload can convert a Field/Value file only when it includes the actual patient input fields. "
+            f"Missing reconstructed field(s): {', '.join(missing)}. "
+            f"Expected fields: {', '.join(BATCH_TEMPLATE_COLUMNS)}. "
+            "Use the Batch CSV export or download the batch template; do not upload the PDF/report CSV."
+        )
+    return [patient], None
 
 
 @app.route("/api/batch/template", methods=["GET"])
 def batch_template():
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(BATCH_REQUIRED_COLUMNS)
-    writer.writerow([78, 0, 21, 0, 4, 2])
-    writer.writerow([45, 1, 7, 1, 0, 8])
-    writer.writerow([66, 0, 35, 0, 2, 4])
+    writer.writerow(BATCH_TEMPLATE_COLUMNS)
+    writer.writerow([78, 0, 21, 0, 4, 2, 1, 1, 0, 0])
+    writer.writerow([45, 1, 7, 1, 0, 8, 0, 0, 0, 0])
+    writer.writerow([66, 0, 35, 0, 2, 4, 1, 0, 1, 0])
     response = make_response(output.getvalue())
     response.headers["Content-Type"] = "text/csv"
     response.headers["Content-Disposition"] = "attachment; filename=sample_batch_upload.csv"
@@ -441,8 +576,6 @@ def batch_predict():
     except Exception:
         return jsonify({"error": "Invalid CSV format"}), 400
 
-    if len(rows) > 100:
-        return jsonify({"error": "Maximum 100 records per batch"}), 400
     if len(rows) == 0:
         return jsonify({"error": "CSV file is empty"}), 400
 
@@ -457,6 +590,17 @@ def batch_predict():
             cleaned.append(norm)
     rows = cleaned
 
+    if not rows:
+        return jsonify({"error": "CSV file is empty"}), 400
+
+    if _is_field_value_report(rows):
+        rows, error = _patient_rows_from_field_value_report(rows)
+        if error:
+            return jsonify({"error": error}), 400
+
+    if len(rows) > 100:
+        return jsonify({"error": "Maximum 100 records per batch"}), 400
+
     # Fail fast with a clear message if the header itself is wrong, rather than
     # emitting an opaque "Invalid data format: 'Age'" on every single row.
     if rows:
@@ -465,7 +609,8 @@ def batch_predict():
             found_columns = ", ".join(rows[0].keys())
             message = (
                 f"CSV missing required column(s): {', '.join(sorted(missing_cols))}. "
-                f"Expected header: {expected_header}. Found columns: {found_columns}."
+                f"Expected required header: {expected_header}. "
+                f"Optional columns: {', '.join(BATCH_OPTIONAL_COLUMNS)}. Found columns: {found_columns}."
             )
             if {"Field", "Value"}.issubset(set(rows[0].keys())):
                 message += (

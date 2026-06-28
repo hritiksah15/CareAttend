@@ -291,7 +291,7 @@ class AppLocalizationsCy extends AppLocalizations {
 
   @override
   String get batchUploadDesc =>
-      'Uwchlwythwch CSV o hyd at 100 o gleifion. Colofnau gofynnol: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile.';
+      'Uwchlwythwch CSV o hyd at 100 o gleifion. Gofynnol: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile. Dewisol: Hypertension, Diabetes, Alcoholism, Disability.';
 
   @override
   String get batchScoring => 'Yn sgorio…';

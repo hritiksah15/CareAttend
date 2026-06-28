@@ -2164,7 +2164,7 @@ const TAB_TOUR = {
     assessment: { title: 'Patient Assessment', description: 'Where every assessment starts. What to do: fill in age, gender, appointment lead time, prior DNA count, clinical flags, and IMD deprivation decile, then click Predict Risk. Tip: use EHR auto-fill to pull details automatically, or Carer Proxy mode for digitally excluded patients.' },
     results: { title: 'Risk Results', description: 'Opens automatically after you predict. What to do: read the DNA risk gauge, scroll the SHAP chart to see WHY the score was given, and review the recommended interventions. Use the feedback buttons to log whether the patient attended — this trains the accuracy stats.' },
     dashboard: { title: 'Practice Dashboard', description: 'Your practice-wide overview. What to do: come here after running several assessments to see total volume, risk breakdown by age group, recent assessments, and feedback accuracy. All figures are session-scoped — no patient data is stored.' },
-    batch: { title: 'Batch Upload', description: 'For scoring many patients at once. What to do: download the CSV template, fill in up to 100 patients, upload it, then download the results CSV with risk scores, tiers, and top risk factors for each row.' },
+    batch: { title: 'Batch Upload', description: 'For scoring many patients at once. What to do: download the CSV template or use Batch CSV export, fill in up to 100 patients, upload it, then download the results CSV with risk scores, tiers, and top risk factors for each row.' },
     bias: { title: 'Bias Monitor', description: 'Checks the model is fair. What to do: click Run Audit to test demographic parity and equalised odds across age, gender, and IMD groups against the 0.10 NHS threshold. Export a PDF report for your governance records.' },
     ethics: { title: 'Ethics', description: 'Evidence the tool meets NHS standards. What to do: click Load Ethics Mapping to see compliance against the NHS England (2024) Good Practice guide, and Run Cross-Validation for 5-fold accuracy with 95% confidence intervals and McNemar significance tests.' },
     slots: { title: 'Slot Optimisation', description: 'Recover wasted clinic time. What to do: run the slot analysis to find appointments with 40%+ DNA risk that can be safely double-booked, so a no-show does not leave an empty slot.' },
@@ -2447,7 +2447,7 @@ function getChatbotResponse(query) {
     } else if (q.includes('privacy') || q.includes('gdpr') || q.includes('data')) {
         return 'Care Attend is <strong>GDPR Article 5(1)(c) compliant</strong>. No patient data is stored — all predictions are session-scoped. Passwords are hashed with bcrypt. Sessions expire after 30 minutes. No third-party analytics.';
     } else if (q.includes('batch') || q.includes('csv') || q.includes('upload')) {
-        return 'The <strong>Batch Upload</strong> tab (press 4) lets you upload a CSV of up to 100 patients. Required columns: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile. <a href="/api/batch/template" download>Download the CSV template</a>. Results download as CSV.';
+        return 'The <strong>Batch Upload</strong> tab (press 4) lets you upload a CSV of up to 100 patients. Required columns: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile. Optional columns: Hypertension, Diabetes, Alcoholism, Disability. Use Batch CSV export or <a href="/api/batch/template" download>download the CSV template</a>. Results download as CSV.';
     } else if (q.includes('slot') || q.includes('overbook')) {
         return 'The <strong>Slot Optimisation</strong> tab (press 7) analyses appointment slots for overbooking opportunities. Paste JSON patient data — slots with 40%+ DNA risk are flagged as overbookable.';
     } else if (q.includes('nudge') || q.includes('message') || q.includes('patient comms')) {
@@ -2570,6 +2570,7 @@ function _downloadBlob(filename, text, mime) {
 
 const PATIENT_BATCH_CSV_COLUMNS = [
     'Age', 'Gender', 'AppointmentLeadTimeDays', 'SMSReceived', 'PriorDNACount', 'IMDDecile',
+    'Hypertension', 'Diabetes', 'Alcoholism', 'Disability',
 ];
 
 function csvCell(value) {
@@ -2590,6 +2591,10 @@ function exportPatientCSV() {
         SMSReceived: p.SMSReceived,
         PriorDNACount: p.PriorDNACount,
         IMDDecile: p.IMDDecile,
+        Hypertension: p.Hypertension,
+        Diabetes: p.Diabetes,
+        Alcoholism: p.Alcoholism,
+        Disability: p.Disability,
     };
     var csv = [
         PATIENT_BATCH_CSV_COLUMNS.map(csvCell).join(','),

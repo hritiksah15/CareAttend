@@ -22,8 +22,10 @@ class _ChatbotOverlayState extends State<ChatbotOverlay> {
   final _input = TextEditingController();
   final _scroll = ScrollController();
   final List<_Msg> _messages = [
-    _Msg('Hi! I am the Care Attend assistant. Ask me about assessment, SHAP, '
-        'bias, batch upload, slots, nudge, 2FA, carer proxy, and more.', false),
+    _Msg(
+        'Hi! I am the Care Attend assistant. Ask me about assessment, SHAP, '
+        'bias, batch upload, slots, nudge, 2FA, carer proxy, and more.',
+        false),
   ];
 
   String _reply(String query) {
@@ -38,25 +40,34 @@ class _ChatbotOverlayState extends State<ChatbotOverlay> {
     } else if (q.contains('bias') || q.contains('fair')) {
       return 'The Bias Monitor audits fairness across age, gender and IMD using '
           'demographic parity and equalised odds at a 0.10 threshold (admin only).';
-    } else if (q.contains('privacy') || q.contains('gdpr') || q.contains('data')) {
+    } else if (q.contains('privacy') ||
+        q.contains('gdpr') ||
+        q.contains('data')) {
       return 'Care Attend is GDPR Article 5(1)(c) compliant. No patient data is '
           'stored — predictions are session-scoped. Passwords use bcrypt.';
-    } else if (q.contains('batch') || q.contains('csv') || q.contains('upload')) {
+    } else if (q.contains('batch') ||
+        q.contains('csv') ||
+        q.contains('upload')) {
       return 'The Batch Upload tab scores a CSV of up to 100 patients. Columns: '
-          'Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile.';
+          'Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile. '
+          'Optional columns: Hypertension, Diabetes, Alcoholism, Disability. Use Batch CSV export or the template.';
     } else if (q.contains('slot') || q.contains('overbook')) {
       return 'Slot Optimisation flags appointments with 40%+ DNA risk as '
           'overbookable so a no-show does not waste a slot.';
     } else if (q.contains('nudge') || q.contains('message')) {
       return 'Patient Nudge generates personalised, non-stigmatising messages in '
           'English, Welsh, Urdu or Polish based on the risk profile.';
-    } else if (q.contains('2fa') || q.contains('two-factor') || q.contains('authenticator')) {
+    } else if (q.contains('2fa') ||
+        q.contains('two-factor') ||
+        q.contains('authenticator')) {
       return 'Enable 2FA in Personal Account. It uses TOTP — Google Authenticator, '
           'Authy or any TOTP app. You then need the 6-digit code to log in.';
     } else if (q.contains('proxy') || q.contains('carer')) {
       return 'Carer Proxy lets a family member or carer enter data for digitally '
           'excluded patients, from the Assessment tab.';
-    } else if (q.contains('tour') || q.contains('guide') || q.contains('help')) {
+    } else if (q.contains('tour') ||
+        q.contains('guide') ||
+        q.contains('help')) {
       return 'Tap the help (?) icon in the top bar to start the guided tour of the '
           'features available to your role.';
     }
@@ -124,8 +135,7 @@ class _ChatbotOverlayState extends State<ChatbotOverlay> {
               padding: const EdgeInsets.all(12),
               decoration: const BoxDecoration(
                 color: NHSTheme.blue,
-                borderRadius:
-                    BorderRadius.vertical(top: Radius.circular(12)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
               ),
               child: Row(children: [
                 const Icon(Icons.smart_toy, color: Colors.white, size: 20),
@@ -151,17 +161,14 @@ class _ChatbotOverlayState extends State<ChatbotOverlay> {
                       padding: const EdgeInsets.all(10),
                       constraints: const BoxConstraints(maxWidth: 240),
                       decoration: BoxDecoration(
-                        color: m.fromUser
-                            ? NHSTheme.blue
-                            : NHSTheme.paleGrey,
+                        color: m.fromUser ? NHSTheme.blue : NHSTheme.paleGrey,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(m.text,
                           style: TextStyle(
                               fontSize: 13,
-                              color: m.fromUser
-                                  ? Colors.white
-                                  : NHSTheme.black)),
+                              color:
+                                  m.fromUser ? Colors.white : NHSTheme.black)),
                     ),
                   );
                 },
@@ -182,7 +189,8 @@ class _ChatbotOverlayState extends State<ChatbotOverlay> {
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.send, color: Theme.of(context).colorScheme.primary),
+                  icon: Icon(Icons.send,
+                      color: Theme.of(context).colorScheme.primary),
                   tooltip: AppLocalizations.of(context).chatbotSend,
                   onPressed: _send,
                 ),

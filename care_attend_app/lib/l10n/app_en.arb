@@ -104,7 +104,7 @@
   "recentAssessments": "Recent assessments",
   "noAssessmentsYet": "No assessments yet. Run a Patient Assessment first.",
   "operationalOutcomes": "Operational Outcomes",
-  "batchUploadDesc": "Upload a CSV of up to 100 patients. Required columns: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile.",
+  "batchUploadDesc": "Upload a CSV of up to 100 patients. Required: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile. Optional: Hypertension, Diabetes, Alcoholism, Disability.",
   "batchScoring": "Scoring…",
   "batchPickCsv": "Pick CSV & Score",
   "batchFile": "File: {filename}",

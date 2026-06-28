@@ -90,7 +90,7 @@
   "recentAssessments": "Ostatnie oceny",
   "noAssessmentsYet": "Brak ocen. Najpierw wykonaj ocenę pacjenta.",
   "operationalOutcomes": "Wyniki operacyjne",
-  "batchUploadDesc": "Prześlij plik CSV z maksymalnie 100 pacjentami. Wymagane kolumny: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile.",
+  "batchUploadDesc": "Prześlij plik CSV z maksymalnie 100 pacjentami. Wymagane: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile. Opcjonalne: Hypertension, Diabetes, Alcoholism, Disability.",
   "batchScoring": "Ocenianie…",
   "batchPickCsv": "Wybierz CSV i oceń",
   "batchFile": "Plik: {filename}",

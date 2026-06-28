@@ -14,11 +14,15 @@ class Exporter {
     'SMSReceived',
     'PriorDNACount',
     'IMDDecile',
+    'Hypertension',
+    'Diabetes',
+    'Alcoholism',
+    'Disability',
   ];
   static const _batchCsvTemplateRows = [
-    [78, 0, 21, 0, 4, 2],
-    [45, 1, 7, 1, 0, 8],
-    [66, 0, 35, 0, 2, 4],
+    [78, 0, 21, 0, 4, 2, 1, 1, 0, 0],
+    [45, 1, 7, 1, 0, 8, 0, 0, 0, 0],
+    [66, 0, 35, 0, 2, 4, 1, 0, 1, 0],
   ];
 
   // ── Patient risk report ──
@@ -88,6 +92,10 @@ class Exporter {
       'SMSReceived': patient['SMSReceived'],
       'PriorDNACount': patient['PriorDNACount'],
       'IMDDecile': patient['IMDDecile'],
+      'Hypertension': patient['Hypertension'],
+      'Diabetes': patient['Diabetes'],
+      'Alcoholism': patient['Alcoholism'],
+      'Disability': patient['Disability'],
     };
     final csv = [
       batchCsvColumns.map(_csvCell).join(','),

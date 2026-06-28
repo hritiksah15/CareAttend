@@ -90,7 +90,7 @@
   "recentAssessments": "حالیہ تشخیصات",
   "noAssessmentsYet": "ابھی تک کوئی تشخیص نہیں۔ پہلے مریض کی تشخیص کریں۔",
   "operationalOutcomes": "آپریشنل نتائج",
-  "batchUploadDesc": "زیادہ سے زیادہ 100 مریضوں کی CSV اپ لوڈ کریں۔ مطلوبہ کالم: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile۔",
+  "batchUploadDesc": "زیادہ سے زیادہ 100 مریضوں کی CSV اپ لوڈ کریں۔ مطلوبہ: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile۔ اختیاری: Hypertension, Diabetes, Alcoholism, Disability۔",
   "batchScoring": "اسکورنگ…",
   "batchPickCsv": "CSV منتخب کریں اور اسکور کریں",
   "batchFile": "فائل: {filename}",

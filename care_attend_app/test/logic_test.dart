@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:care_attend_app/utils/validators.dart';
 import 'package:care_attend_app/nhs_theme.dart';
 import 'package:care_attend_app/theme/design_tokens.dart';
+import 'package:care_attend_app/utils/export.dart';
 
 /// Pure-logic unit tests — no widgets, no network. Deterministic and fast.
 void main() {
@@ -53,5 +54,21 @@ void main() {
     test('falls back to Low for unknown tier', () {
       expect(AppColors.riskColor('???'), AppColors.riskLow);
     });
+  });
+
+  test('Batch CSV columns include required fields followed by optional flags',
+      () {
+    expect(Exporter.batchCsvColumns, [
+      'Age',
+      'Gender',
+      'AppointmentLeadTimeDays',
+      'SMSReceived',
+      'PriorDNACount',
+      'IMDDecile',
+      'Hypertension',
+      'Diabetes',
+      'Alcoholism',
+      'Disability',
+    ]);
   });
 }

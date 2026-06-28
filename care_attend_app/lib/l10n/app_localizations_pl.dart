@@ -288,7 +288,7 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get batchUploadDesc =>
-      'Prześlij plik CSV z maksymalnie 100 pacjentami. Wymagane kolumny: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile.';
+      'Prześlij plik CSV z maksymalnie 100 pacjentami. Wymagane: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile. Opcjonalne: Hypertension, Diabetes, Alcoholism, Disability.';
 
   @override
   String get batchScoring => 'Ocenianie…';

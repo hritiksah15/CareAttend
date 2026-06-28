@@ -645,7 +645,7 @@ abstract class AppLocalizations {
   /// No description provided for @batchUploadDesc.
   ///
   /// In en, this message translates to:
-  /// **'Upload a CSV of up to 100 patients. Required columns: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile.'**
+  /// **'Upload a CSV of up to 100 patients. Required: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile. Optional: Hypertension, Diabetes, Alcoholism, Disability.'**
   String get batchUploadDesc;
 
   /// No description provided for @batchScoring.
