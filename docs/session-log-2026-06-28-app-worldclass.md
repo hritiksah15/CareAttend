@@ -80,7 +80,7 @@ glassmorphism on transient panels, notifications, branding, i18n, tests.
   AT2 judgement, satisfied-vs-gap tables, and world-class build order.
 - Replaced the scaffold Flutter README with a project-specific app README.
 - Updated stale evidence counts in README/traceability/audit/readiness docs to
-  233 backend tests and 26 Flutter tests.
+  234 backend tests and 26 Flutter tests.
 - Hardened Flutter API response handling so non-JSON proxy/server errors become
   controlled `ApiException` messages instead of raw decode failures.
 - Verified: full backend `pytest -q` passed, `flutter analyze` clean,
@@ -109,7 +109,7 @@ glassmorphism on transient panels, notifications, branding, i18n, tests.
 - Added failed-login throttling for `/auth/login`: repeated failures are counted
   per IP + identifier, successful login clears the bucket, and the sixth failed
   attempt returns `429` with `Retry-After`.
-- Added API coverage for the rate-limit path; backend collection is now 233
+- Added API coverage for the rate-limit path; backend collection is now 234
   tests.
 - Verified: Python compile passed, OpenAPI YAML valid, full backend `pytest -q`
   passed.

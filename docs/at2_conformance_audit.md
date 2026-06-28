@@ -5,7 +5,7 @@ Verified against backend (`backend/`), Flutter app (`care_attend_app/`), web fro
 
 ## Method
 - Read full AT2 report (49pp): reqs, RTM (App B), MoSCoW (App A), testing methodology, plan.
-- Backend: 233 pytest tests run → **all pass**.
+- Backend: 234 pytest tests run → **all pass**.
 - Models inspected directly: base = LogisticRegression, calibrated = CalibratedClassifierCV.
 - Perf + a11y: read actual result numbers, not just file presence.
 - Flutter: `flutter analyze` → **no issues**; `flutter test` → **26 tests pass, including AppCard hover/press and admin session-log rendering coverage**. Toolchain at `~/development/flutter`. Full browser E2E not run (optional: `flutter run -d chrome`).
