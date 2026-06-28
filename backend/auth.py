@@ -26,18 +26,24 @@ RESET_MAX_TRIES = 5
 
 try:
     import bcrypt
+
     USE_BCRYPT = True
 except ImportError:
     USE_BCRYPT = False
 
 try:
     import pyotp
+
     USE_PYOTP = True
 except ImportError:
     USE_PYOTP = False
 
 SESSION_TIMEOUT = 1800  # 30 minutes in seconds (NFR-06)
 REMEMBER_TIMEOUT = 30 * 24 * 3600  # 30 days for "remember me" sessions
+# Sliding-window activity is only persisted once it is stale by this interval,
+# so a burst of requests does not write last_activity on every call. The lag is
+# bounded by this value and is negligible against SESSION_TIMEOUT.
+SESSION_ACTIVITY_WRITE_INTERVAL = int(os.environ.get("SESSION_ACTIVITY_WRITE_INTERVAL", "60"))
 
 # Role hierarchy for RBAC (FR-04). Higher tier inherits lower-tier access.
 ROLES = ("user", "staff", "admin")
@@ -62,8 +68,7 @@ def _verify_password(password, stored_hash):
     return hashlib.sha256((salt + password).encode()).hexdigest() == hashed
 
 
-PASSWORD_RULE = ("at least 8 characters with an uppercase letter, a lowercase "
-                 "letter, a number and a symbol")
+PASSWORD_RULE = "at least 8 characters with an uppercase letter, a lowercase " "letter, a number and a symbol"
 
 
 def validate_password(pw):
@@ -105,9 +110,7 @@ def register_user(username, email, password, role="staff"):
 
 def authenticate(identifier, password, totp_code=None, remember=False):
     # Accept either a username or an email address as the login identifier.
-    user = User.query.filter(
-        (User.username == identifier) | (User.email == identifier)
-    ).first()
+    user = User.query.filter((User.username == identifier) | (User.email == identifier)).first()
     if not user:
         return None, "Invalid credentials"
     if not _verify_password(password, user.password_hash):
@@ -144,8 +147,13 @@ def validate_token(token):
         db.session.delete(session)
         db.session.commit()
         return None
-    session.last_activity = time.time()
-    db.session.commit()
+    # Throttle write amplification: only persist the sliding-window timestamp
+    # once it is stale by the configured interval. Reads within the interval
+    # still succeed; the at-most-interval lag is harmless vs SESSION_TIMEOUT.
+    now = time.time()
+    if now - session.last_activity >= SESSION_ACTIVITY_WRITE_INTERVAL:
+        session.last_activity = now
+        db.session.commit()
     return {
         "userId": session.user_id,
         "username": session.user.username,
@@ -176,12 +184,14 @@ def token_required(f):
             return jsonify({"error": "Session expired or invalid"}), 401
         request.current_user = session
         return f(*args, **kwargs)
+
     return decorated
 
 
 def role_required(*allowed_roles):
     """Restrict a route to the given roles. Apply *after* token_required so
     request.current_user is set. Returns 403 when the role is not permitted."""
+
     def decorator(f):
         @wraps(f)
         def decorated(*args, **kwargs):
@@ -191,7 +201,9 @@ def role_required(*allowed_roles):
             if user.get("role") not in allowed_roles:
                 return jsonify({"error": "Insufficient permissions for this action"}), 403
             return f(*args, **kwargs)
+
         return decorated
+
     return decorator
 
 

@@ -5,8 +5,15 @@ import time
 from app import app as flask_app
 from models import db, User, Session as DBSession  # noqa: F811
 from auth import (
-    register_user, authenticate, validate_token, logout,
-    _hash_password, _verify_password, SESSION_TIMEOUT, REMEMBER_TIMEOUT,
+    register_user,
+    authenticate,
+    validate_token,
+    logout,
+    _hash_password,
+    _verify_password,
+    SESSION_TIMEOUT,
+    REMEMBER_TIMEOUT,
+    SESSION_ACTIVITY_WRITE_INTERVAL,
 )
 
 
@@ -138,14 +145,31 @@ class TestSessionManagement:
         assert validate_token(token) is None
 
     def test_session_refresh_on_activity(self, ctx):
+        # Once activity is stale beyond the throttle interval, validate_token
+        # refreshes the sliding-window timestamp.
         register_user("asha", "asha@nhs.uk", "Password123!")
         token, _ = authenticate("asha", "Password123!")
         session = db.session.get(DBSession, token)
-        old_time = session.last_activity
-        time.sleep(0.01)
+        stale = time.time() - SESSION_ACTIVITY_WRITE_INTERVAL - 1
+        session.last_activity = stale
+        db.session.commit()
         validate_token(token)
         db.session.refresh(session)
-        assert session.last_activity > old_time
+        assert session.last_activity > stale
+
+    def test_session_activity_write_throttled(self, ctx):
+        # A second validate within the interval must NOT write last_activity,
+        # avoiding a DB write on every authenticated request.
+        register_user("asha", "asha@nhs.uk", "Password123!")
+        token, _ = authenticate("asha", "Password123!")
+        session = db.session.get(DBSession, token)
+        validate_token(token)  # may write once (fresh session)
+        db.session.refresh(session)
+        baseline = session.last_activity
+        time.sleep(0.01)
+        validate_token(token)  # within interval -> throttled, no write
+        db.session.refresh(session)
+        assert session.last_activity == baseline
 
     def test_timeout_constant(self):
         assert SESSION_TIMEOUT == 1800
