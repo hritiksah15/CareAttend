@@ -73,7 +73,8 @@ class AuditLog(db.Model):
     __tablename__ = "audit_logs"
 
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False)
+    user_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=True)
+    username_snapshot = db.Column(db.String(80), nullable=True)
     action = db.Column(db.String(100), nullable=False)
     detail = db.Column(db.Text, nullable=True)
     ip_address = db.Column(db.String(45), nullable=True)
@@ -85,6 +86,7 @@ class AuditLog(db.Model):
         return {
             "id": self.id,
             "userId": self.user_id,
+            "username": self.username_snapshot or (self.user.username if self.user else None),
             "action": self.action,
             "detail": self.detail,
             "ipAddress": self.ip_address,

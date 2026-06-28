@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 pytestmark = pytest.mark.skipif(not os.path.exists("models/model.joblib"), reason="Models not trained yet")
 
-from app import app as flask_app, load_models
+from app import app as flask_app, load_models, _clear_login_failures
 from models import db, User
 
 
@@ -35,6 +35,7 @@ def client(app):
 def clean_auth(app):
     with app.app_context():
         yield
+        _clear_login_failures()
         db.session.execute(db.text("DELETE FROM assessment_summaries"))
         db.session.execute(db.text("DELETE FROM notifications"))
         db.session.execute(db.text("DELETE FROM sessions"))
@@ -116,6 +117,19 @@ class TestAuthEndpoints:
         client.post("/auth/register", json={"username": "asha", "email": "asha@nhs.uk", "password": "Password123!"})
         res = client.post("/auth/login", json={"username": "asha", "password": "wrong"})
         assert res.status_code == 401
+
+    def test_login_rate_limit_failed_attempts(self, client):
+        client.post(
+            "/auth/register",
+            json={"username": "asha", "email": "asha@nhs.uk", "password": "Password123!"},
+        )
+        for _ in range(5):
+            res = client.post("/auth/login", json={"username": "asha", "password": "wrong"})
+            assert res.status_code == 401
+
+        res = client.post("/auth/login", json={"username": "asha", "password": "wrong"})
+        assert res.status_code == 429
+        assert res.headers.get("Retry-After")
 
     def test_logout(self, client):
         token = register_and_login(client)

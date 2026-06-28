@@ -66,6 +66,12 @@ paths:
     post:
       tags: [Auth]
       summary: Login (returns token; may require 2FA)
+      description: >
+        Creates an opaque DB-backed session. Successful full logins write a
+        `login_success` audit row; the admin UI filters these rows into the
+        Login Session Log. If 2FA is enabled, the first step returns
+        `requires_2fa` and does not create the final session until a valid TOTP
+        code is supplied.
       security: []
       requestBody:
         required: true
@@ -86,11 +92,11 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - type: object
-                    properties: { token: { type: string }, message: { type: string } }
-                  - type: object
-                    properties: { requires_2fa: { type: boolean }, message: { type: string } }
+                  - $ref: "#/components/schemas/LoginResponse"
+                  - $ref: "#/components/schemas/TwoFactorChallenge"
         "401": { $ref: "#/components/responses/Unauthorized" }
+        "429":
+          description: Too many failed login attempts; retry after the `Retry-After` header delay.
 
   /auth/forgot-password:
     post:
@@ -145,8 +151,19 @@ paths:
     post:
       tags: [Auth]
       summary: Logout / invalidate session
+      description: >
+        Invalidates the current DB-backed session and writes a `logout` audit
+        row before deleting the session token. The row remains visible in the
+        admin Login Session Log.
       responses:
-        "200": { description: Logged out }
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: Logged out }
 
   /api/predict:
     post:
@@ -549,9 +566,23 @@ paths:
   /api/audit-log:
     get:
       tags: [Admin]
-      summary: Read audit log (admin only)
+      summary: Read audit log and login session events (admin only)
+      description: >
+        Returns the most recent audit entries. Admin clients filter
+        `login_success` and `logout` actions to render the Login Session Log.
+        `username` is a snapshot so historic login/logout rows remain readable
+        if the account is later deleted.
       responses:
-        "200": { description: OK }
+        "200":
+          description: Recent audit log entries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  logs:
+                    type: array
+                    items: { $ref: "#/components/schemas/AuditLogEntry" }
         "403": { description: Admin access required }
 
   /api/admin/pending-users:
@@ -608,6 +639,26 @@ components:
         error: { type: string }
         detail: { type: string }
 
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: Opaque bearer session token.
+        message:
+          type: string
+          example: Login successful
+
+    TwoFactorChallenge:
+      type: object
+      properties:
+        requires_2fa:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: 2FA verification required
+
     Health:
       type: object
       properties:
@@ -615,6 +666,34 @@ components:
         model_loaded: { type: boolean }
         database: { type: string, example: ok }
         uptime_seconds: { type: number }
+
+    AuditLogEntry:
+      type: object
+      properties:
+        id: { type: string }
+        userId:
+          type: string
+          nullable: true
+          description: Null when the source user has been deleted.
+        username:
+          type: string
+          nullable: true
+          description: Snapshot of the username at audit-write time.
+        action:
+          type: string
+          example: login_success
+          description: "Examples: login_success, logout, role_changed, user_approved, carer_proxy_created."
+        detail:
+          type: string
+          nullable: true
+          example: admin1 signed in
+        ipAddress:
+          type: string
+          nullable: true
+          example: 127.0.0.1
+        createdAt:
+          type: number
+          description: Unix timestamp in seconds.
 
     Patient:
       type: object

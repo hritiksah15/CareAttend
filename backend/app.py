@@ -24,6 +24,7 @@ from models import (
     db,
     migrate,
     User,
+    Session,
     AuditLog,
     CarerProxy,
     PersistentFeedback,
@@ -177,6 +178,47 @@ def health():
 # ── Auth Endpoints (FR-04, NFR-06) ──
 
 
+_LOGIN_FAILURES = {}
+
+
+def _login_rate_key(identifier):
+    return f"{request.remote_addr or 'unknown'}:{identifier.lower()}"
+
+
+def _pruned_login_failures(key, now=None):
+    now = now or time.time()
+    window = int(app.config.get("LOGIN_RATE_LIMIT_WINDOW_SECONDS", 300))
+    attempts = [ts for ts in _LOGIN_FAILURES.get(key, []) if now - ts < window]
+    if attempts:
+        _LOGIN_FAILURES[key] = attempts
+    else:
+        _LOGIN_FAILURES.pop(key, None)
+    return attempts
+
+
+def _login_rate_limited(key):
+    attempts = _pruned_login_failures(key)
+    max_attempts = int(app.config.get("LOGIN_RATE_LIMIT_MAX_ATTEMPTS", 5))
+    if len(attempts) < max_attempts:
+        return False, 0
+    window = int(app.config.get("LOGIN_RATE_LIMIT_WINDOW_SECONDS", 300))
+    retry_after = max(1, int(window - (time.time() - attempts[0])))
+    return True, retry_after
+
+
+def _record_login_failure(key):
+    attempts = _pruned_login_failures(key)
+    attempts.append(time.time())
+    _LOGIN_FAILURES[key] = attempts
+
+
+def _clear_login_failures(key=None):
+    if key is None:
+        _LOGIN_FAILURES.clear()
+    else:
+        _LOGIN_FAILURES.pop(key, None)
+
+
 @app.route("/auth/register", methods=["POST"])
 def auth_register():
     data = request.get_json()
@@ -207,19 +249,37 @@ def auth_login():
     password = data.get("password", "")
     totp_code = data.get("totp_code")
     remember = bool(data.get("remember"))
+    rate_key = _login_rate_key(username)
+
+    limited, retry_after = _login_rate_limited(rate_key)
+    if limited:
+        response = jsonify({"error": "Too many failed login attempts. Try again later."})
+        response.status_code = 429
+        response.headers["Retry-After"] = str(retry_after)
+        return response
 
     # Bound TOTP code length (6-digit codes); reject oversized input early.
     if totp_code is not None and len(str(totp_code)) > 10:
+        _record_login_failure(rate_key)
         return jsonify({"error": "Invalid 2FA code"}), 401
 
     result, error = authenticate(username, password, totp_code, remember)
     if error:
+        _record_login_failure(rate_key)
         return jsonify({"error": error}), 401
 
+    _clear_login_failures(rate_key)
     if isinstance(result, dict) and result.get("requires_2fa"):
         return jsonify({"requires_2fa": True, "message": "2FA verification required"}), 200
 
     token = result
+    session = db.session.get(Session, token)
+    if session:
+        detail = f"{session.user.username} signed in"
+        if remember:
+            detail += " with remember me"
+        db.session.add(_audit(session.user_id, "login_success", detail))
+        db.session.commit()
     response = jsonify({"token": token, "message": "Login successful"})
     response.set_cookie(
         "session_token", token, httponly=True, samesite="Strict", max_age=(REMEMBER_TIMEOUT if remember else 1800)
@@ -269,6 +329,10 @@ def auth_logout():
     if not token:
         token = request.cookies.get("session_token")
     if token:
+        session = db.session.get(Session, token)
+        if session:
+            db.session.add(_audit(session.user_id, "logout", f"{session.user.username} signed out"))
+            db.session.commit()
         logout(token)
     response = jsonify({"message": "Logged out"})
     response.delete_cookie("session_token")
@@ -1783,6 +1847,10 @@ def admin_delete_user(user_id):
     if not target:
         return jsonify({"error": "User not found"}), 404
     username = target.username
+    AuditLog.query.filter_by(user_id=user_id).update(
+        {AuditLog.user_id: None, AuditLog.username_snapshot: username},
+        synchronize_session=False,
+    )
     db.session.delete(target)
     db.session.add(_audit(request.current_user["userId"], "user_deleted", username))
     db.session.commit()
@@ -1791,8 +1859,10 @@ def admin_delete_user(user_id):
 
 def _audit(user_id, action, detail=None):
     """Build an AuditLog row (caller commits)."""
+    user = db.session.get(User, user_id) if user_id else None
     return AuditLog(
         user_id=user_id,
+        username_snapshot=user.username if user else None,
         action=action,
         detail=detail,
         ip_address=request.remote_addr,
