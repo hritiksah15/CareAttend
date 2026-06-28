@@ -166,7 +166,7 @@ In-depth project docs live in [`docs/`](docs/):
   [Literature review sources](docs/literature_review_sources.md) ·
   [SUS testing template](docs/sus_testing_template.md) ·
   [SUS response sheet](docs/sus_responses_template.csv) ·
-  [SUS pending results](docs/sus_results_2026-06-28.md)
+  [SUS results](docs/sus_results_2026-06-28.md)
 
 Contributing guidelines: [CONTRIBUTING.md](CONTRIBUTING.md) ·
 Security policy: [.github/SECURITY.md](.github/SECURITY.md) ·

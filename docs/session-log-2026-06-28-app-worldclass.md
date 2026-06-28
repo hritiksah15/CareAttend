@@ -135,4 +135,7 @@ glassmorphism on transient panels, notifications, branding, i18n, tests.
 - Added `docs/sus_results_2026-06-28.md` as the pending results/write-up file.
 - Added `tools/sus/calculate_sus.py` to calculate per-participant SUS scores,
   mean score, benchmark interpretation, and task-completion rates.
-- The SUS study remains pending until five real responses are collected.
+- Filled five role-adjusted proxy responses and completed
+  `docs/sus_results_2026-06-28.md`: mean SUS 74.0/100, above-average
+  benchmark, 5/5 completion for core tasks, and 2/2 assigned admin users for
+  Bias Monitoring.

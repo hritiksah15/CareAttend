@@ -668,7 +668,8 @@ body > * {
 .intervention-card.priority-2 { background: #FFF8E1; border-left: 4px solid var(--risk-medium); }
 .intervention-card.priority-3 { background: #E8F5E9; border-left: 4px solid var(--risk-low); }
 .intervention-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
-.intervention-number {
+.intervention-number,
+.intervention-icon {
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -680,6 +681,7 @@ body > * {
     font-weight: 700;
     flex-shrink: 0;
 }
+.intervention-icon { font-size: 16px; }
 .intervention-text h4 { font-size: 14px; font-weight: 700; color: var(--nhs-blue); margin-bottom: 2px; }
 .intervention-text p { font-size: 13px; color: var(--nhs-dark-grey); line-height: 1.4; }
 
