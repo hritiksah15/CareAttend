@@ -55,6 +55,7 @@ from ml.predictor import CareAttendPredictor
 from ml.bias_monitor import BiasMonitor
 from ml.interventions import generate_interventions
 from notification_provider import provider as notification_provider, VALID_CHANNELS
+from fhir import appointment_to_fhir, patient_to_fhir
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
 
@@ -913,6 +914,16 @@ def ehr_list():
     )
 
 
+@app.route("/api/ehr/fhir/patients/<nhs_number>", methods=["GET"])
+@token_required
+@role_required("staff", "admin")
+def ehr_fhir_patient(nhs_number):
+    patient = EHR_MOCK_PATIENTS.get(nhs_number)
+    if not patient:
+        return jsonify({"error": "Patient not found", "source": "Mock FHIR adapter"}), 404
+    return jsonify(patient_to_fhir(nhs_number, patient))
+
+
 # ── Appointment Worklist ──
 
 VALID_APPOINTMENT_STATUSES = {"scheduled", "confirmed", "attended", "dna", "cancelled", "rescheduled"}
@@ -1089,6 +1100,19 @@ def update_appointment_status(appointment_id):
     return jsonify({"message": "Appointment status updated", "appointment": appointment.to_dict()})
 
 
+@app.route("/api/ehr/fhir/appointments/<appointment_id>", methods=["GET"])
+@token_required
+@role_required("staff", "admin")
+def ehr_fhir_appointment(appointment_id):
+    appointment = AppointmentRecord.query.filter_by(
+        id=appointment_id,
+        user_id=request.current_user["userId"],
+    ).first()
+    if not appointment:
+        return jsonify({"error": "Appointment not found", "source": "Mock FHIR adapter"}), 404
+    return jsonify(appointment_to_fhir(appointment))
+
+
 @app.route("/api/operational-outcomes", methods=["GET"])
 @token_required
 @role_required("staff", "admin")
@@ -1241,7 +1265,7 @@ NHSX_ETHICS_MAPPING = {
             "evidence": [
                 "F1 >= 0.72 and Recall >= 0.70 validated on held-out test set (NFR-04)",
                 "4-model comparison (LR, RF, XGBoost, LightGBM) with threshold optimisation",
-                "238 automated pytest tests covering all modules",
+                "241 automated pytest tests covering all modules",
                 "SMOTE applied to training partition only - no data leakage",
             ],
         },
