@@ -30,3 +30,10 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true
+  fonts:
+    # Bundled so Urdu/Arabic glyphs render offline without CanvasKit having to
+    # fetch a Noto fallback ("Could not find a set of Noto fonts..."). Variable
+    # font covers the weight range used by the type scale.
+    - family: NotoSansArabic
+      fonts:
+        - asset: assets/fonts/NotoSansArabic.ttf

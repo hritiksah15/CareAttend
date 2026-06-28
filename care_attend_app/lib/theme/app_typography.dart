@@ -20,7 +20,7 @@ class AppType {
     final heading = GoogleFonts.lexendTextTheme(base);
     final body = GoogleFonts.interTextTheme(base);
 
-    return base.copyWith(
+    final merged = base.copyWith(
       displayLarge: heading.displayLarge?.copyWith(fontWeight: FontWeight.w700),
       displayMedium: heading.displayMedium?.copyWith(fontWeight: FontWeight.w700),
       displaySmall: heading.displaySmall?.copyWith(fontWeight: FontWeight.w700),
@@ -36,6 +36,31 @@ class AppType {
       labelLarge: body.labelLarge?.copyWith(fontWeight: FontWeight.w600),
       labelMedium: body.labelMedium?.copyWith(fontWeight: FontWeight.w600),
       labelSmall: body.labelSmall?.copyWith(fontWeight: FontWeight.w600),
+    );
+    // Latin fonts (Lexend/Inter) lack Arabic glyphs; chain the bundled Noto
+    // Sans Arabic as a fallback so Urdu renders without CanvasKit hunting a
+    // remote Noto font.
+    return _withFallback(merged, const ['NotoSansArabic']);
+  }
+
+  static TextTheme _withFallback(TextTheme t, List<String> fb) {
+    TextStyle? f(TextStyle? s) => s?.copyWith(fontFamilyFallback: fb);
+    return TextTheme(
+      displayLarge: f(t.displayLarge),
+      displayMedium: f(t.displayMedium),
+      displaySmall: f(t.displaySmall),
+      headlineLarge: f(t.headlineLarge),
+      headlineMedium: f(t.headlineMedium),
+      headlineSmall: f(t.headlineSmall),
+      titleLarge: f(t.titleLarge),
+      titleMedium: f(t.titleMedium),
+      titleSmall: f(t.titleSmall),
+      bodyLarge: f(t.bodyLarge),
+      bodyMedium: f(t.bodyMedium),
+      bodySmall: f(t.bodySmall),
+      labelLarge: f(t.labelLarge),
+      labelMedium: f(t.labelMedium),
+      labelSmall: f(t.labelSmall),
     );
   }
 }
