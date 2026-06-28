@@ -28,5 +28,5 @@ flutter test
 flutter build web
 ```
 
-Current evidence: `flutter analyze` clean, 26 Flutter tests passing, and
+Current evidence: `flutter analyze` clean, 28 Flutter tests passing, and
 `flutter build web` succeeds.

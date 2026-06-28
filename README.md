@@ -138,7 +138,7 @@ flutter build web      # release web build
 
 ```bash
 cd backend
-pytest -q              # 234 tests across 10 suites
+pytest -q              # 241 tests across 10 suites
 ruff check .           # lint
 ```
 
@@ -161,12 +161,15 @@ GitHub Actions ([.github/workflows/](.github/workflows/)):
 In-depth project docs live in [`docs/`](docs/):
 
 - [Architecture](docs/architecture.md) · [Model card](docs/model_card.md) ·
-  [OpenAPI spec](docs/openapi.yaml)
+  [OpenAPI spec](docs/openapi.yaml) ·
+  [FHIR integration architecture](docs/ehr_fhir_architecture.md)
 - [Traceability matrix](docs/traceability_matrix.md) ·
   [Literature review sources](docs/literature_review_sources.md) ·
   [SUS testing template](docs/sus_testing_template.md) ·
   [SUS response sheet](docs/sus_responses_template.csv) ·
   [SUS results](docs/sus_results_2026-06-28.md)
+- [DPIA/DCB0129 safety outline](docs/dpia_dcb0129_safety.md) ·
+  [External validation plan](docs/external_validation_plan.md)
 
 Contributing guidelines: [CONTRIBUTING.md](CONTRIBUTING.md) ·
 Security policy: [.github/SECURITY.md](.github/SECURITY.md) ·

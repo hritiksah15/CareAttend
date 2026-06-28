@@ -830,6 +830,47 @@ class TestAppointmentWorklist:
         with app.app_context():
             assert AuditLog.query.filter_by(action="appointment_status_updated").count() == 1
 
+    def test_mock_ehr_patient_fhir_mapping(self, client):
+        token = login(client)
+        res = client.get("/api/ehr/fhir/patients/NHS001", headers=auth(token))
+        data = json.loads(res.data)
+        assert res.status_code == 200
+        assert data["resourceType"] == "Patient"
+        assert data["id"] == "NHS001"
+        assert data["identifier"][0]["system"] == "https://fhir.nhs.uk/Id/nhs-number"
+        assert data["identifier"][0]["value"] == "NHS001"
+        assert data["gender"] == "female"
+        assert any(ext["url"].endswith("/careattend-prior-dna-count") for ext in data["extension"])
+
+    def test_appointment_fhir_mapping_is_owner_scoped(self, client):
+        token_a = login(client, username="staffa")
+        token_b = login(client, username="staffb")
+        created = client.post(
+            "/api/appointments",
+            headers=auth(token_a),
+            json={
+                "patient_id": "NHS001",
+                "appointment_date": "2026-07-01",
+                "appointment_time": "09:30",
+                "clinic": "Diabetes Review",
+            },
+        )
+        appointment_id = json.loads(created.data)["appointments"][0]["id"]
+
+        blocked = client.get(f"/api/ehr/fhir/appointments/{appointment_id}", headers=auth(token_b))
+        assert blocked.status_code == 404
+
+        res = client.get(f"/api/ehr/fhir/appointments/{appointment_id}", headers=auth(token_a))
+        data = json.loads(res.data)
+        assert res.status_code == 200
+        assert data["resourceType"] == "Appointment"
+        assert data["id"] == appointment_id
+        assert data["status"] == "booked"
+        assert data["start"] == "2026-07-01T09:30:00"
+        assert data["serviceType"][0]["text"] == "Diabetes Review"
+        assert data["participant"][0]["actor"]["reference"] == "Patient/NHS001"
+        assert any(ext["url"].endswith("/careattend-risk-tier") for ext in data["extension"])
+
     def test_operational_outcomes_aggregates_actioned_vs_unactioned(self, client, app):
         token = login(client)
         with app.app_context():

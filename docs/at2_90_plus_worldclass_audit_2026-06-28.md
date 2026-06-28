@@ -19,7 +19,7 @@ Current realistic mark position:
 |---|---:|---|---:|
 | Problem Definition | 20% | Clear aim, bounded NHS/GDPR scope, SMART-style implementation evidence. Needs final quantified problem-impact paragraph in the submitted report. | 17-18/20 |
 | Context Investigation | 20% | Strong health-AI/fairness/context docs and competitor positioning. Needs synthesis phrasing and final source alignment. | 16-17/20 |
-| Software Definition | 40% | Strongest area: implemented FR/NFRs, RTM, C4/ERD docs, OpenAPI, app/web/backend, 234 backend tests, 26 Flutter tests. | 37-39/40 |
+| Software Definition | 40% | Strongest area: implemented FR/NFRs, RTM, C4/ERD docs, OpenAPI, app/web/backend, 241 backend tests, 28 Flutter tests. | 37-39/40 |
 | Planning | 15% | Sprint/session logs, risk framing, evidence of fix-and-verify loops. Needs final deviation/reflection log in report prose. | 12-14/15 |
 | Communication | 5% | README, model card, architecture, traceability, production review. Needs final proofread, captions, Harvard consistency. | 4/5 |
 
@@ -43,7 +43,7 @@ validity.
 | Security | bcrypt, strong-password policy, TOTP, opaque DB-backed sessions, RBAC, admin approval flow, audit log, self-lockout protections. |
 | Operational value | Clinic list, appointment status, notifications, delivery lifecycle, outreach actions, outcomes dashboard, slots, patient nudges. |
 | App/web parity | Flutter app now includes styled AppCard surfaces, bottom-nav overlap fix, colorful ethics/bias views, admin session log. Web admin also has session log. |
-| Testing evidence | Backend suite collected 234 tests and passed; Flutter analyze is clean; Flutter test passes 26 tests; JS syntax and Python compile checks pass. |
+| Testing evidence | Backend suite collected 241 tests and passed; Flutter analyze is clean; Flutter test passes 28 tests; JS syntax and Python compile checks pass. |
 | Professional communication | Root README, app README, architecture, model card, production-readiness review, session logs, feature plan, SUS template. |
 
 ## Current Weaknesses That Could Lose Marks
@@ -53,7 +53,7 @@ validity.
 | Synthetic-data overclaiming | Biggest academic risk. Metrics fit the generator, not real NHS populations. | In report/demo, state metrics are synthetic-fit only and real-world validation is out of scope. Use the paragraph in `docs/production-readiness-review.md`. |
 | Human usability evidence now documented | WCAG automation is strong, and the 5-person role-adjusted SUS study adds human usability evidence. | Reference `docs/sus_results_2026-06-28.md`: mean SUS 74.0/100 with three reported findings. |
 | UAT evidence for export/admin/session-log | Some frontend features are verified by build/tests but not human scenario evidence. | Capture a short scenario table: login, admin session log, assessment, result export, bias/ethics, mobile nav. |
-| Requirement wording drift | Older docs had stale counts and old NFR-01 wording. Some FR numbering differs between report/table. | Before submission, align exact FR/NFR wording in the report and RTM. Keep 234 backend tests / 26 Flutter tests consistent. |
+| Requirement wording drift | Older docs had stale counts and old NFR-01 wording. Some FR numbering differs between report/table. | Before submission, align exact FR/NFR wording in the report and RTM. Keep 241 backend tests / Flutter test count consistent. |
 | App visual evidence missing from report | The app has been fixed, but markers cannot infer that from code. | Include screenshots of app home, results, admin session log, ethics/bias color, mobile bottom-nav spacing. |
 | Production hardening not complete | External pentest, DPIA/DCB0129, FHIR connectors are not expected for AT2 but matter for "real NHS product". | Frame as future work, not missing AT2 scope. |
 
@@ -116,9 +116,9 @@ Priority 2: real NHS product path, outside AT2.
 
 | # | Work | Why it matters |
 |---:|---|---|
-| 11 | DPIA and DCB0129 clinical safety case | Required before real clinical deployment. |
-| 12 | FHIR R4 / EMIS / SystmOne / Spine connectors | Required for interoperability. |
-| 13 | External validation on real NHS data | Required before claiming real-world model performance. |
+| 11 | DPIA and DCB0129 clinical safety case | Safety outline now documented in `docs/dpia_dcb0129_safety.md`; signed clinical safety case remains required before real deployment. |
+| 12 | FHIR R4 / EMIS / SystmOne / Spine connectors | Prototype FHIR `Patient`/`Appointment` adapter now implemented and documented in `docs/ehr_fhir_architecture.md`; live EMIS/SystmOne/Spine connector remains future work. |
+| 13 | External validation on real NHS data | Validation protocol now documented in `docs/external_validation_plan.md`; real external validation remains required before claiming real-world model performance. |
 | 14 | Pen test and DSPT evidence | Required for NHS security assurance. |
 | 15 | Pilot/A-B study measuring DNA reduction | Required to prove impact beyond technical correctness. |
 
@@ -144,12 +144,12 @@ Commands run during this pass:
 
 | Check | Result |
 |---|---|
-| `pytest --collect-only -q` | 234 backend tests collected |
+| `pytest --collect-only -q` | 241 backend tests collected |
 | `pytest -q` | Full backend suite completed successfully |
 | `python -m py_compile backend/...` | Passed |
 | `node --check frontend/js/app.js` | Passed |
 | `flutter analyze` | No issues |
-| `flutter test` | 26 tests passed |
+| `flutter test` | 28 tests passed |
 | `flutter build web` | Succeeded; existing Cupertino icon font warning remains non-blocking |
 
 OpenAPI refresh completed after this audit: `docs/openapi.yaml` now documents

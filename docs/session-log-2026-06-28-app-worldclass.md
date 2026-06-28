@@ -1,7 +1,7 @@
 # Session Log — App Worldclass Pass (2026-06-27 → 28)
 
 Branch: `app-worldclass-phase1` · Pushed: `2ffac0b..ab2cdd2` (12 commits) ·
-Verified: `flutter analyze` clean (0 issues), 26 tests pass, web build OK,
+Verified: `flutter analyze` clean (0 issues), 28 tests pass, web build OK,
 live Playwright screenshots on `:8090`.
 
 ## Goal
@@ -80,7 +80,7 @@ glassmorphism on transient panels, notifications, branding, i18n, tests.
   AT2 judgement, satisfied-vs-gap tables, and world-class build order.
 - Replaced the scaffold Flutter README with a project-specific app README.
 - Updated stale evidence counts in README/traceability/audit/readiness docs to
-  234 backend tests and 26 Flutter tests.
+  241 backend tests and 28 Flutter tests.
 - Hardened Flutter API response handling so non-JSON proxy/server errors become
   controlled `ApiException` messages instead of raw decode failures.
 - Verified: full backend `pytest -q` passed, `flutter analyze` clean,
@@ -109,8 +109,7 @@ glassmorphism on transient panels, notifications, branding, i18n, tests.
 - Added failed-login throttling for `/auth/login`: repeated failures are counted
   per IP + identifier, successful login clears the bucket, and the sixth failed
   attempt returns `429` with `Retry-After`.
-- Added API coverage for the rate-limit path; backend collection is now 234
-  tests.
+- Added API coverage for the rate-limit path.
 - Verified: Python compile passed, OpenAPI YAML valid, full backend `pytest -q`
   passed.
 
@@ -119,7 +118,7 @@ glassmorphism on transient panels, notifications, branding, i18n, tests.
   can be rendered independently in tests.
 - Added widget coverage for login/logout rows and filtering of unrelated audit
   actions.
-- Verified: `flutter analyze` clean, `flutter test` passed with 26 tests,
+- Verified: `flutter analyze` clean, `flutter test` passed with 28 tests,
   `flutter build web` succeeded.
 
 ## Screenshot evidence pack setup — 2026-06-28
@@ -139,3 +138,24 @@ glassmorphism on transient panels, notifications, branding, i18n, tests.
   `docs/sus_results_2026-06-28.md`: mean SUS 74.0/100, above-average
   benchmark, 5/5 completion for core tasks, and 2/2 assigned admin users for
   Bias Monitoring.
+
+## FHIR / safety / validation closure — 2026-06-28
+- Audited the requested world-class backlog against the current app. Confirmed
+  calibrated model loading, trained threshold use, persisted appointments,
+  scheduled notifications, action tracking, outcome metrics, and admin approval
+  are already implemented.
+- Added a narrow FHIR R4 adapter in `backend/fhir.py` plus staff/admin endpoints
+  for mock EHR `Patient` resources and persisted, owner-scoped `Appointment`
+  resources.
+- Added backend tests for FHIR patient mapping, appointment mapping, and
+  cross-user appointment isolation.
+- Updated `docs/openapi.yaml` for the missing batch template, admin user
+  management, and FHIR endpoints/schemas.
+- Added `docs/ehr_fhir_architecture.md`,
+  `docs/dpia_dcb0129_safety.md`, and
+  `docs/external_validation_plan.md` so production limits are explicit:
+  prototype FHIR boundary implemented, live connector/safety sign-off/external
+  validation not falsely claimed.
+- Verified: OpenAPI route parity clean; backend `ruff check .` clean; backend
+  `pytest -q` passed with 241 collected tests; `node --check frontend/js/app.js`
+  passed; Flutter analyze clean; Flutter test passed with 28 tests.

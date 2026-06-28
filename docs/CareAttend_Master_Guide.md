@@ -117,7 +117,7 @@ Two tracks. **Track A** = things that raise your COM668 grade now (do before AT3
 
 | Phase | Build | Real-world gate it satisfies |
 |-------|-------|------------------------------|
-| B1 | **FHIR R4 compliance** (model patients/appointments as FHIR resources) | Mandatory for NHS interoperability |
+| B1 | **FHIR R4 compliance** (model patients/appointments as FHIR resources) | Prototype adapter implemented; live connector conformance remains mandatory for NHS interoperability |
 | B2 | **Real EMIS/SystmOne + NHS Spine (PDS)** connectors replacing mock EHR | Live data |
 | B3 | **DCB0129 Clinical Safety Case** + **DPIA** (GDPR Art 35) | Legally required before any NHS deployment |
 | B4 | **NHS IG Toolkit / DSPT** registration; **DARS** data application | Access to real data |

@@ -4,7 +4,7 @@
 
 **How it was built:** Requirement IDs harvested directly from `@requirement` tags in the source (`grep -rEn "FR-|NFR-|US-" backend/`). Implementation and test columns are verified file references, not claims. **Action for you:** replace each *Requirement (description)* cell with the exact wording from your AT2 report so the matrix is word-identical to your requirements section.
 
-**Test status:** 234 pytest tests, all passing (June 2026).
+**Test status:** 241 pytest tests, all passing (June 2026).
 
 ---
 
@@ -40,7 +40,7 @@
 |----|-----------------|----------------|-----------------|:------:|
 | **US-002** | Practice dashboard (risk counts, breakdown) | `app.py:284` `/api/dashboard` | `test_feature_coverage::TestDashboard` | ✅ |
 | **US-011** | Export bias audit as PDF for governance | `app.py:497`; frontend jsPDF | manual / UAT (frontend) | ⚠️ add UAT |
-| **Feature 10** | Mock NHS EHR integration | `app.py:382` `/api/ehr/*` | `test_feature_coverage::TestEHR` | ✅ |
+| **Feature 10** | Mock NHS EHR integration + prototype FHIR R4 adapter | `app.py:/api/ehr/*`; `backend/fhir.py`; `docs/ehr_fhir_architecture.md` | `test_feature_coverage::TestEHR`; `test_new_endpoints::TestAppointmentWorklist` FHIR mapping tests | ✅ |
 | **Feature 12** | Prediction feedback loop | `app.py:327` `/api/feedback` | `test_feature_coverage::TestFeedback` | ✅ |
 | **Feature 13** | Natural-language risk summary | `app.py:_generate_nl_summary` | `test_feature_coverage::TestNLSummary` | ✅ |
 | **Feature 14** | Multi-trust configuration | `app.py:417` `/api/trusts` | `test_feature_coverage::TestTrusts` | ✅ |

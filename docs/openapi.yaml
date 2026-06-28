@@ -23,6 +23,7 @@ tags:
   - name: Model
   - name: Dashboard & Feedback
   - name: EHR
+  - name: Appointments
   - name: Config
   - name: Account & Security
   - name: Outreach
@@ -195,6 +196,14 @@ paths:
         "200": { description: CSV of results, content: { text/csv: {} } }
         "400": { $ref: "#/components/responses/BadRequest" }
 
+  /api/batch/template:
+    get:
+      tags: [Prediction]
+      summary: Download the batch-upload CSV template
+      description: Returns the canonical wide CSV header used by /api/batch.
+      responses:
+        "200": { description: CSV template, content: { text/csv: {} } }
+
   /api/bias-audit:
     get:
       tags: [Fairness]
@@ -286,6 +295,26 @@ paths:
         "404": { description: Not found }
   /api/ehr/patients:
     get: { tags: [EHR], summary: List mock EHR patients, responses: { "200": { description: OK } } }
+  /api/ehr/fhir/patients/{nhs_number}:
+    get:
+      tags: [EHR]
+      summary: Mock EHR patient mapped to a minimal FHIR R4 Patient
+      description: Prototype FHIR adapter over mock EHR data; not a live NHS connector.
+      parameters:
+        - { name: nhs_number, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: FHIR Patient, content: { application/json: { schema: { $ref: "#/components/schemas/FHIRPatient" } } } }
+        "404": { description: Not found }
+  /api/ehr/fhir/appointments/{appointment_id}:
+    get:
+      tags: [EHR]
+      summary: Persisted appointment mapped to a minimal FHIR R4 Appointment
+      description: Owner-scoped prototype FHIR adapter over CareAttend appointments.
+      parameters:
+        - { name: appointment_id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: FHIR Appointment, content: { application/json: { schema: { $ref: "#/components/schemas/FHIRAppointment" } } } }
+        "404": { description: Appointment not found }
 
   /api/appointments:
     post:
@@ -594,6 +623,45 @@ paths:
         "200": { description: List of pending accounts }
         "403": { description: Admin access required }
 
+  /api/admin/users:
+    get:
+      tags: [Admin]
+      summary: List all users (admin only)
+      responses:
+        "200":
+          description: User list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items: { $ref: "#/components/schemas/User" }
+                  total: { type: integer }
+        "403": { description: Admin access required }
+
+  /api/admin/users/{user_id}/role:
+    put:
+      tags: [Admin]
+      summary: Change a user role (admin only)
+      parameters:
+        - { name: user_id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role]
+              properties:
+                role: { type: string, enum: [user, staff, admin] }
+      responses:
+        "200": { description: Role updated }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { description: Admin access required }
+        "404": { description: User not found }
+
   /api/admin/users/{user_id}/approve:
     post:
       tags: [Admin]
@@ -614,6 +682,18 @@ paths:
       responses:
         "200": { description: User approved }
         "400": { description: Already approved or invalid approval role }
+        "403": { description: Admin access required }
+        "404": { description: User not found }
+
+  /api/admin/users/{user_id}:
+    delete:
+      tags: [Admin]
+      summary: Delete a user account (admin only)
+      parameters:
+        - { name: user_id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: User deleted }
+        "400": { $ref: "#/components/responses/BadRequest" }
         "403": { description: Admin access required }
         "404": { description: User not found }
 
@@ -728,3 +808,77 @@ components:
         interventions: { type: array, items: { type: object } }
         age_group: { type: string }
         nl_summary: { type: string }
+
+    User:
+      type: object
+      properties:
+        id: { type: string }
+        username: { type: string }
+        email: { type: string, format: email }
+        role: { type: string, enum: [user, staff, admin] }
+        createdAt: { type: number }
+        lastLogin: { type: number, nullable: true }
+        has2FA: { type: boolean }
+
+    FHIRExtension:
+      type: object
+      properties:
+        url: { type: string }
+        valueInteger: { type: integer }
+        valueBoolean: { type: boolean }
+        valueDecimal: { type: number }
+        valueString: { type: string }
+
+    FHIRPatient:
+      type: object
+      required: [resourceType, id, identifier]
+      properties:
+        resourceType: { type: string, enum: [Patient] }
+        id: { type: string }
+        meta: { type: object }
+        identifier:
+          type: array
+          items:
+            type: object
+            properties:
+              system: { type: string, example: "https://fhir.nhs.uk/Id/nhs-number" }
+              value: { type: string, example: NHS001 }
+        name:
+          type: array
+          items:
+            type: object
+            properties:
+              text: { type: string }
+        gender: { type: string, enum: [female, male, unknown] }
+        extension:
+          type: array
+          items: { $ref: "#/components/schemas/FHIRExtension" }
+
+    FHIRAppointment:
+      type: object
+      required: [resourceType, id, status, participant]
+      properties:
+        resourceType: { type: string, enum: [Appointment] }
+        id: { type: string }
+        meta: { type: object }
+        status: { type: string, enum: [booked, fulfilled, noshow, cancelled, proposed] }
+        start: { type: string, example: "2026-07-01T09:30:00" }
+        serviceType:
+          type: array
+          items:
+            type: object
+            properties:
+              text: { type: string }
+        participant:
+          type: array
+          items:
+            type: object
+            properties:
+              actor:
+                type: object
+                properties:
+                  reference: { type: string, example: Patient/NHS001 }
+              status: { type: string, example: accepted }
+        extension:
+          type: array
+          items: { $ref: "#/components/schemas/FHIRExtension" }
