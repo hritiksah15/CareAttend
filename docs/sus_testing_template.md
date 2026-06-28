@@ -80,3 +80,14 @@ Include in Quality Assurance section:
 - Task completion rates and times
 - Key qualitative findings
 - Comparison to industry benchmark (68 = above average)
+
+## Response Sheet And Calculator
+Use `docs/sus_responses_template.csv` for the five anonymised participant rows.
+After collecting real responses, calculate the score with:
+
+```bash
+python3 tools/sus/calculate_sus.py docs/sus_responses_template.csv
+```
+
+Record the final score and top findings in
+`docs/sus_results_2026-06-28.md`.

@@ -138,7 +138,7 @@ flutter build web      # release web build
 
 ```bash
 cd backend
-pytest -q              # 180 tests across 10 suites
+pytest -q              # 233 tests across 10 suites
 ruff check .           # lint
 ```
 
@@ -164,7 +164,9 @@ In-depth project docs live in [`docs/`](docs/):
   [OpenAPI spec](docs/openapi.yaml)
 - [Traceability matrix](docs/traceability_matrix.md) ·
   [Literature review sources](docs/literature_review_sources.md) ·
-  [SUS testing template](docs/sus_testing_template.md)
+  [SUS testing template](docs/sus_testing_template.md) ·
+  [SUS response sheet](docs/sus_responses_template.csv) ·
+  [SUS pending results](docs/sus_results_2026-06-28.md)
 
 Contributing guidelines: [CONTRIBUTING.md](CONTRIBUTING.md) ·
 Security policy: [.github/SECURITY.md](.github/SECURITY.md) ·
