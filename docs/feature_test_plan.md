@@ -249,7 +249,7 @@ curl -s localhost:5000/api/audit-log -H "Authorization: Bearer $TOKEN_ADMIN" \
 
 Automated curl harness, all 3 roles seeded (admin via CLI, staff via approval, user unapproved).
 
-**30 / 30 functional + role-gate checks PASS.** Backend `pytest`: **233 passed**.
+**30 / 30 functional + role-gate checks PASS.** Backend `pytest`: **234 passed**.
 
 | Group | Result |
 |---|---|

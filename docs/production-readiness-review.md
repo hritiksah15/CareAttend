@@ -8,7 +8,7 @@ real NHS data out of scope per AT2 §1.3.
 standing between this and "world-class" is **evidential validity of the ML claims**, which
 — for a synthetic-data prototype — is an honesty-of-framing fix, not an engineering defect.
 
-**Baseline at review:** `233 backend tests pass` (`pytest`), CI + CodeQL + GHCR image
+**Baseline at review:** `234 backend tests pass` (`pytest`), CI + CodeQL + GHCR image
 publish configured. (The NHSX mapping in `app.py` still cites "199 tests" — stale; see §5.)
 
 ---
@@ -92,7 +92,7 @@ These are not student-grade; they are the reasons this system is close to produc
   default; `SECRET_KEY`/`CORS` env-gated; audit log on privileged mutations and login/logout.
 - **Operability.** `/health` readiness probe (model + DB), structured request logging,
   uniform JSON error handlers (400/404/405/500 + catch-all), Alembic migrations,
-  CI + CodeQL + GHCR image build, 233 automated tests.
+  CI + CodeQL + GHCR image build, 234 automated tests.
 
 ## 4. The crown-jewel gap — ML evaluation circularity
 
@@ -134,7 +134,7 @@ quote metrics as *fit-to-generator on synthetic data*, and state the limitation 
 | 1 | High | **Risk-tier computed 3 ways** | **FIXED** |
 | 2 | Med | False "JWT" claim in `app.py` docstring | **FIXED** |
 | 3 | Med | "CTGAN" naming overstates method | **FIXED (docstring)** |
-| 4 | Med | NHSX doc claims "199 tests" (actual 233) | Documented (below) |
+| 4 | Med | NHSX doc claims "199 tests" (actual 234) | Documented (below) |
 | 5 | Med | Per-request double DB write in `validate_token` | Documented (scale ceiling) |
 | 6 | Low | No login rate-limit (brute-force surface) | **FIXED** |
 | 7 | Low | Flutter `_handleResponse` assumes JSON body | **FIXED** |
@@ -158,7 +158,7 @@ the intended consequence of the unification. `slot_optimisation`'s bands are int
 left alone: they model slot economics (overbooking), a different question from clinical risk.
 
 **Finding 4 — test-count drift.** `NHSX_ETHICS_MAPPING` (P1 evidence) says "199 automated
-pytest tests"; the suite now has **233**. Update that string when the dissertation numbers
+pytest tests"; the suite now has **234**. Update that string when the dissertation numbers
 are finalised, or — better — generate it from a `pytest --collect-only` count so it can't
 drift again.
 
@@ -184,7 +184,7 @@ Redis or use a shared limiter.
 | Security (authn/z) | 🟢 Green | bcrypt, TOTP, revocable DB sessions, server+client RBAC, escalation guards, audit log, failed-login throttling. |
 | Observability | 🟢 Green | `/health`, structured logs, uniform JSON errors. |
 | CI/CD | 🟢 Green | CI + CodeQL + GHCR image publish; Alembic migrations. |
-| Testing | 🟢 Green | 233 passing tests across ML, API, auth, bias, robustness. |
+| Testing | 🟢 Green | 234 passing tests across ML, API, auth, bias, robustness. |
 | Data & ML validity | 🔴 Red | Metrics measure fit-to-generator, not generalisation; no real-world validation possible at this scope. **Honesty of framing is the deliverable.** |
 | Scalability | 🟡 Amber | Per-request session write; in-process model load is fine for one worker, needs care under concurrency. |
 
@@ -197,4 +197,4 @@ synthetic-fit, not generalisation. World-class is one honest paragraph away.
 ---
 *Code fixes applied in this review: tier single-source-of-truth (`ml/interventions.py`,
 `app.py` ×3 call sites); docstring accuracy (`app.py` module docstring, `data_generator.py`
-CTGAN note). Current suite collects 233 tests.*
+CTGAN note). Current suite collects 234 tests.*

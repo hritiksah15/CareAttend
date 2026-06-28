@@ -19,7 +19,7 @@ Current realistic mark position:
 |---|---:|---|---:|
 | Problem Definition | 20% | Clear aim, bounded NHS/GDPR scope, SMART-style implementation evidence. Needs final quantified problem-impact paragraph in the submitted report. | 17-18/20 |
 | Context Investigation | 20% | Strong health-AI/fairness/context docs and competitor positioning. Needs synthesis phrasing and final source alignment. | 16-17/20 |
-| Software Definition | 40% | Strongest area: implemented FR/NFRs, RTM, C4/ERD docs, OpenAPI, app/web/backend, 233 backend tests, 26 Flutter tests. | 37-39/40 |
+| Software Definition | 40% | Strongest area: implemented FR/NFRs, RTM, C4/ERD docs, OpenAPI, app/web/backend, 234 backend tests, 26 Flutter tests. | 37-39/40 |
 | Planning | 15% | Sprint/session logs, risk framing, evidence of fix-and-verify loops. Needs final deviation/reflection log in report prose. | 12-14/15 |
 | Communication | 5% | README, model card, architecture, traceability, production review. Needs final proofread, captions, Harvard consistency. | 4/5 |
 
@@ -43,7 +43,7 @@ validity.
 | Security | bcrypt, strong-password policy, TOTP, opaque DB-backed sessions, RBAC, admin approval flow, audit log, self-lockout protections. |
 | Operational value | Clinic list, appointment status, notifications, delivery lifecycle, outreach actions, outcomes dashboard, slots, patient nudges. |
 | App/web parity | Flutter app now includes styled AppCard surfaces, bottom-nav overlap fix, colorful ethics/bias views, admin session log. Web admin also has session log. |
-| Testing evidence | Backend suite collected 233 tests and passed; Flutter analyze is clean; Flutter test passes 26 tests; JS syntax and Python compile checks pass. |
+| Testing evidence | Backend suite collected 234 tests and passed; Flutter analyze is clean; Flutter test passes 26 tests; JS syntax and Python compile checks pass. |
 | Professional communication | Root README, app README, architecture, model card, production-readiness review, session logs, feature plan, SUS template. |
 
 ## Current Weaknesses That Could Lose Marks
@@ -53,7 +53,7 @@ validity.
 | Synthetic-data overclaiming | Biggest academic risk. Metrics fit the generator, not real NHS populations. | In report/demo, state metrics are synthetic-fit only and real-world validation is out of scope. Use the paragraph in `docs/production-readiness-review.md`. |
 | Human usability evidence still thin | WCAG automation is strong, but AT2/AT4 evaluators reward real users. | Run 5-person SUS using `docs/sus_testing_template.md`; report score and top 3 findings. |
 | UAT evidence for export/admin/session-log | Some frontend features are verified by build/tests but not human scenario evidence. | Capture a short scenario table: login, admin session log, assessment, result export, bias/ethics, mobile nav. |
-| Requirement wording drift | Older docs had stale counts and old NFR-01 wording. Some FR numbering differs between report/table. | Before submission, align exact FR/NFR wording in the report and RTM. Keep 233 backend tests / 26 Flutter tests consistent. |
+| Requirement wording drift | Older docs had stale counts and old NFR-01 wording. Some FR numbering differs between report/table. | Before submission, align exact FR/NFR wording in the report and RTM. Keep 234 backend tests / 26 Flutter tests consistent. |
 | App visual evidence missing from report | The app has been fixed, but markers cannot infer that from code. | Include screenshots of app home, results, admin session log, ethics/bias color, mobile bottom-nav spacing. |
 | Production hardening not complete | External pentest, DPIA/DCB0129, FHIR connectors are not expected for AT2 but matter for "real NHS product". | Frame as future work, not missing AT2 scope. |
 
@@ -144,7 +144,7 @@ Commands run during this pass:
 
 | Check | Result |
 |---|---|
-| `pytest --collect-only -q` | 233 backend tests collected |
+| `pytest --collect-only -q` | 234 backend tests collected |
 | `pytest -q` | Full backend suite completed successfully |
 | `python -m py_compile backend/...` | Passed |
 | `node --check frontend/js/app.js` | Passed |
