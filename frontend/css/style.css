@@ -747,9 +747,9 @@ body > * {
     border-radius: 4px;
     transition: width 0.5s ease;
 }
-.bias-bar-fill.pass { background: var(--nhs-dark-grey); }
-.bias-bar-fill.warn { background: var(--risk-medium); }
-.bias-bar-fill.fail { background: var(--risk-high); }
+.bias-bar-fill.pass { background: linear-gradient(90deg, var(--risk-low), #3FBF74); }
+.bias-bar-fill.warn { background: linear-gradient(90deg, var(--risk-medium), #F7C948); }
+.bias-bar-fill.fail { background: linear-gradient(90deg, var(--risk-high), #FF6B5C); }
 .bias-bar-value {
     position: absolute;
     right: 8px;
