@@ -8,7 +8,7 @@ Verified against backend (`backend/`), Flutter app (`care_attend_app/`), web fro
 - Backend: 241 pytest tests run → **all pass**.
 - Models inspected directly: base = LogisticRegression, calibrated = CalibratedClassifierCV.
 - Perf + a11y: read actual result numbers, not just file presence.
-- Flutter: `flutter analyze` → **no issues**; `flutter test` → **28 tests pass, including AppCard hover/press and admin session-log rendering coverage**. Toolchain at `~/development/flutter`. Full browser E2E not run (optional: `flutter run -d chrome`).
+- Flutter: `flutter analyze` → **no issues**; `flutter test` → **29 tests pass, including AppCard hover/press, admin session-log rendering, batch template, and dashboard module-card coverage**. Toolchain at `~/development/flutter`. Full browser E2E not run (optional: `flutter run -d chrome`).
 
 ## Functional Requirements (by feature, IDs vary between Table 3.3 and MoSCoW p41)
 

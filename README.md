@@ -164,6 +164,8 @@ In-depth project docs live in [`docs/`](docs/):
   [OpenAPI spec](docs/openapi.yaml) ·
   [FHIR integration architecture](docs/ehr_fhir_architecture.md)
 - [Traceability matrix](docs/traceability_matrix.md) ·
+  [AT3 viva evidence pack](docs/at3_viva_evidence_pack.md) ·
+  [Final QA sign-off](docs/final_qa_signoff_2026-06-28.md) ·
   [Literature review sources](docs/literature_review_sources.md) ·
   [SUS testing template](docs/sus_testing_template.md) ·
   [SUS response sheet](docs/sus_responses_template.csv) ·

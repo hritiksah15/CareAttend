@@ -1,7 +1,7 @@
 # Session Log — App Worldclass Pass (2026-06-27 → 28)
 
-Branch: `app-worldclass-phase1` · Pushed: `2ffac0b..ab2cdd2` (12 commits) ·
-Verified: `flutter analyze` clean (0 issues), 28 tests pass, web build OK,
+Branch: `app-worldclass-phase1` · Latest pushed baseline: `7343a15` ·
+Verified: `flutter analyze` clean (0 issues), 29 tests pass, web build OK,
 live Playwright screenshots on `:8090`.
 
 ## Goal
@@ -80,7 +80,7 @@ glassmorphism on transient panels, notifications, branding, i18n, tests.
   AT2 judgement, satisfied-vs-gap tables, and world-class build order.
 - Replaced the scaffold Flutter README with a project-specific app README.
 - Updated stale evidence counts in README/traceability/audit/readiness docs to
-  241 backend tests and 28 Flutter tests.
+  241 backend tests and 29 Flutter tests.
 - Hardened Flutter API response handling so non-JSON proxy/server errors become
   controlled `ApiException` messages instead of raw decode failures.
 - Verified: full backend `pytest -q` passed, `flutter analyze` clean,
@@ -118,12 +118,12 @@ glassmorphism on transient panels, notifications, branding, i18n, tests.
   can be rendered independently in tests.
 - Added widget coverage for login/logout rows and filtering of unrelated audit
   actions.
-- Verified: `flutter analyze` clean, `flutter test` passed with 28 tests,
+- Verified: `flutter analyze` clean, `flutter test` passed with 29 tests,
   `flutter build web` succeeded.
 
 ## Screenshot evidence pack setup — 2026-06-28
 - Attempted to connect to the supported in-app browser for automated screenshot
-  capture; no browser backend was available in this Codex session.
+  capture; no browser backend was available in this automation session.
 - Added `docs/screenshots/README.md` with required filenames, viewport sizes,
   capture setup, acceptance rules, and pending sign-off rows for UX1-UX9.
 - Screenshot evidence remains pending and must be filled with real captures from
@@ -158,4 +158,16 @@ glassmorphism on transient panels, notifications, branding, i18n, tests.
   validation not falsely claimed.
 - Verified: OpenAPI route parity clean; backend `ruff check .` clean; backend
   `pytest -q` passed with 241 collected tests; `node --check frontend/js/app.js`
-  passed; Flutter analyze clean; Flutter test passed with 28 tests.
+  passed; Flutter analyze clean; Flutter test passed with 29 tests.
+
+## Batch CSV and Dashboard workflow closure — 2026-06-28
+- Fixed the batch-upload CSV experience around the real required wide format:
+  canonical template, download actions in web/app, chatbot link to the template,
+  clearer backend errors for report-shaped CSVs, and tests for wide CSV,
+  Field/Value handling, and template columns.
+- Added a top-level dashboard workflow on web and Flutter: clickable module
+  cards, expandable result cards, and detailed recent-assessment rows/actions.
+- Added Flutter widget coverage for dashboard module-card navigation.
+- Verified and pushed: backend `pytest -q`, backend `ruff check .`,
+  `node --check frontend/js/app.js`, dashboard JS smoke, `flutter analyze`, and
+  `flutter test` all passed.

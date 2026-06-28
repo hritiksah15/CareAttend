@@ -121,9 +121,10 @@ Pre: admin must approve staff1 first (see §4 A3). Then re-login staff1 to refre
 | # | Feature | Steps | Expected outcome |
 |---|---|---|---|
 | S1 | Predict | same as U2 | 200 full result |
-| S2 | Batch CSV | upload CSV (≤100 rows: Age,Gender,AppointmentLeadTimeDays,SMSReceived,PriorDNACount,IMDDecile + comorbidity cols) | CSV download: per-row risk_probability, risk_tier, age_group, top_risk_factor |
+| S2 | Batch CSV | download template, upload CSV (≤100 rows: Age,Gender,AppointmentLeadTimeDays,SMSReceived,PriorDNACount,IMDDecile + comorbidity cols) | CSV download: per-row risk_probability, risk_tier, age_group, top_risk_factor |
 | S2b | Batch limit | upload 101 rows | **400** "Maximum 100 records" |
-| S3 | Dashboard | open Dashboard tab; set date range | counts by risk tier; date filter narrows; loads <2s |
+| S2c | Batch wrong report CSV | upload a 2-column `Field,Value` report export without patient input fields | actionable error explains expected wide header and single-patient report mismatch |
+| S3 | Dashboard | open Dashboard tab; use top module cards, expandable result cards, and recent row detail view | counts by risk tier; module navigation works; detail row expands; loads <2s |
 | S4 | Feedback | on a result, mark outcome attended/DNA | 200 stored; appears in feedback summary |
 | S5 | EHR lookup | enter mock NHS number on patient form | auto-fills demographics (mock EMIS/SystmOne); unknown → 404 with scope note |
 | S6 | Appointments import | POST appointments (EHR id or full features) | rows created, risk-scored on import |
@@ -224,6 +225,8 @@ caption, date, role, and device width.
 | UX7 | Flutter mobile/emulator | any | Tap an `AppCard` | Press feedback appears; true hover is not expected on touch |
 | UX8 | Web | staff/admin | Results export row | PDF/CSV/JSON/print controls visible and operable |
 | UX9 | Flutter app 320-390px width | any | Bottom navigation | Labels fit; body content remains above nav |
+| UX10 | Web + Flutter app | staff/admin | Dashboard workflow | Top module cards visible; recent assessment expands to a detailed record/action panel |
+| UX11 | Web + Flutter app | staff/admin | Batch Upload tab | Download template button visible; valid template upload succeeds; wrong report-shaped CSV gives actionable guidance |
 
 ### 6.2 Admin session-log curl evidence
 
