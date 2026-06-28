@@ -288,7 +288,7 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get batchUploadDesc =>
-      'زیادہ سے زیادہ 100 مریضوں کی CSV اپ لوڈ کریں۔ مطلوبہ کالم: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile۔';
+      'زیادہ سے زیادہ 100 مریضوں کی CSV اپ لوڈ کریں۔ مطلوبہ: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile۔ اختیاری: Hypertension, Diabetes, Alcoholism, Disability۔';
 
   @override
   String get batchScoring => 'اسکورنگ…';

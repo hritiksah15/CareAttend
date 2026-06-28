@@ -437,7 +437,7 @@
                     <div class="export-row">
                         <span class="export-label"><i data-lucide="file-down" style="width:14px;height:14px;margin-right:4px;"></i> Export:</span>
                         <button class="btn-secondary export-fmt" onclick="exportPatient('pdf')">PDF</button>
-                        <button class="btn-secondary export-fmt" onclick="exportPatient('csv')">CSV</button>
+                        <button class="btn-secondary export-fmt" onclick="exportPatient('csv')">Batch CSV</button>
                         <button class="btn-secondary export-fmt" onclick="exportPatient('json')">JSON</button>
                         <button class="btn-secondary export-fmt" onclick="exportPatient('print')">Print</button>
                     </div>
@@ -556,9 +556,10 @@
                     </button>
 
                     <div class="card info-card" style="margin-top:16px;">
-                        <h4>Required CSV Columns</h4>
-                        <p><code>Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile</code></p>
+                        <h4>Accepted Batch CSV Format</h4>
+                        <p>Required: <code>Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile</code></p>
                         <p>Optional: <code>Hypertension, Diabetes, Alcoholism, Disability</code></p>
+                        <p>Use the <strong>Batch CSV</strong> export from a completed assessment or the template above. Do not upload the PDF/report CSV.</p>
                     </div>
                 </div>
 

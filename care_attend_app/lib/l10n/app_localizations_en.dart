@@ -290,7 +290,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get batchUploadDesc =>
-      'Upload a CSV of up to 100 patients. Required columns: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile.';
+      'Upload a CSV of up to 100 patients. Required: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile. Optional: Hypertension, Diabetes, Alcoholism, Disability.';
 
   @override
   String get batchScoring => 'Scoring…';

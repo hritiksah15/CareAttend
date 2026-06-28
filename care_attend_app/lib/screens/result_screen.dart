@@ -387,7 +387,7 @@ class ResultScreen extends StatelessWidget {
                   OutlinedButton.icon(
                     onPressed: () => Exporter.patientCsv(result!),
                     icon: const Icon(Icons.table_chart, size: 18),
-                    label: const Text('CSV'),
+                    label: const Text('Batch CSV'),
                   ),
                   OutlinedButton.icon(
                     onPressed: () => Exporter.json(
