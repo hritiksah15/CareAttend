@@ -1,17 +1,32 @@
-# care_attend_app
+# CareAttend Flutter App
 
-A new Flutter project.
+Cross-platform Flutter client for CareAttend. It shares the Flask backend with
+the web client and implements the clinical workflow in a mobile/tablet-friendly
+surface: assessment, results, dashboard, clinic list, batch scoring, bias,
+ethics, slot optimisation, patient nudges, admin controls, profile, offline
+state, notifications, i18n, and export.
 
-## Getting Started
+## Run
 
-This project is a starting point for a Flutter application.
+```bash
+flutter pub get
+flutter run
+```
 
-A few resources to get you started if this is your first Flutter project:
+Use a local backend on `http://127.0.0.1:5000` for web/desktop/iOS simulator, or
+`http://10.0.2.2:5000` for Android emulator. Override with:
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+```bash
+flutter run --dart-define=API_BASE=http://127.0.0.1:5000
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Verify
+
+```bash
+flutter analyze
+flutter test
+flutter build web
+```
+
+Current evidence: `flutter analyze` clean, 26 Flutter tests passing, and
+`flutter build web` succeeds.

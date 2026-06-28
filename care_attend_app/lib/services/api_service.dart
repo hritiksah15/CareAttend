@@ -130,8 +130,11 @@ class ApiService {
     required String password,
     bool remember = false,
   }) async {
-    final data = await _post('/auth/login',
-        body: {'username': username, 'password': password, 'remember': remember});
+    final data = await _post('/auth/login', body: {
+      'username': username,
+      'password': password,
+      'remember': remember
+    });
     if (data.containsKey('token')) {
       _token = data['token'];
       // Pull the real role so the UI can gate features to match the backend.
@@ -222,11 +225,9 @@ class ApiService {
 
   // ── Batch CSV scoring ──
 
-  static Future<String> batchPredict(
-      List<int> bytes, String filename) async {
+  static Future<String> batchPredict(List<int> bytes, String filename) async {
     try {
-      final req =
-          http.MultipartRequest('POST', _uri('/api/batch'));
+      final req = http.MultipartRequest('POST', _uri('/api/batch'));
       if (_token != null) req.headers['Authorization'] = 'Bearer $_token';
       req.files.add(http.MultipartFile.fromBytes('file', bytes,
           filename: filename.endsWith('.csv') ? filename : '$filename.csv'));
@@ -353,6 +354,8 @@ class ApiService {
   static Future<Map<String, dynamic>> adminListUsers() =>
       _get('/api/admin/users');
 
+  static Future<Map<String, dynamic>> auditLog() => _get('/api/audit-log');
+
   static Future<Map<String, dynamic>> adminSetRole(
           String userId, String newRole) =>
       _put('/api/admin/users/$userId/role', body: {'role': newRole});
@@ -361,7 +364,24 @@ class ApiService {
       _delete('/api/admin/users/$userId');
 
   static Map<String, dynamic> _handleResponse(http.Response res) {
-    final body = jsonDecode(res.body) as Map<String, dynamic>;
+    Map<String, dynamic> body = {};
+    try {
+      final decoded = jsonDecode(res.body);
+      if (decoded is Map<String, dynamic>) {
+        body = decoded;
+      } else if (decoded is Map) {
+        body = Map<String, dynamic>.from(decoded);
+      }
+    } catch (_) {
+      if (res.statusCode == 401) {
+        clearSession();
+        throw ApiException('Session expired. Please log in again.');
+      }
+      if (res.statusCode >= 400) {
+        throw ApiException('Request failed (${res.statusCode}).');
+      }
+      throw ApiException('Invalid server response.');
+    }
     if (res.statusCode == 401) {
       clearSession();
       throw ApiException('Session expired. Please log in again.');

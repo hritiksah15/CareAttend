@@ -459,6 +459,25 @@ class AppLocalizationsPl extends AppLocalizations {
   String get adminRoleLabel => 'Rola:';
 
   @override
+  String get adminSessionLogTitle => 'Dziennik sesji logowania';
+
+  @override
+  String get adminSessionLogSubtitle =>
+      'Trwały zapis udanych logowań i wylogowań.';
+
+  @override
+  String get adminSessionEmpty => 'Brak zdarzeń sesji logowania.';
+
+  @override
+  String get adminSessionLogin => 'Logowanie';
+
+  @override
+  String get adminSessionLogout => 'Wylogowanie';
+
+  @override
+  String get adminSessionUnknownUser => 'Nieznany użytkownik';
+
+  @override
   String get slotsTitle => 'Optymalizacja slotów';
 
   @override

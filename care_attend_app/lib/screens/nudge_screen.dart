@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../l10n/app_localizations.dart';
 import '../nhs_theme.dart';
 import '../services/api_service.dart';
+import '../widgets/ui.dart';
 
 class NudgeScreen extends StatefulWidget {
   const NudgeScreen({super.key});
@@ -99,9 +100,10 @@ class _NudgeScreenState extends State<NudgeScreen> {
             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
         const SizedBox(height: 4),
         Text(t.nudgeSubtitle,
-            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+            style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant)),
         const SizedBox(height: 16),
-        Card(child: Padding(
+        AppCard(
           padding: const EdgeInsets.all(14),
           child: Column(children: [
             TextField(
@@ -155,11 +157,12 @@ class _NudgeScreenState extends State<NudgeScreen> {
               label: Text(_loading ? t.nudgeGenerating : t.nudgeGenerate),
             ),
           ]),
-        )),
+        ),
         if (_error != null)
-          Card(child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(_error!, style: const TextStyle(color: NHSTheme.riskHigh)))),
+          AppCard(
+              padding: const EdgeInsets.all(16),
+              child: Text(_error!,
+                  style: const TextStyle(color: NHSTheme.riskHigh))),
         if (_result != null) _buildResult(),
       ],
     );
@@ -170,47 +173,45 @@ class _NudgeScreenState extends State<NudgeScreen> {
     final r = _result!;
     final tier = '${r['risk_tier']}';
     final message = '${r['message']}';
-    return Card(
+    return AppCard(
       color: NHSTheme.calloutBg(context, NHSTheme.riskBgColor(tier)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            Chip(
-              label: Text('${r['nudge_type']}'.toUpperCase(),
-                  style: const TextStyle(fontSize: 11, color: Colors.white)),
-              backgroundColor: NHSTheme.blue,
-            ),
-            const Spacer(),
-            Text('${r['risk_probability']}% · $tier',
-                style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: NHSTheme.riskColor(tier))),
-          ]),
-          const SizedBox(height: 12),
-          Text(message, style: const TextStyle(fontSize: 15, height: 1.4)),
-          const SizedBox(height: 8),
-          Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: OutlinedButton.icon(
-              onPressed: () => _copyMessage(message),
-              icon: const Icon(Icons.copy, size: 18),
-              label: Text(t.nudgeCopy),
-            ),
+      padding: const EdgeInsets.all(16),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Chip(
+            label: Text('${r['nudge_type']}'.toUpperCase(),
+                style: const TextStyle(fontSize: 11, color: Colors.white)),
+            backgroundColor: NHSTheme.blue,
           ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 6,
-            children: ((r['personalisation_factors'] as List?) ?? [])
-                .map<Widget>((f) => Chip(
-                      label: Text('$f'.replaceAll('_', ' '),
-                          style: const TextStyle(fontSize: 11)),
-                      visualDensity: VisualDensity.compact,
-                    ))
-                .toList(),
-          ),
+          const Spacer(),
+          Text('${r['risk_probability']}% · $tier',
+              style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: NHSTheme.riskColor(tier))),
         ]),
-      ),
+        const SizedBox(height: 12),
+        Text(message, style: const TextStyle(fontSize: 15, height: 1.4)),
+        const SizedBox(height: 8),
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: OutlinedButton.icon(
+            onPressed: () => _copyMessage(message),
+            icon: const Icon(Icons.copy, size: 18),
+            label: Text(t.nudgeCopy),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 6,
+          children: ((r['personalisation_factors'] as List?) ?? [])
+              .map<Widget>((f) => Chip(
+                    label: Text('$f'.replaceAll('_', ' '),
+                        style: const TextStyle(fontSize: 11)),
+                    visualDensity: VisualDensity.compact,
+                  ))
+              .toList(),
+        ),
+      ]),
     );
   }
 

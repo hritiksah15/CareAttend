@@ -462,6 +462,25 @@ class AppLocalizationsCy extends AppLocalizations {
   String get adminRoleLabel => 'Rôl:';
 
   @override
+  String get adminSessionLogTitle => 'Cofnod Sesiynau Mewngofnodi';
+
+  @override
+  String get adminSessionLogSubtitle =>
+      'Cofnod parhaol o fewngofnodi ac allgofnodi llwyddiannus.';
+
+  @override
+  String get adminSessionEmpty => 'Dim digwyddiadau sesiwn mewngofnodi eto.';
+
+  @override
+  String get adminSessionLogin => 'Mewngofnodi';
+
+  @override
+  String get adminSessionLogout => 'Allgofnodi';
+
+  @override
+  String get adminSessionUnknownUser => 'Defnyddiwr anhysbys';
+
+  @override
   String get slotsTitle => 'Optimeiddio Slot';
 
   @override

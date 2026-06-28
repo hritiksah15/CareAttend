@@ -15,6 +15,7 @@ class AdminScreen extends StatefulWidget {
 
 class _AdminScreenState extends State<AdminScreen> {
   List<dynamic> _users = [];
+  List<dynamic> _auditLogs = [];
   String? _error;
   bool _loading = false;
 
@@ -26,8 +27,12 @@ class _AdminScreenState extends State<AdminScreen> {
       _error = null;
     });
     try {
-      final data = await ApiService.adminListUsers();
-      setState(() => _users = (data['users'] as List?) ?? []);
+      final users = await ApiService.adminListUsers();
+      final audit = await ApiService.auditLog();
+      setState(() {
+        _users = (users['users'] as List?) ?? [];
+        _auditLogs = (audit['logs'] as List?) ?? [];
+      });
     } catch (e) {
       setState(() => _error = e.toString());
     } finally {
@@ -82,8 +87,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
   void _toast(String msg) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(msg)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
@@ -95,14 +99,18 @@ class _AdminScreenState extends State<AdminScreen> {
         padding: const EdgeInsets.all(12),
         children: [
           Text(t.adminTitle,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
+              style:
+                  const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
           Text(t.adminSubtitle,
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant)),
           const SizedBox(height: 16),
           if (_loading) const SkeletonList(),
           if (_error != null) ErrorView(t.loadFailed, onRetry: _load),
           for (final u in _users) _userCard(u as Map<String, dynamic>),
+          const SizedBox(height: 12),
+          AdminSessionLogCard(logs: _auditLogs),
           const SizedBox(height: 12),
           _permissionMatrix(),
         ],
@@ -122,7 +130,9 @@ class _AdminScreenState extends State<AdminScreen> {
               style: TextStyle(
                   fontSize: 12,
                   fontWeight: head ? FontWeight.w700 : FontWeight.w400,
-                  color: head ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onSurface)),
+                  color: head
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.onSurface)),
         );
     Widget rowFor(String feature, bool u, bool s, bool a) => Padding(
           padding: const EdgeInsets.symmetric(vertical: 6),
@@ -133,26 +143,24 @@ class _AdminScreenState extends State<AdminScreen> {
             cell(a ? '✓' : '—', 1),
           ]),
         );
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(t.adminRolePerms,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 8),
-          Row(children: [
-            cell(t.adminFeature, 2, head: true),
-            cell(t.adminRoleUser, 1, head: true),
-            cell(t.adminRoleStaff, 1, head: true),
-            cell(t.adminRoleAdmin, 1, head: true),
-          ]),
-          const Divider(),
-          rowFor(t.adminPermAssessment, true, true, true),
-          rowFor(t.adminPermDashboard, false, true, true),
-          rowFor(t.adminPermBias, false, false, true),
-          rowFor(t.adminPermAudit, false, false, true),
+    return AppCard(
+      padding: const EdgeInsets.all(16),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(t.adminRolePerms,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 8),
+        Row(children: [
+          cell(t.adminFeature, 2, head: true),
+          cell(t.adminRoleUser, 1, head: true),
+          cell(t.adminRoleStaff, 1, head: true),
+          cell(t.adminRoleAdmin, 1, head: true),
         ]),
-      ),
+        const Divider(),
+        rowFor(t.adminPermAssessment, true, true, true),
+        rowFor(t.adminPermDashboard, false, true, true),
+        rowFor(t.adminPermBias, false, false, true),
+        rowFor(t.adminPermAudit, false, false, true),
+      ]),
     );
   }
 
@@ -175,19 +183,20 @@ class _AdminScreenState extends State<AdminScreen> {
     final role = (u['role']?.toString() ?? 'user');
     final current = _roles.contains(role) ? role : 'user';
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      child: Padding(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: AppCard(
         padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(username,
-                style: const TextStyle(
-                    fontWeight: FontWeight.w700, fontSize: 16)),
+                style:
+                    const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
             Text(email,
                 style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontSize: 13)),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -216,5 +225,118 @@ class _AdminScreenState extends State<AdminScreen> {
         ),
       ),
     );
+  }
+}
+
+class AdminSessionLogCard extends StatelessWidget {
+  final List<dynamic> logs;
+
+  const AdminSessionLogCard({super.key, required this.logs});
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final sessionLogs = logs
+        .whereType<Map>()
+        .map((entry) => Map<String, dynamic>.from(entry))
+        .where((entry) {
+          final action = entry['action']?.toString();
+          return action == 'login_success' || action == 'logout';
+        })
+        .take(8)
+        .toList();
+
+    return AppCard(
+      padding: const EdgeInsets.all(16),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Icon(Icons.manage_history,
+              color: Theme.of(context).colorScheme.primary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(t.adminSessionLogTitle,
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+          ),
+        ]),
+        const SizedBox(height: 6),
+        Text(t.adminSessionLogSubtitle,
+            style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: 13)),
+        const SizedBox(height: 12),
+        if (sessionLogs.isEmpty)
+          Text(t.adminSessionEmpty,
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant))
+        else
+          for (final log in sessionLogs) _sessionLogRow(context, log),
+      ]),
+    );
+  }
+
+  Widget _sessionLogRow(BuildContext context, Map<String, dynamic> log) {
+    final t = AppLocalizations.of(context);
+    final action = log['action']?.toString() ?? '';
+    final isLogin = action == 'login_success';
+    final color =
+        isLogin ? NHSTheme.riskLow : Theme.of(context).colorScheme.primary;
+    final username = log['username']?.toString().isNotEmpty == true
+        ? log['username'].toString()
+        : t.adminSessionUnknownUser;
+    final detail = log['detail']?.toString() ?? '';
+    final ip = log['ipAddress']?.toString() ?? '';
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.13),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(isLogin ? Icons.login : Icons.logout,
+              color: color, size: 20),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(
+              '${isLogin ? t.adminSessionLogin : t.adminSessionLogout} · $username',
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              [
+                _formatTimestamp(log['createdAt']),
+                if (ip.isNotEmpty) ip,
+              ].join(' · '),
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontSize: 12),
+            ),
+            if (detail.isNotEmpty) ...[
+              const SizedBox(height: 2),
+              Text(detail,
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontSize: 12)),
+            ],
+          ]),
+        ),
+      ]),
+    );
+  }
+
+  String _formatTimestamp(dynamic raw) {
+    final seconds = double.tryParse(raw?.toString() ?? '');
+    if (seconds == null) return '--';
+    final dt =
+        DateTime.fromMillisecondsSinceEpoch((seconds * 1000).round()).toLocal();
+    String two(int value) => value.toString().padLeft(2, '0');
+    return '${two(dt.day)}/${two(dt.month)}/${dt.year} ${two(dt.hour)}:${two(dt.minute)}';
   }
 }

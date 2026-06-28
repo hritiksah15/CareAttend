@@ -194,8 +194,8 @@ class _ClinicScreenState extends State<ClinicScreen> {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
-    final appointments = ((_data?['appointments'] as List?) ?? [])
-        .cast<Map<String, dynamic>>();
+    final appointments =
+        ((_data?['appointments'] as List?) ?? []).cast<Map<String, dynamic>>();
     final summary = (_data?['summary'] as Map<String, dynamic>?) ?? {};
 
     return RefreshIndicator(
@@ -206,14 +206,15 @@ class _ClinicScreenState extends State<ClinicScreen> {
         padding: const EdgeInsets.fromLTRB(12, 12, 12, 88),
         children: [
           Text(t.clinicTitle,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
+              style:
+                  const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
           Text(t.clinicSubtitle,
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant)),
           const SizedBox(height: 16),
           _buildImportCard(),
-          if (_error != null)
-            ErrorView(t.loadFailed, onRetry: _load),
+          if (_error != null) ErrorView(t.loadFailed, onRetry: _load),
           _buildSummary(summary),
           if (_loading)
             const SkeletonList()
@@ -231,75 +232,72 @@ class _ClinicScreenState extends State<ClinicScreen> {
 
   Widget _buildImportCard() {
     final t = AppLocalizations.of(context);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: _loading ? null : _pickDate,
-                icon: const Icon(Icons.calendar_month),
-                label: Text(_dateText),
-              ),
+    return AppCard(
+      padding: const EdgeInsets.all(14),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: _loading ? null : _pickDate,
+              icon: const Icon(Icons.calendar_month),
+              label: Text(_dateText),
             ),
-            const SizedBox(width: 10),
-            IconButton(
-              tooltip: t.clinicRefresh,
-              onPressed: _loading ? null : _load,
-              icon: const Icon(Icons.refresh),
-            ),
-          ]),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _patientId,
-            decoration: InputDecoration(labelText: t.clinicPatientId),
           ),
-          const SizedBox(height: 10),
-          Row(children: [
-            Expanded(
-              child: TextField(
-                controller: _time,
-                decoration: InputDecoration(labelText: t.clinicTime),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: TextField(
-                controller: _clinic,
-                decoration: InputDecoration(labelText: t.clinicClinic),
-              ),
-            ),
-          ]),
-          const SizedBox(height: 12),
-          ElevatedButton.icon(
-            onPressed: _loading ? null : _addAppointment,
-            icon: const Icon(Icons.calendar_today),
-            label: Text(_loading ? t.clinicWorking : t.clinicAddAppointment),
-          ),
-          const SizedBox(height: 8),
-          ExpansionTile(
-            tilePadding: EdgeInsets.zero,
-            title: Text(t.clinicBulkImport,
-                style: const TextStyle(fontWeight: FontWeight.w700)),
-            children: [
-              TextField(
-                controller: _bulkJson,
-                minLines: 4,
-                maxLines: 8,
-                decoration:
-                    InputDecoration(labelText: t.clinicApptsJson),
-              ),
-              const SizedBox(height: 10),
-              OutlinedButton.icon(
-                onPressed: _loading ? null : _importJson,
-                icon: const Icon(Icons.upload_file),
-                label: Text(t.clinicImportJson),
-              ),
-            ],
+          const SizedBox(width: 10),
+          IconButton(
+            tooltip: t.clinicRefresh,
+            onPressed: _loading ? null : _load,
+            icon: const Icon(Icons.refresh),
           ),
         ]),
-      ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _patientId,
+          decoration: InputDecoration(labelText: t.clinicPatientId),
+        ),
+        const SizedBox(height: 10),
+        Row(children: [
+          Expanded(
+            child: TextField(
+              controller: _time,
+              decoration: InputDecoration(labelText: t.clinicTime),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: TextField(
+              controller: _clinic,
+              decoration: InputDecoration(labelText: t.clinicClinic),
+            ),
+          ),
+        ]),
+        const SizedBox(height: 12),
+        ElevatedButton.icon(
+          onPressed: _loading ? null : _addAppointment,
+          icon: const Icon(Icons.calendar_today),
+          label: Text(_loading ? t.clinicWorking : t.clinicAddAppointment),
+        ),
+        const SizedBox(height: 8),
+        ExpansionTile(
+          tilePadding: EdgeInsets.zero,
+          title: Text(t.clinicBulkImport,
+              style: const TextStyle(fontWeight: FontWeight.w700)),
+          children: [
+            TextField(
+              controller: _bulkJson,
+              minLines: 4,
+              maxLines: 8,
+              decoration: InputDecoration(labelText: t.clinicApptsJson),
+            ),
+            const SizedBox(height: 10),
+            OutlinedButton.icon(
+              onPressed: _loading ? null : _importJson,
+              icon: const Icon(Icons.upload_file),
+              label: Text(t.clinicImportJson),
+            ),
+          ],
+        ),
+      ]),
     );
   }
 
@@ -341,9 +339,15 @@ class _ClinicScreenState extends State<ClinicScreen> {
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border(
           top: BorderSide(color: color, width: 3),
-          left: dark ? const BorderSide(color: AppColors.darkOutline) : BorderSide.none,
-          right: dark ? const BorderSide(color: AppColors.darkOutline) : BorderSide.none,
-          bottom: dark ? const BorderSide(color: AppColors.darkOutline) : BorderSide.none,
+          left: dark
+              ? const BorderSide(color: AppColors.darkOutline)
+              : BorderSide.none,
+          right: dark
+              ? const BorderSide(color: AppColors.darkOutline)
+              : BorderSide.none,
+          bottom: dark
+              ? const BorderSide(color: AppColors.darkOutline)
+              : BorderSide.none,
         ),
       ),
       child: Padding(
@@ -390,85 +394,86 @@ class _ClinicScreenState extends State<ClinicScreen> {
     final prob = appt['probability'] is num
         ? '${((appt['probability'] as num) * 100).toStringAsFixed(1)}%'
         : '--';
-    final status = _statuses.contains(appt['status']) ? '${appt['status']}' : 'scheduled';
+    final status =
+        _statuses.contains(appt['status']) ? '${appt['status']}' : 'scheduled';
     final canNotify = tier == 'High' || tier == 'Medium';
 
-    return Card(
+    return AppCard(
       color: NHSTheme.riskBgColor(tier),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Expanded(
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('${appt['appointment_time'] ?? '--'} · ${appt['patient_id']}',
-                        style: const TextStyle(
-                            fontSize: 17, fontWeight: FontWeight.w800)),
-                    const SizedBox(height: 2),
-                    Text('${appt['clinic'] ?? ''}',
-                        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
-                  ]),
-            ),
-            Chip(
-              backgroundColor: NHSTheme.riskColor(tier),
-              label: Text('$tier · $prob',
-                  style: const TextStyle(color: Colors.white, fontSize: 12)),
-            ),
-          ]),
-          const SizedBox(height: 10),
-          Row(children: [
-            Expanded(
-              child: DropdownButtonFormField<String>(
-                initialValue: status,
-                decoration: InputDecoration(labelText: t.clinicStatus),
-                items: _statuses
-                    .map((s) => DropdownMenuItem(
-                        value: s, child: Text(_statusLabel(t, s))))
-                    .toList(),
-                onChanged: (v) {
-                  if (v != null) _updateStatus('${appt['id']}', v);
-                },
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                '${t.clinicActionsCount('${appt['action_count'] ?? 0}')}\n'
-                '${t.clinicRemindersCount('${appt['notification_count'] ?? 0}')}',
-                style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600),
-              ),
-            ),
-          ]),
-          if (appt['needs_action'] == true)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(t.clinicNeedsOutreach,
+      padding: const EdgeInsets.all(14),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Expanded(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(
+                  '${appt['appointment_time'] ?? '--'} · ${appt['patient_id']}',
                   style: const TextStyle(
-                      color: NHSTheme.riskHigh, fontWeight: FontWeight.w800)),
-            ),
-          const SizedBox(height: 10),
-          Row(children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: canNotify ? () => _scheduleReminder(appt) : null,
-                icon: const Icon(Icons.notifications_active),
-                label: Text(t.clinicReminder),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () => _recordCall(appt),
-                icon: const Icon(Icons.call),
-                label: Text(t.clinicCall),
-              ),
-            ),
-          ]),
+                      fontSize: 17, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 2),
+              Text('${appt['clinic'] ?? ''}',
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant)),
+            ]),
+          ),
+          Chip(
+            backgroundColor: NHSTheme.riskColor(tier),
+            label: Text('$tier · $prob',
+                style: const TextStyle(color: Colors.white, fontSize: 12)),
+          ),
         ]),
-      ),
+        const SizedBox(height: 10),
+        Row(children: [
+          Expanded(
+            child: DropdownButtonFormField<String>(
+              initialValue: status,
+              decoration: InputDecoration(labelText: t.clinicStatus),
+              items: _statuses
+                  .map((s) => DropdownMenuItem(
+                      value: s, child: Text(_statusLabel(t, s))))
+                  .toList(),
+              onChanged: (v) {
+                if (v != null) _updateStatus('${appt['id']}', v);
+              },
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              '${t.clinicActionsCount('${appt['action_count'] ?? 0}')}\n'
+              '${t.clinicRemindersCount('${appt['notification_count'] ?? 0}')}',
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w600),
+            ),
+          ),
+        ]),
+        if (appt['needs_action'] == true)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(t.clinicNeedsOutreach,
+                style: const TextStyle(
+                    color: NHSTheme.riskHigh, fontWeight: FontWeight.w800)),
+          ),
+        const SizedBox(height: 10),
+        Row(children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: canNotify ? () => _scheduleReminder(appt) : null,
+              icon: const Icon(Icons.notifications_active),
+              label: Text(t.clinicReminder),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () => _recordCall(appt),
+              icon: const Icon(Icons.call),
+              label: Text(t.clinicCall),
+            ),
+          ),
+        ]),
+      ]),
     );
   }
 }

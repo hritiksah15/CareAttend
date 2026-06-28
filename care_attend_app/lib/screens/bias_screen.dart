@@ -64,13 +64,15 @@ class _BiasScreenState extends State<BiasScreen>
                 const SizedBox(height: 4),
                 Text(t.biasSubtitle,
                     style: TextStyle(
-                        fontSize: 14, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                        fontSize: 14,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant)),
                 const SizedBox(height: 16),
 
                 // Tab bar (Age / Gender / IMD)
                 Container(
                   decoration: BoxDecoration(
-                    border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2),
+                    border: Border.all(
+                        color: Theme.of(context).colorScheme.primary, width: 2),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: TabBar(
@@ -181,11 +183,14 @@ class _BiasScreenState extends State<BiasScreen>
                 children: [
                   Text(t.plainEnglishSummary,
                       style: TextStyle(
-                          fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.primary)),
+                          fontWeight: FontWeight.w700,
+                          color: Theme.of(context).colorScheme.primary)),
                   const SizedBox(height: 6),
                   Text(_generateSummary(),
                       style: TextStyle(
-                          fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                          fontSize: 13,
+                          color:
+                              Theme.of(context).colorScheme.onSurfaceVariant)),
                 ],
               ),
             ),
@@ -224,8 +229,9 @@ class _BiasScreenState extends State<BiasScreen>
                     fontWeight: FontWeight.w700,
                     color: Theme.of(context).colorScheme.primary)),
             Text(label,
-                style:
-                    TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                style: TextStyle(
+                    fontSize: 11,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ],
         ),
       );
@@ -298,6 +304,12 @@ class _BiasScreenState extends State<BiasScreen>
         : status == 'WARN'
             ? const Color(0xFFB8860B)
             : NHSTheme.riskHigh;
+    final trackColor = status == 'PASS'
+        ? NHSTheme.riskLowBg
+        : status == 'WARN'
+            ? const Color(0xFFFFF4CC)
+            : NHSTheme.riskHighBg;
+    final fillEnd = Color.lerp(statusColor, Colors.white, 0.20)!;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -317,7 +329,7 @@ class _BiasScreenState extends State<BiasScreen>
                 Container(
                   height: 24,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE8E8E8),
+                    color: trackColor,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -326,8 +338,19 @@ class _BiasScreenState extends State<BiasScreen>
                   child: Container(
                     height: 24,
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      gradient: LinearGradient(
+                        colors: [statusColor, fillEnd],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
                       borderRadius: BorderRadius.circular(4),
+                      boxShadow: [
+                        BoxShadow(
+                          color: statusColor.withValues(alpha: 0.20),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -336,7 +359,9 @@ class _BiasScreenState extends State<BiasScreen>
                   top: 3,
                   child: Text(value.toStringAsFixed(2),
                       style: const TextStyle(
-                          fontSize: 12, fontWeight: FontWeight.w700)),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: NHSTheme.black)),
                 ),
               ],
             ),
@@ -355,37 +380,35 @@ class _BiasScreenState extends State<BiasScreen>
   Widget _statusBadge(String text, bool pass) {
     final t = AppLocalizations.of(context);
     return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: pass ? NHSTheme.riskLowBg : NHSTheme.riskHighBg,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: pass ? NHSTheme.riskLowBg : NHSTheme.riskHighBg,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(pass ? t.biasPass : t.biasFail,
-                  style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color:
-                          pass ? NHSTheme.riskLow : NHSTheme.riskHigh)),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: pass ? NHSTheme.riskLowBg : NHSTheme.riskHighBg,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: pass ? NHSTheme.riskLowBg : NHSTheme.riskHighBg,
+              borderRadius: BorderRadius.circular(8),
             ),
-            const SizedBox(width: 4),
-            Text(text,
+            child: Text(pass ? t.biasPass : t.biasFail,
                 style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color:
-                        pass ? NHSTheme.riskLow : NHSTheme.riskHigh)),
-          ],
-        ),
-      );
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: pass ? NHSTheme.riskLow : NHSTheme.riskHigh)),
+          ),
+          const SizedBox(width: 4),
+          Text(text,
+              style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: pass ? NHSTheme.riskLow : NHSTheme.riskHigh)),
+        ],
+      ),
+    );
   }
 
   String _generateSummary() {

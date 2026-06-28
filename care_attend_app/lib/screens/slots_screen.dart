@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../nhs_theme.dart';
 import '../services/api_service.dart';
+import '../widgets/ui.dart';
 
 class SlotsScreen extends StatefulWidget {
   const SlotsScreen({super.key});
@@ -59,9 +60,10 @@ class _SlotsScreenState extends State<SlotsScreen> {
             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
         const SizedBox(height: 4),
         Text(t.slotsSubtitle,
-            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+            style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant)),
         const SizedBox(height: 16),
-        Card(child: Padding(
+        AppCard(
           padding: const EdgeInsets.all(14),
           child: Column(children: [
             Row(children: [
@@ -79,7 +81,8 @@ class _SlotsScreenState extends State<SlotsScreen> {
             Row(children: [
               _num(_slot, t.slotsSlotMins),
               const SizedBox(width: 10),
-              Expanded(child: DropdownButtonFormField<int>(
+              Expanded(
+                  child: DropdownButtonFormField<int>(
                 initialValue: _gender,
                 decoration: InputDecoration(labelText: t.gender),
                 items: [
@@ -103,11 +106,12 @@ class _SlotsScreenState extends State<SlotsScreen> {
               label: Text(_loading ? t.slotsAnalysing : t.slotsAnalyse),
             ),
           ]),
-        )),
+        ),
         if (_error != null)
-          Card(child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(_error!, style: const TextStyle(color: NHSTheme.riskHigh)))),
+          AppCard(
+              padding: const EdgeInsets.all(16),
+              child: Text(_error!,
+                  style: const TextStyle(color: NHSTheme.riskHigh))),
         if (_result != null) ..._buildResult(),
       ],
     );
@@ -131,7 +135,8 @@ class _SlotsScreenState extends State<SlotsScreen> {
             Text(label,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                    fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                    fontSize: 11,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ]),
         ),
       );
@@ -143,10 +148,15 @@ class _SlotsScreenState extends State<SlotsScreen> {
     final summary = _result!['summary'] as Map<String, dynamic>?;
     final s = slots.first as Map<String, dynamic>;
     if (s.containsKey('error')) {
-      return [Card(child: Padding(
-        padding: const EdgeInsets.all(16), child: Text('${s['error']}')))];
+      return [
+        AppCard(
+          padding: const EdgeInsets.all(16),
+          child: Text('${s['error']}'),
+        )
+      ];
     }
-    final prob = (((s['dna_probability'] ?? 0) as num) * 100).toStringAsFixed(0);
+    final prob =
+        (((s['dna_probability'] ?? 0) as num) * 100).toStringAsFixed(0);
     final tier = '${s['risk_tier']}';
     return [
       if (summary != null)
@@ -160,29 +170,27 @@ class _SlotsScreenState extends State<SlotsScreen> {
                 t.slotsRecoveryPotential),
           ]),
         ),
-      Card(
+      AppCard(
         color: NHSTheme.riskBgColor(tier),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              Icon(Icons.warning_amber, color: NHSTheme.riskColor(tier)),
-              const SizedBox(width: 8),
-              Text(t.slotsRiskLine(prob, tier),
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      color: NHSTheme.riskColor(tier))),
-            ]),
-            const SizedBox(height: 10),
-            Text('${t.slotsCanOverbookLabel} '
-                '${s['can_overbook'] == true ? t.commonYes : t.commonNo}'),
-            Text(t.slotsWastedMinutes('${s['expected_waste_minutes']}')),
-            const SizedBox(height: 10),
-            Text('${s['recommendation']}',
-                style: const TextStyle(fontWeight: FontWeight.w600)),
+        padding: const EdgeInsets.all(16),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Icon(Icons.warning_amber, color: NHSTheme.riskColor(tier)),
+            const SizedBox(width: 8),
+            Text(t.slotsRiskLine(prob, tier),
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: NHSTheme.riskColor(tier))),
           ]),
-        ),
+          const SizedBox(height: 10),
+          Text('${t.slotsCanOverbookLabel} '
+              '${s['can_overbook'] == true ? t.commonYes : t.commonNo}'),
+          Text(t.slotsWastedMinutes('${s['expected_waste_minutes']}')),
+          const SizedBox(height: 10),
+          Text('${s['recommendation']}',
+              style: const TextStyle(fontWeight: FontWeight.w600)),
+        ]),
       ),
     ];
   }

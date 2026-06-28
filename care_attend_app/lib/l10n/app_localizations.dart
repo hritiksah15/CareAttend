@@ -954,6 +954,42 @@ abstract class AppLocalizations {
   /// **'Role:'**
   String get adminRoleLabel;
 
+  /// No description provided for @adminSessionLogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Login Session Log'**
+  String get adminSessionLogTitle;
+
+  /// No description provided for @adminSessionLogSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Persistent record of successful sign-ins and sign-outs.'**
+  String get adminSessionLogSubtitle;
+
+  /// No description provided for @adminSessionEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No login session events yet.'**
+  String get adminSessionEmpty;
+
+  /// No description provided for @adminSessionLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Login'**
+  String get adminSessionLogin;
+
+  /// No description provided for @adminSessionLogout.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout'**
+  String get adminSessionLogout;
+
+  /// No description provided for @adminSessionUnknownUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown user'**
+  String get adminSessionUnknownUser;
+
   /// No description provided for @slotsTitle.
   ///
   /// In en, this message translates to:
