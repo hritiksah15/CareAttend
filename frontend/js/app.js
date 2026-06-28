@@ -1157,6 +1157,16 @@ function renderRiskHistory() {
 
 let batchFile = null;
 
+function downloadBatchTemplate() {
+    const link = document.createElement('a');
+    link.href = '/api/batch/template';
+    link.download = 'sample_batch_upload.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    if (typeof showToast === 'function') showToast('Batch template downloaded.', 'success');
+}
+
 function handleBatchFile(input) {
     if (input.files.length === 0) return;
     batchFile = input.files[0];
@@ -2437,7 +2447,7 @@ function getChatbotResponse(query) {
     } else if (q.includes('privacy') || q.includes('gdpr') || q.includes('data')) {
         return 'Care Attend is <strong>GDPR Article 5(1)(c) compliant</strong>. No patient data is stored — all predictions are session-scoped. Passwords are hashed with bcrypt. Sessions expire after 30 minutes. No third-party analytics.';
     } else if (q.includes('batch') || q.includes('csv') || q.includes('upload')) {
-        return 'The <strong>Batch Upload</strong> tab (press 4) lets you upload a CSV of up to 100 patients. Required columns: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile. Results download as CSV.';
+        return 'The <strong>Batch Upload</strong> tab (press 4) lets you upload a CSV of up to 100 patients. Required columns: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile. <a href="/api/batch/template" download>Download the CSV template</a>. Results download as CSV.';
     } else if (q.includes('slot') || q.includes('overbook')) {
         return 'The <strong>Slot Optimisation</strong> tab (press 7) analyses appointment slots for overbooking opportunities. Paste JSON patient data — slots with 40%+ DNA risk are flagged as overbookable.';
     } else if (q.includes('nudge') || q.includes('message') || q.includes('patient comms')) {
@@ -2558,26 +2568,35 @@ function _downloadBlob(filename, text, mime) {
     URL.revokeObjectURL(url);
 }
 
+const PATIENT_BATCH_CSV_COLUMNS = [
+    'Age', 'Gender', 'AppointmentLeadTimeDays', 'SMSReceived', 'PriorDNACount', 'IMDDecile',
+];
+
+function csvCell(value) {
+    return '"' + String(value ?? '').replace(/"/g, '""') + '"';
+}
+
 function exportPatientCSV() {
     var r = lastResult;
-    var rows = [
-        ['Field', 'Value'],
-        ['Risk Score', r.percentage],
-        ['Risk Tier', r.risk_tier],
-        ['Age Group', r.age_group],
-        ['Model', r.model_used || 'Logistic Regression'],
-    ];
-    if (r.shap_values) {
-        r.shap_values.forEach(function (s) {
-            rows.push(['Factor: ' + s.label, s.value.toFixed(4) + ' (' + s.direction + ')']);
-        });
+    var p = r.patient_summary || {};
+    if (!p.Age && p.Age !== 0) {
+        showToast('Patient inputs are missing; export JSON/PDF instead.', 'warning');
+        return;
     }
-    if (r.nl_summary) rows.push(['Summary', r.nl_summary]);
-    var csv = rows.map(function (row) {
-        return row.map(function (c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(',');
-    }).join('\n');
-    _downloadBlob('CareAttend_Patient_Report.csv', csv, 'text/csv');
-    showToast('CSV exported.', 'success');
+    var row = {
+        Age: p.Age,
+        Gender: p.Gender,
+        AppointmentLeadTimeDays: p.AppointmentLeadTimeDays,
+        SMSReceived: p.SMSReceived,
+        PriorDNACount: p.PriorDNACount,
+        IMDDecile: p.IMDDecile,
+    };
+    var csv = [
+        PATIENT_BATCH_CSV_COLUMNS.map(csvCell).join(','),
+        PATIENT_BATCH_CSV_COLUMNS.map(function (col) { return csvCell(row[col]); }).join(','),
+    ].join('\n');
+    _downloadBlob('CareAttend_Patient_Assessment.csv', csv, 'text/csv');
+    showToast('Batch-compatible CSV exported.', 'success');
 }
 
 function exportPatientJSON() {
