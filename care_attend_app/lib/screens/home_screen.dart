@@ -314,7 +314,10 @@ class _HomeScreenState extends State<HomeScreen> {
           onBiasDashboard: ApiService.canBias ? () => _go(3) : null,
         );
       case 2:
-        return DashboardScreen(key: ValueKey('dash-${_visit[2] ?? 0}'));
+        return DashboardScreen(
+          key: ValueKey('dash-${_visit[2] ?? 0}'),
+          onOpenModule: _go,
+        );
       case 3:
         return BiasScreen(key: ValueKey('bias-${_visit[3] ?? 0}'));
       case 4:
