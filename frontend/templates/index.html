@@ -455,21 +455,36 @@
                     <div class="card">
                         <div class="metrics-row" id="dashboard-metrics"></div>
                     </div>
-                    <div class="card">
-                        <h3 class="card-title">Age Group Breakdown</h3>
-                        <div id="dashboard-age-breakdown"></div>
-                    </div>
-                    <div class="card">
-                        <h3 class="card-title">Recent Assessments</h3>
-                        <div id="dashboard-recent" style="overflow-x:auto;"></div>
-                    </div>
-                    <div class="card">
-                        <h3 class="card-title">Feedback Accuracy</h3>
-                        <div id="dashboard-feedback"></div>
-                    </div>
-                    <div class="card">
-                        <h3 class="card-title">Operational Outcomes</h3>
-                        <div id="dashboard-outcomes"></div>
+                    <div class="dashboard-module-grid" id="dashboard-modules"></div>
+                    <div class="dashboard-result-grid">
+                        <details class="dashboard-result-card" open>
+                            <summary>
+                                <span><i data-lucide="users" style="width:16px;height:16px;"></i> Age Group Breakdown</span>
+                                <i data-lucide="chevron-down" class="details-chevron" style="width:16px;height:16px;"></i>
+                            </summary>
+                            <div id="dashboard-age-breakdown" class="dashboard-result-body"></div>
+                        </details>
+                        <details class="dashboard-result-card" open>
+                            <summary>
+                                <span><i data-lucide="list-checks" style="width:16px;height:16px;"></i> Recent Assessments</span>
+                                <i data-lucide="chevron-down" class="details-chevron" style="width:16px;height:16px;"></i>
+                            </summary>
+                            <div id="dashboard-recent" class="dashboard-result-body" style="overflow-x:auto;"></div>
+                        </details>
+                        <details class="dashboard-result-card">
+                            <summary>
+                                <span><i data-lucide="badge-check" style="width:16px;height:16px;"></i> Feedback Accuracy</span>
+                                <i data-lucide="chevron-down" class="details-chevron" style="width:16px;height:16px;"></i>
+                            </summary>
+                            <div id="dashboard-feedback" class="dashboard-result-body"></div>
+                        </details>
+                        <details class="dashboard-result-card" open>
+                            <summary>
+                                <span><i data-lucide="activity" style="width:16px;height:16px;"></i> Operational Outcomes</span>
+                                <i data-lucide="chevron-down" class="details-chevron" style="width:16px;height:16px;"></i>
+                            </summary>
+                            <div id="dashboard-outcomes" class="dashboard-result-body"></div>
+                        </details>
                     </div>
                 </div>
             </section>

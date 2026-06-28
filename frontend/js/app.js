@@ -1459,35 +1459,155 @@ function renderDashboard(data, outcomes) {
             <div class="metric-box"><div class="metric-value">${data.feedback_given}</div><div class="metric-label">Feedback Given</div></div>
         `;
     }
+    renderDashboardModules(data, outcomes);
 
     // Age breakdown
+    const ageEntries = Object.entries(data.age_breakdown || {});
     let ageHtml = '<table class="audit-table"><thead><tr><th>Age Group</th><th>Total</th><th>High Risk</th><th>% High</th></tr></thead><tbody>';
-    for (const [group, stats] of Object.entries(data.age_breakdown || {})) {
+    for (const [group, stats] of ageEntries) {
         const pct = stats.total > 0 ? ((stats.high_risk / stats.total) * 100).toFixed(1) : '0.0';
-        ageHtml += `<tr><td><strong>${group}</strong></td><td>${stats.total}</td><td>${stats.high_risk}</td><td>${pct}%</td></tr>`;
+        ageHtml += `<tr><td><strong>${escapeHtml(group)}</strong></td><td>${stats.total}</td><td>${stats.high_risk}</td><td>${pct}%</td></tr>`;
     }
     ageHtml += '</tbody></table>';
-    document.getElementById('dashboard-age-breakdown').innerHTML = ageHtml;
+    document.getElementById('dashboard-age-breakdown').innerHTML = ageEntries.length
+        ? ageHtml
+        : '<p style="color:#AEB7BD;">No age-group breakdown available yet.</p>';
 
     // Recent assessments
-    let recentHtml = '<table class="audit-table"><thead><tr><th>ID</th><th>Age</th><th>Group</th><th>Risk</th><th>Score</th></tr></thead><tbody>';
-    (data.recent_assessments || []).forEach(r => {
-        const cls = r.risk_tier === 'High' ? 'color:#DA291C;font-weight:700' :
-                    r.risk_tier === 'Medium' ? 'color:#B8860B;font-weight:700' : 'color:#007F3B;font-weight:700';
-        recentHtml += `<tr><td>${r.id}</td><td>${r.age}</td><td>${r.age_group}</td><td style="${cls}">${r.risk_tier}</td><td>${(r.probability * 100).toFixed(1)}%</td></tr>`;
+    const recent = data.recent_assessments || [];
+    let recentHtml = '<table class="audit-table dashboard-table"><thead><tr><th>ID</th><th>Group</th><th>Risk</th><th>Score</th><th>Action</th></tr></thead><tbody>';
+    recent.forEach((r, idx) => {
+        const detailId = `dashboard-recent-detail-${idx}`;
+        const id = escapeHtml(r.id ?? '—');
+        const tier = escapeHtml(r.risk_tier || 'Unknown');
+        const ageGroup = escapeHtml(r.age_group || 'Not stored');
+        const score = typeof r.probability === 'number' ? `${(r.probability * 100).toFixed(1)}%` : '--';
+        recentHtml += `
+            <tr class="dashboard-clickable-row" tabindex="0" role="button" aria-controls="${detailId}" onclick="toggleDashboardRow('${detailId}')" onkeydown="if(event.key === 'Enter' || event.key === ' '){event.preventDefault();toggleDashboardRow('${detailId}');}">
+                <td>${id}</td>
+                <td>${ageGroup}</td>
+                <td><span class="risk-inline ${dashboardRiskClass(r.risk_tier)}">${tier}</span></td>
+                <td>${score}</td>
+                <td><button type="button" class="btn-secondary btn-compact" onclick="event.stopPropagation();toggleDashboardRow('${detailId}')">View</button></td>
+            </tr>
+            <tr id="${detailId}" class="dashboard-detail-row" hidden>
+                <td colspan="5">
+                    <div class="dashboard-detail-panel">
+                        <div>
+                            <strong>Assessment ${id}</strong>
+                            <p>Age is ${escapeHtml(r.age || 'Not stored')} because individual patient-identifiable data is privacy-minimised.</p>
+                        </div>
+                        <div class="dashboard-detail-grid">
+                            <span><b>Age group</b>${ageGroup}</span>
+                            <span><b>Risk tier</b>${tier}</span>
+                            <span><b>Risk score</b>${score}</span>
+                            <span><b>Next action</b>${dashboardNextAction(r.risk_tier)}</span>
+                        </div>
+                        <div class="dashboard-detail-actions">
+                            <button type="button" class="btn-primary" onclick="switchTab('assessment')">New Assessment</button>
+                            ${canOperateTab('clinic') ? "<button type=\"button\" class=\"btn-secondary\" onclick=\"switchTab('clinic')\">Open Clinic List</button>" : ''}
+                        </div>
+                    </div>
+                </td>
+            </tr>`;
     });
     recentHtml += '</tbody></table>';
-    document.getElementById('dashboard-recent').innerHTML = recentHtml;
+    document.getElementById('dashboard-recent').innerHTML = recent.length
+        ? recentHtml
+        : '<p style="color:#AEB7BD;">No recent assessments to review yet.</p>';
 
     // Feedback summary
     document.getElementById('dashboard-feedback').innerHTML = data.feedback_given > 0
         ? `<p>${data.feedback_given} feedback responses received out of ${data.total} predictions.</p>`
         : '<p style="color:#AEB7BD;">No feedback submitted yet.</p>';
     renderOperationalOutcomes(outcomes);
+    refreshIcons();
 }
 
 function pct(value) {
     return typeof value === 'number' ? `${(value * 100).toFixed(1)}%` : '--';
+}
+
+function dashboardRiskClass(tier) {
+    const t = String(tier || '').toLowerCase();
+    if (t === 'high') return 'risk-inline-high';
+    if (t === 'medium') return 'risk-inline-medium';
+    return 'risk-inline-low';
+}
+
+function dashboardNextAction(tier) {
+    const t = String(tier || '').toLowerCase();
+    if (t === 'high') return 'Prioritise same-day outreach and confirm transport or carer support.';
+    if (t === 'medium') return 'Send reminder and review practical barriers before the appointment.';
+    return 'Standard reminder pathway.';
+}
+
+function toggleDashboardRow(id) {
+    const row = document.getElementById(id);
+    if (!row) return;
+    row.hidden = !row.hidden;
+}
+
+function focusDashboardPanel(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const details = el.closest('details');
+    if (details) details.open = true;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderDashboardModules(data, outcomes) {
+    const el = document.getElementById('dashboard-modules');
+    if (!el) return;
+    const total = data.total || 0;
+    const completed = outcomes && outcomes.appointments ? (outcomes.appointments.completed || 0) : 0;
+    const modules = [
+        {
+            icon: 'pencil',
+            title: 'New Assessment',
+            meta: 'Score one patient',
+            detail: 'Run the privacy-minimised risk workflow.',
+            action: "switchTab('assessment')",
+        },
+        canOperateTab('clinic') ? {
+            icon: 'calendar-check',
+            title: 'Clinic List',
+            meta: 'Tomorrow worklist',
+            detail: 'Track calls, SMS, transport and outcomes.',
+            action: "switchTab('clinic')",
+        } : null,
+        canOperateTab('batch') ? {
+            icon: 'upload',
+            title: 'Batch Upload',
+            meta: 'Up to 100 patients',
+            detail: 'Use the wide CSV template for cohort scoring.',
+            action: "switchTab('batch')",
+        } : null,
+        {
+            icon: 'activity',
+            title: 'Outcomes',
+            meta: `${completed} completed`,
+            detail: 'Review DNA reduction and intervention success.',
+            action: "focusDashboardPanel('dashboard-outcomes')",
+        },
+        canOperateTab('bias') ? {
+            icon: 'scale',
+            title: 'Bias Governance',
+            meta: `${total} assessments`,
+            detail: 'Audit tiering by demographic group.',
+            action: "switchTab('bias')",
+        } : null,
+    ].filter(Boolean);
+
+    el.innerHTML = modules.map(m => `
+        <button type="button" class="dashboard-module-card" onclick="${m.action}">
+            <span class="dashboard-module-icon"><i data-lucide="${m.icon}" style="width:20px;height:20px;"></i></span>
+            <span class="dashboard-module-copy">
+                <span class="dashboard-module-title">${escapeHtml(m.title)}</span>
+                <span class="dashboard-module-meta">${escapeHtml(m.meta)}</span>
+                <span class="dashboard-module-detail">${escapeHtml(m.detail)}</span>
+            </span>
+        </button>`).join('');
 }
 
 function renderOperationalOutcomes(data) {
