@@ -6,7 +6,7 @@ Status: pending capture
 This folder is the evidence pack for the UI checklist in
 `docs/feature_test_plan.md`.
 
-Automation note: Codex could not capture these screenshots in this session
+Automation note: screenshots could not be captured in this session
 because the in-app browser backend was unavailable and the browser list was
 empty. Do not mark this pack complete until real screenshots are added.
 
@@ -51,6 +51,8 @@ http://localhost:8090
 | UX7 | `UX7_flutter_touch_feedback_390.png` | Flutter mobile/emulated | 390 x 844 | Tap/press feedback is visible; true hover is not expected on touch devices. |
 | UX8 | `UX8_web_results_export_1440.png` | Web app | 1440 x 900 | PDF/CSV/JSON/print export controls are visible and usable. |
 | UX9 | `UX9_flutter_bottom_nav_320.png` | Flutter app | 320 x 800 | Bottom navigation labels fit and page content remains above the nav. |
+| UX10 | `UX10_dashboard_workflow_1440.png` | Web or Flutter web | 1440 x 900 | Dashboard module cards visible; a recent assessment detail row/card is expanded. |
+| UX11 | `UX11_batch_template_upload_1440.png` | Web or Flutter web | 1440 x 900 | Download template action visible and batch-upload guidance shows the wide CSV format. |
 
 ## Acceptance Rules
 
@@ -66,12 +68,14 @@ http://localhost:8090
 
 | ID | Captured | Pass/fail | Notes |
 |---|---|---|---|
-| UX1 | no | pending | Browser capture unavailable in Codex session. |
-| UX2 | no | pending | Browser capture unavailable in Codex session. |
-| UX3 | no | pending | Browser capture unavailable in Codex session. |
-| UX4 | no | pending | Browser capture unavailable in Codex session. |
-| UX5 | no | pending | Browser capture unavailable in Codex session. |
-| UX6 | no | pending | Browser capture unavailable in Codex session. |
-| UX7 | no | pending | Browser capture unavailable in Codex session. |
-| UX8 | no | pending | Browser capture unavailable in Codex session. |
-| UX9 | no | pending | Browser capture unavailable in Codex session. |
+| UX1 | no | pending | Browser capture unavailable in automation session. |
+| UX2 | no | pending | Browser capture unavailable in automation session. |
+| UX3 | no | pending | Browser capture unavailable in automation session. |
+| UX4 | no | pending | Browser capture unavailable in automation session. |
+| UX5 | no | pending | Browser capture unavailable in automation session. |
+| UX6 | no | pending | Browser capture unavailable in automation session. |
+| UX7 | no | pending | Browser capture unavailable in automation session. |
+| UX8 | no | pending | Browser capture unavailable in automation session. |
+| UX9 | no | pending | Browser capture unavailable in automation session. |
+| UX10 | no | pending | Added after dashboard workflow cards; capture before AT3 recording. |
+| UX11 | no | pending | Added after batch CSV template fix; capture before AT3 recording. |
