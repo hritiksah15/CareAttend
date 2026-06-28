@@ -693,7 +693,7 @@ function switchTab(tabName) {
     }
     document.getElementById(`tab-${tabName}`).classList.add('active');
     if (tabName === 'dashboard') loadDashboard();
-    if (tabName === 'admin') loadAdminUsers();
+    if (tabName === 'admin') refreshAdminPanel();
     if (tabName === 'clinic') initClinicList();
 }
 
@@ -2687,9 +2687,15 @@ toggleDarkMode = function() {
 
 // ── Admin: User Management ──
 
+function refreshAdminPanel() {
+    loadAdminUsers();
+    loadAdminAuditLog();
+}
+
 async function loadAdminUsers() {
     const status = document.getElementById('admin-users-status');
     const tableEl = document.getElementById('admin-users-table');
+    if (!status || !tableEl) return;
     status.textContent = 'Loading…';
     try {
         const res = await fetch('/api/admin/users', { headers: authHeaders() });
@@ -2727,6 +2733,47 @@ async function loadAdminUsers() {
     }
 }
 
+async function loadAdminAuditLog() {
+    const status = document.getElementById('admin-audit-status');
+    const tableEl = document.getElementById('admin-audit-table');
+    if (!status || !tableEl) return;
+    status.textContent = 'Loading login sessions…';
+    try {
+        const res = await fetch('/api/audit-log', { headers: authHeaders() });
+        const data = await res.json();
+        if (!res.ok) { status.textContent = data.error || 'Failed to load audit log.'; return; }
+        const logs = (data.logs || [])
+            .filter(log => log.action === 'login_success' || log.action === 'logout')
+            .slice(0, 12);
+        status.textContent = logs.length
+            ? logs.length + ' recent login session event(s).'
+            : 'No login session events yet.';
+        if (!logs.length) {
+            tableEl.innerHTML = '<p class="muted">Login and logout activity will appear here after users sign in or out.</p>';
+            return;
+        }
+        let html = '<table class="audit-table"><thead><tr><th>Time</th><th>User</th><th>Event</th><th>IP / Detail</th></tr></thead><tbody>';
+        logs.forEach(log => {
+            const timeSeconds = Number(log.createdAt || 0);
+            const when = timeSeconds ? new Date(timeSeconds * 1000).toLocaleString() : '--';
+            const isLogin = log.action === 'login_success';
+            const eventLabel = isLogin ? 'Login' : 'Logout';
+            const badgeClass = isLogin ? 'pass' : 'warn';
+            const detail = [log.ipAddress || '', log.detail || ''].filter(Boolean).join(' · ');
+            html += `<tr>
+                <td>${escapeHtml(when)}</td>
+                <td>${escapeHtml(log.username || 'Unknown user')}</td>
+                <td><span class="status-badge ${badgeClass}">${eventLabel}</span></td>
+                <td>${escapeHtml(detail || 'Local / unknown')}</td>
+            </tr>`;
+        });
+        html += '</tbody></table>';
+        tableEl.innerHTML = html;
+    } catch {
+        status.textContent = 'Could not reach the server.';
+    }
+}
+
 async function changeUserRole(userId) {
     const role = document.getElementById('role-' + userId).value;
     try {
@@ -2735,7 +2782,7 @@ async function changeUserRole(userId) {
         });
         const data = await res.json();
         alert(res.ok ? 'Role updated.' : (data.error || 'Failed.'));
-        if (res.ok) loadAdminUsers();
+        if (res.ok) refreshAdminPanel();
     } catch { alert('Could not reach the server.'); }
 }
 
@@ -2747,7 +2794,7 @@ async function approveUser(userId, username) {
         });
         const data = await res.json();
         alert(res.ok ? data.message : (data.error || 'Failed.'));
-        if (res.ok) loadAdminUsers();
+        if (res.ok) refreshAdminPanel();
     } catch { alert('Could not reach the server.'); }
 }
 
@@ -2759,7 +2806,7 @@ async function deleteUser(userId, username) {
         });
         const data = await res.json();
         alert(res.ok ? data.message : (data.error || 'Failed.'));
-        if (res.ok) loadAdminUsers();
+        if (res.ok) refreshAdminPanel();
     } catch { alert('Could not reach the server.'); }
 }
 

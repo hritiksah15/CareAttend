@@ -730,10 +730,19 @@
                     <h2>&#128081; User Management</h2>
                     <p class="muted">Admin only. Manage user roles and accounts (FR-04, RBAC).</p>
                     <div style="margin:12px 0;">
-                        <button class="btn-primary" onclick="loadAdminUsers()">Refresh Users</button>
+                        <button class="btn-primary" onclick="refreshAdminPanel()">Refresh Admin Panel</button>
                     </div>
                     <div id="admin-users-status" class="muted"></div>
                     <div id="admin-users-table"></div>
+                </div>
+                <div class="card">
+                    <h3>Login Session Log</h3>
+                    <p class="muted">Persistent admin view of successful sign-ins and sign-outs, including timestamp, user, and source IP.</p>
+                    <div style="margin:12px 0;">
+                        <button class="btn-secondary" onclick="loadAdminAuditLog()">Refresh Session Log</button>
+                    </div>
+                    <div id="admin-audit-status" class="muted"></div>
+                    <div id="admin-audit-table"></div>
                 </div>
                 <div class="card">
                     <h3>Role Permissions</h3>
