@@ -67,6 +67,7 @@ function applyRoleAccess(role) {
 let sessionTimer = null;
 let biasAuditData = null;
 let riskHistory = []; // session-scoped risk trajectory (FR-09)
+const RISK_HISTORY_LIMIT = 5;
 const IDLE_TIMEOUT_MS = 30 * 60 * 1000;            // 30 min — matches backend SESSION_TIMEOUT
 const REMEMBER_TIMEOUT_MS = 30 * 24 * 60 * 60 * 1000; // 30 days — matches backend REMEMBER_TIMEOUT
 
@@ -856,8 +857,8 @@ function renderResults(result) {
     document.getElementById('feedback-card').style.display = 'block';
     document.getElementById('feedback-response').style.display = 'none';
 
-    // Risk history tracking (FR-09)
-    riskHistory.push({
+    // Risk history tracking (FR-09): session-scoped last five assessments.
+    recordRiskHistory({
         time: new Date().toLocaleTimeString(),
         percentage: result.percentage,
         tier: result.risk_tier,
@@ -1124,6 +1125,13 @@ if (localStorage.getItem('careattend-dark-mode') === '1') {
 }
 
 // ── Risk History (FR-09, US-012) ──
+
+function recordRiskHistory(entry) {
+    riskHistory.push(entry);
+    if (riskHistory.length > RISK_HISTORY_LIMIT) {
+        riskHistory = riskHistory.slice(-RISK_HISTORY_LIMIT);
+    }
+}
 
 function renderRiskHistory() {
     const card = document.getElementById('risk-history-card');

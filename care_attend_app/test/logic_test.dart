@@ -3,6 +3,7 @@ import 'package:care_attend_app/utils/validators.dart';
 import 'package:care_attend_app/nhs_theme.dart';
 import 'package:care_attend_app/theme/design_tokens.dart';
 import 'package:care_attend_app/utils/export.dart';
+import 'package:care_attend_app/services/api_service.dart';
 
 /// Pure-logic unit tests — no widgets, no network. Deterministic and fast.
 void main() {
@@ -70,5 +71,21 @@ void main() {
       'Alcoholism',
       'Disability',
     ]);
+  });
+
+  test('risk history keeps only the last five assessments', () {
+    addTearDown(() => ApiService.riskHistory.clear());
+    ApiService.riskHistory.clear();
+
+    for (var i = 1; i <= 7; i++) {
+      ApiService.recordRiskHistory({
+        'percentage': i * 10,
+        'risk_tier': i.isEven ? 'Low' : 'High',
+      });
+    }
+
+    expect(ApiService.riskHistory.length, ApiService.riskHistoryLimit);
+    expect(ApiService.riskHistory.first['percentage'], 30);
+    expect(ApiService.riskHistory.last['percentage'], 70);
   });
 }
