@@ -75,7 +75,7 @@ of Git/source zips, and what remains before AT3 recording.
 ### Flutter Admin User Management
 
 - Flutter admin User Management now mirrors the web action model with approve,
-  save-role, activity, delete, and refresh icon actions.
+  save-role, activity, delete, and refresh icon+label actions.
 - Selecting a user exposes their login/logout and related audit activity, and
   the Login Session Log filters to that selected user.
 - Flutter app package version bumped to `1.2.1+4`.

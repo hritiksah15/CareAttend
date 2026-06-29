@@ -40,16 +40,16 @@ void main() {
       ),
     );
 
-    expect(find.byTooltip('Approve user'), findsOneWidget);
-    expect(find.byTooltip('Save role'), findsOneWidget);
-    expect(find.byTooltip('View login/activity'), findsOneWidget);
-    expect(find.byTooltip('Delete user'), findsOneWidget);
+    expect(find.text('Approve'), findsOneWidget);
+    expect(find.text('Save role'), findsOneWidget);
+    expect(find.text('Activity'), findsOneWidget);
+    expect(find.text('Delete'), findsOneWidget);
     expect(find.text('Pending'), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Approve user'));
-    await tester.tap(find.byTooltip('Save role'));
-    await tester.tap(find.byTooltip('View login/activity'));
-    await tester.tap(find.byTooltip('Delete user'));
+    await tester.tap(find.text('Approve'));
+    await tester.tap(find.text('Save role'));
+    await tester.tap(find.text('Activity'));
+    await tester.tap(find.text('Delete'));
 
     expect(approved, isTrue);
     expect(savedRole, 'saved');

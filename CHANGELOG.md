@@ -10,16 +10,16 @@ to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 - Flutter admin User Management now matches the web admin action model with
-  icon actions for approval, saving role changes, viewing user activity, delete,
-  and refreshing users/session logs.
+  visible icon+label actions for approval, saving role changes, viewing user
+  activity, delete, and refreshing users/session logs.
 - Admin role changes in the Flutter app now require an explicit Save Role action
   instead of applying immediately on dropdown selection.
 
 ### Added
 - Flutter admin user activity panel showing login/logout and related audit
   actions for the selected account.
-- Widget coverage for admin action icons, user-filtered login session logs, and
-  user-linked audit activity rendering.
+- Widget coverage for admin action controls, user-filtered login session logs,
+  and user-linked audit activity rendering.
 
 ## [1.2.0] — 2026-06-24
 
