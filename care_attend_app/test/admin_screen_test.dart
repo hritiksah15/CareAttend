@@ -1,16 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:care_attend_app/l10n/app_localizations.dart';
+import 'package:care_attend_app/nhs_theme.dart';
 import 'package:care_attend_app/screens/admin_screen.dart';
 
-Future<void> pumpLocalized(WidgetTester tester, Widget child) async {
+Future<void> pumpLocalized(
+  WidgetTester tester,
+  Widget child, {
+  ThemeMode themeMode = ThemeMode.light,
+}) async {
   await tester.pumpWidget(MaterialApp(
     locale: const Locale('en'),
     supportedLocales: AppLocalizations.supportedLocales,
     localizationsDelegates: AppLocalizations.localizationsDelegates,
+    theme: NHSTheme.theme,
+    darkTheme: NHSTheme.darkTheme,
+    themeMode: themeMode,
     home: Scaffold(body: child),
   ));
   await tester.pump();
+}
+
+void expectVisibleActionButton(
+  WidgetTester tester,
+  String label,
+  IconData icon,
+) {
+  final labelWidget = tester.widget<Text>(find.text(label));
+  expect(labelWidget.style?.color, isNotNull);
+  expect(labelWidget.style?.color, isNot(Colors.transparent));
+  expect(labelWidget.style?.fontWeight, FontWeight.w800);
+
+  final iconWidget = tester.widget<Icon>(find.byIcon(icon));
+  expect(iconWidget.color, isNotNull);
+  expect(iconWidget.color, isNot(Colors.transparent));
 }
 
 void main() {
@@ -45,6 +68,14 @@ void main() {
     expect(find.text('Activity'), findsOneWidget);
     expect(find.text('Delete'), findsOneWidget);
     expect(find.text('Pending'), findsOneWidget);
+    expect(find.byIcon(Icons.verified_user_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.save_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.manage_history), findsOneWidget);
+    expect(find.byIcon(Icons.delete_outline), findsOneWidget);
+    expectVisibleActionButton(tester, 'Approve', Icons.verified_user_outlined);
+    expectVisibleActionButton(tester, 'Save role', Icons.save_outlined);
+    expectVisibleActionButton(tester, 'Activity', Icons.manage_history);
+    expectVisibleActionButton(tester, 'Delete', Icons.delete_outline);
 
     await tester.tap(find.text('Approve'));
     await tester.tap(find.text('Save role'));
@@ -55,6 +86,35 @@ void main() {
     expect(savedRole, 'saved');
     expect(activity, isTrue);
     expect(deleted, isTrue);
+  });
+
+  testWidgets(
+      'AdminUserManagementCard keeps action icons visible in dark theme',
+      (tester) async {
+    await pumpLocalized(
+      tester,
+      AdminUserManagementCard(
+        user: const {
+          'userId': 'u-1',
+          'username': 'clerk',
+          'email': 'clerk@nhs.test',
+          'role': 'user',
+          'approved': false,
+        },
+        selectedRole: 'staff',
+        onRoleChanged: (_) {},
+        onApprove: () {},
+        onSaveRole: () {},
+        onDelete: () {},
+        onToggleActivity: () {},
+      ),
+      themeMode: ThemeMode.dark,
+    );
+
+    expectVisibleActionButton(tester, 'Approve', Icons.verified_user_outlined);
+    expectVisibleActionButton(tester, 'Save role', Icons.save_outlined);
+    expectVisibleActionButton(tester, 'Activity', Icons.manage_history);
+    expectVisibleActionButton(tester, 'Delete', Icons.delete_outline);
   });
 
   testWidgets('AdminSessionLogCard renders login and logout events',
