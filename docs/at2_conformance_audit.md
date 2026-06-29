@@ -5,10 +5,10 @@ Verified against backend (`backend/`), Flutter app (`care_attend_app/`), web fro
 
 ## Method
 - Read full AT2 report (49pp): reqs, RTM (App B), MoSCoW (App A), testing methodology, plan.
-- Backend: 241 pytest tests run → **all pass**.
+- Backend: 242 pytest tests run → **all pass**.
 - Models inspected directly: base = LogisticRegression, calibrated = CalibratedClassifierCV.
 - Perf + a11y: read actual result numbers, not just file presence.
-- Flutter: `flutter analyze` → **no issues**; `flutter test` → **33 tests pass, including AppCard hover/press, admin action controls, admin session-log/user-activity rendering, batch template, risk-history cap, and dashboard module-card coverage**. Toolchain at `~/development/flutter`. Full browser E2E not run (optional: `flutter run -d chrome`).
+- Flutter: `flutter analyze` → **no issues**; `flutter test` → **38 tests pass, including AppCard hover/press/ListTile ink handling, compact admin layout, admin action controls, admin session-log/user-activity rendering, batch template, risk-history cap, and dashboard module-card coverage**. Toolchain at `~/development/flutter`. Full browser E2E not run (optional: `flutter run -d chrome`).
 
 ## Functional Requirements (by feature, IDs vary between Table 3.3 and MoSCoW p41)
 

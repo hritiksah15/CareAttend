@@ -19,11 +19,11 @@ in this automation session.
 |---|---|---|
 | Backend lint | `ruff check .` in `backend/` | Passed |
 | Backend tests | `pytest -q` in `backend/` | Passed; only existing sklearn deprecation warnings |
-| Backend collection | `pytest --collect-only -q` | 241 tests collected across 10 files |
+| Backend collection | `pytest --collect-only -q` | 242 tests collected across 10 files |
 | Web syntax | `node --check frontend/js/app.js` | Passed |
 | Web dashboard smoke | Direct JS runtime smoke against dashboard DOM stubs | Passed: module cards, batch module, expandable detail row, row toggle, outcomes, icon refresh |
 | Flutter static analysis | `flutter analyze --no-fatal-infos` | No issues |
-| Flutter tests | `flutter test` | Passed; 33 tests |
+| Flutter tests | `flutter test` | Passed; 38 tests |
 | Git state before docs pass | `git status --short --branch` | Clean after pushing `7343a15` |
 
 ## Current Automated Test Counts
@@ -39,14 +39,15 @@ Backend pytest collection:
 | `tests/test_data_generator.py` | 23 |
 | `tests/test_feature_coverage.py` | 50 |
 | `tests/test_interventions.py` | 10 |
-| `tests/test_new_endpoints.py` | 78 |
+| `tests/test_new_endpoints.py` | 79 |
 | `tests/test_predictor.py` | 12 |
 | `tests/test_robustness.py` | 5 |
-| **Total** | **241** |
+| **Total** | **242** |
 
-Flutter test coverage count: 33 tests across logic, widgets, accessibility,
+Flutter test coverage count: 38 tests across logic, widgets, accessibility,
 dashboard module cards, batch template button, risk-history cap,
-notifications, app boot, and admin session-log/user-activity widgets.
+notifications, app boot, AppCard/ListTile ink handling, compact admin layout,
+and admin session-log/user-activity widgets.
 
 ## Feature Sign-Off
 

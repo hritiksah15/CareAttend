@@ -225,6 +225,8 @@ class _AdminScreenState extends State<AdminScreen> {
           flex: flex,
           child: Text(label,
               textAlign: flex == 2 ? TextAlign.left : TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                   fontSize: 12,
                   fontWeight: head ? FontWeight.w700 : FontWeight.w400,
@@ -357,45 +359,52 @@ class AdminUserManagementCard extends StatelessWidget {
             ),
             items: [
               for (final role in _roles)
-                DropdownMenuItem(value: role, child: Text(_roleLabel(t, role))),
+                DropdownMenuItem(
+                    value: role,
+                    child: Text(_roleLabel(t, role),
+                        overflow: TextOverflow.ellipsis)),
             ],
             onChanged: (value) {
               if (value != null) onRoleChanged(value);
             },
           );
-          final actions = Wrap(spacing: 2, runSpacing: 2, children: [
-            if (!approved)
-              _AdminActionButton(
-                tooltip: 'Approve user',
-                label: 'Approve',
-                icon: Icons.verified_user_outlined,
-                color: NHSTheme.riskLow,
-                onPressed: onApprove,
-              ),
-            _AdminActionButton(
-              tooltip: 'Save role',
-              label: 'Save role',
-              icon: Icons.save_outlined,
-              color: Theme.of(context).colorScheme.primary,
-              onPressed: onSaveRole,
-            ),
-            _AdminActionButton(
-              tooltip: activityExpanded
-                  ? 'Hide user activity'
-                  : 'View login/activity',
-              label: activityExpanded ? 'Hide activity' : 'Activity',
-              icon: Icons.manage_history,
-              color: Theme.of(context).colorScheme.secondary,
-              onPressed: onToggleActivity,
-            ),
-            _AdminActionButton(
-              tooltip: t.adminDeleteTitle,
-              label: t.adminDelete,
-              icon: Icons.delete_outline,
-              color: NHSTheme.riskHigh,
-              onPressed: onDelete,
-            ),
-          ]);
+          final actions = Wrap(
+              spacing: 2,
+              runSpacing: 2,
+              alignment: WrapAlignment.end,
+              children: [
+                if (!approved)
+                  _AdminActionButton(
+                    tooltip: 'Approve user',
+                    label: 'Approve',
+                    icon: Icons.verified_user_outlined,
+                    color: NHSTheme.riskLow,
+                    onPressed: onApprove,
+                  ),
+                _AdminActionButton(
+                  tooltip: 'Save role',
+                  label: 'Save role',
+                  icon: Icons.save_outlined,
+                  color: Theme.of(context).colorScheme.primary,
+                  onPressed: onSaveRole,
+                ),
+                _AdminActionButton(
+                  tooltip: activityExpanded
+                      ? 'Hide user activity'
+                      : 'View login/activity',
+                  label: activityExpanded ? 'Hide activity' : 'Activity',
+                  icon: Icons.manage_history,
+                  color: Theme.of(context).colorScheme.secondary,
+                  onPressed: onToggleActivity,
+                ),
+                _AdminActionButton(
+                  tooltip: t.adminDeleteTitle,
+                  label: t.adminDelete,
+                  icon: Icons.delete_outline,
+                  color: NHSTheme.riskHigh,
+                  onPressed: onDelete,
+                ),
+              ]);
 
           if (narrow) {
             return Column(
@@ -403,13 +412,17 @@ class AdminUserManagementCard extends StatelessWidget {
                 children: [
                   rolePicker,
                   const SizedBox(height: 8),
-                  actions,
+                  Align(alignment: Alignment.centerLeft, child: actions),
                 ]);
           }
-          return Row(children: [
-            Expanded(child: rolePicker),
+          return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Expanded(flex: 3, child: rolePicker),
             const SizedBox(width: 10),
-            actions,
+            Flexible(
+              flex: 4,
+              fit: FlexFit.loose,
+              child: Align(alignment: Alignment.centerRight, child: actions),
+            ),
           ]);
         }),
         if (activityExpanded) ...[

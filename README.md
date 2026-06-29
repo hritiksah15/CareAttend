@@ -139,7 +139,7 @@ flutter build web      # release web build
 
 ```bash
 cd backend
-pytest -q              # 241 tests across 10 suites
+pytest -q              # 242 tests across 10 suites
 ruff check .           # lint
 ```
 

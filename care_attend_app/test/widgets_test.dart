@@ -58,6 +58,34 @@ void main() {
     await touch.up();
   });
 
+  testWidgets('AppCard provides local Material for ListTile ink',
+      (tester) async {
+    await pumpLocalized(
+      tester,
+      const AppCard(
+        padding: EdgeInsets.zero,
+        child: ListTile(
+          tileColor: Color(0xFFE8F5E9),
+          title: Text('Ink row'),
+        ),
+      ),
+    );
+
+    expect(tester.takeException(), isNull);
+    final materials = tester.widgetList<Material>(
+      find.descendant(
+        of: find.byType(AppCard),
+        matching: find.byType(Material),
+      ),
+    );
+    expect(
+      materials.any((material) =>
+          material.clipBehavior == Clip.antiAlias &&
+          material.color != Colors.transparent),
+      isTrue,
+    );
+  });
+
   testWidgets('EmptyState shows its title and message', (tester) async {
     await pumpLocalized(
       tester,

@@ -4,7 +4,7 @@
 
 **How it was built:** Requirement IDs harvested directly from `@requirement` tags in the source (`grep -rEn "FR-|NFR-|US-" backend/`). Implementation and test columns are verified file references, not claims. **Action for you:** replace each *Requirement (description)* cell with the exact wording from your AT2 report so the matrix is word-identical to your requirements section.
 
-**Test status:** 241 pytest tests, all passing (June 2026).
+**Test status:** 242 pytest tests, all passing (June 2026).
 
 ---
 

@@ -117,6 +117,42 @@ void main() {
     expectVisibleActionButton(tester, 'Delete', Icons.delete_outline);
   });
 
+  testWidgets('AdminUserManagementCard avoids overflow at compact widths',
+      (tester) async {
+    for (final width in <double>[560, 520, 360]) {
+      await pumpLocalized(
+        tester,
+        Center(
+          child: SizedBox(
+            width: width,
+            child: AdminUserManagementCard(
+              user: const {
+                'userId': 'u-1',
+                'username': 'clerk',
+                'email': 'clerk@nhs.test',
+                'role': 'user',
+                'approved': false,
+              },
+              selectedRole: 'staff',
+              onRoleChanged: (_) {},
+              onApprove: () {},
+              onSaveRole: () {},
+              onDelete: () {},
+              onToggleActivity: () {},
+            ),
+          ),
+        ),
+      );
+
+      expect(tester.takeException(), isNull,
+          reason: 'Admin card overflowed at ${width}px');
+      expect(find.text('Approve'), findsOneWidget);
+      expect(find.text('Save role'), findsOneWidget);
+      expect(find.text('Activity'), findsOneWidget);
+      expect(find.text('Delete'), findsOneWidget);
+    }
+  });
+
   testWidgets('AdminSessionLogCard renders login and logout events',
       (tester) async {
     await pumpLocalized(
