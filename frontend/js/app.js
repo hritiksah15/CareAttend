@@ -63,6 +63,7 @@ function applyRoleAccess(role) {
         const activeTab = active.id.replace('tab-', '');
         if (!isTabVisible(activeTab)) switchTab('assessment');
     }
+    syncChatbotRoleCopy();
 }
 let sessionTimer = null;
 let biasAuditData = null;
@@ -2546,10 +2547,419 @@ function timeAgo(date) {
 
 let chatbotOpen = false;
 
+const CHATBOT_ROLE_LABELS = {
+    user: 'patient-facing user',
+    staff: 'clinic staff',
+    admin: 'administrator',
+};
+
+const CHATBOT_FEATURES = [
+    {
+        id: 'assessment',
+        tab: 'assessment',
+        icon: 'clipboard-list',
+        title: 'Patient Assessment',
+        roles: ['user', 'staff', 'admin'],
+        summary: 'Enter appointment, demographic, access and clinical flags, then run the DNA risk model.',
+        steps: [
+            'Open Patient Assessment.',
+            'Complete age, gender, lead time, SMS, prior DNA count, IMD and clinical flags.',
+            'Use Carer Proxy when a family member or carer is entering data for a digitally excluded patient.',
+            'Select Assess Risk to generate risk tier, SHAP drivers, outreach priority and interventions.',
+        ],
+        fixes: [
+            'If the button will not submit, check every required input and numeric range.',
+            'If the server cannot be reached, restart with ./start_all.sh and check port 5000.',
+        ],
+        terms: ['assess', 'assessment', 'predict', 'prediction', 'patient form', 'carer', 'proxy'],
+    },
+    {
+        id: 'results',
+        tab: 'results',
+        icon: 'activity',
+        title: 'Risk Results',
+        roles: ['user', 'staff', 'admin'],
+        summary: 'Shows DNA probability, risk tier, outreach priority, SHAP drivers, interventions and exports.',
+        steps: [
+            'Run an assessment first.',
+            'Read the risk gauge and tier.',
+            'Review Outreach Priority before acting: P1 is urgent proactive contact, P2 is targeted reminder, P3 is routine reminder.',
+            'Use SHAP bars to explain the strongest drivers without treating them as a diagnosis.',
+            'Staff and admins can export CSV, JSON, PDF and summary reports.',
+        ],
+        fixes: [
+            'If no result appears, return to Assessment and run a prediction.',
+            'If export is hidden, your role does not have export permission.',
+        ],
+        terms: ['result', 'results', 'shap', 'explain', 'driver', 'intervention', 'export', 'pdf', 'report'],
+    },
+    {
+        id: 'dashboard',
+        tab: 'dashboard',
+        icon: 'layout-dashboard',
+        title: 'Practice Dashboard',
+        roles: ['staff', 'admin'],
+        summary: 'Operational view of recent assessments, risk mix and quick entry into clinic workflows.',
+        steps: [
+            'Open Dashboard.',
+            'Refresh to load current practice metrics.',
+            'Use recent assessments to spot high-risk patients and move into clinic or nudge workflows.',
+        ],
+        fixes: ['If it is hidden, ask an admin for staff or admin access.'],
+        terms: ['dashboard', 'practice dashboard', 'metrics', 'recent assessment'],
+    },
+    {
+        id: 'clinic',
+        tab: 'clinic',
+        icon: 'calendar-check',
+        title: 'Clinic List',
+        roles: ['staff', 'admin'],
+        summary: 'Create, import and manage clinic appointments with risk-aware reminder actions.',
+        steps: [
+            'Open Clinic List.',
+            'Choose date and clinic, then add or import appointments.',
+            'Load the list, review risk badges, update attendance status, and trigger reminders or calls.',
+        ],
+        fixes: [
+            'If rows do not load, check the date and clinic filter.',
+            'Use valid JSON for import and keep patient IDs unique.',
+        ],
+        terms: ['clinic', 'appointment', 'attendance', 'reminder', 'call'],
+    },
+    {
+        id: 'batch',
+        tab: 'batch',
+        icon: 'upload',
+        title: 'Batch Upload',
+        roles: ['staff', 'admin'],
+        summary: 'Score up to 100 patients from a CSV and export triage-ready results.',
+        steps: [
+            'Open Batch Upload.',
+            'Download the template or use a Batch CSV export from a completed assessment.',
+            'Required columns: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile.',
+            'Optional columns: Hypertension, Diabetes, Alcoholism and Disability.',
+        ],
+        fixes: [
+            'Do not upload the PDF/report CSV; use the batch template format.',
+            'Check header spelling and keep the file below 100 rows.',
+        ],
+        terms: ['batch', 'csv', 'upload', 'template'],
+    },
+    {
+        id: 'bias',
+        tab: 'bias',
+        icon: 'scale',
+        title: 'Bias Monitor',
+        roles: ['admin'],
+        summary: 'Runs fairness checks across age, gender and IMD using demographic parity and equalised odds.',
+        steps: [
+            'Open Bias Monitor.',
+            'Run the audit across age, gender or IMD.',
+            'Review amber/red groups and export governance evidence.',
+        ],
+        fixes: ['If it is hidden, the signed-in account is not an admin.'],
+        terms: ['bias', 'fair', 'fairness', 'demographic parity', 'equalised odds'],
+    },
+    {
+        id: 'ethics',
+        tab: 'ethics',
+        icon: 'shield-check',
+        title: 'Ethics Framework',
+        roles: ['admin'],
+        summary: 'Maps the product to NHS AI ethics, safety, transparency, privacy and accountability controls.',
+        steps: [
+            'Open Ethics.',
+            'Load the framework mapping.',
+            'Use the evidence cards for governance and AT2 write-up alignment.',
+        ],
+        fixes: ['If it is hidden, admin access is required.'],
+        terms: ['ethics', 'governance', 'framework', 'nhsx', 'safety'],
+    },
+    {
+        id: 'slots',
+        tab: 'slots',
+        icon: 'calendar-clock',
+        title: 'Slot Optimisation',
+        roles: ['staff', 'admin'],
+        summary: 'Flags slots with 40%+ DNA probability as overbook candidates to reduce wasted capacity.',
+        steps: [
+            'Open Slots.',
+            'Paste appointment JSON.',
+            'Run analysis and review overbook candidates with expected waste.',
+        ],
+        fixes: ['Use valid JSON and include slot duration and DNA probability inputs.'],
+        terms: ['slot', 'slots', 'overbook', 'capacity', 'waste'],
+    },
+    {
+        id: 'nudge',
+        tab: 'nudge',
+        icon: 'message-circle',
+        title: 'Patient Nudge',
+        roles: ['staff', 'admin'],
+        summary: 'Generates personalised, non-stigmatising reminders in English, Welsh, Urdu or Polish.',
+        steps: [
+            'Fill an assessment first so patient context is available.',
+            'Open Nudge.',
+            'Pick language and generate a message.',
+            'Copy the message into the approved clinic communication channel.',
+        ],
+        fixes: ['If patient context is missing, return to Assessment and run the patient first.'],
+        terms: ['nudge', 'message', 'sms', 'patient comms', 'language', 'welsh', 'urdu', 'polish'],
+    },
+    {
+        id: 'admin',
+        tab: 'admin',
+        icon: 'shield',
+        title: 'Admin Console',
+        roles: ['admin'],
+        summary: 'Manage users, approvals, roles and session audit logs.',
+        steps: [
+            'Open Admin.',
+            'Approve pending users and set the least-privilege role.',
+            'Review session logs for login/logout and account activity.',
+        ],
+        fixes: ['Only admins can operate this area; backend enforcement still applies.'],
+        terms: ['admin', 'approve', 'role', 'user management', 'session log', 'audit log'],
+    },
+    {
+        id: 'profile',
+        icon: 'user',
+        title: 'Account Centre',
+        roles: ['user', 'staff', 'admin'],
+        action: { label: 'Open Account', call: 'openProfile()' },
+        summary: 'Update profile details, avatar and security settings including TOTP 2FA.',
+        steps: [
+            'Select the account badge in the header.',
+            'Edit profile details or avatar.',
+            'Use the Security tab to enable or disable 2FA.',
+        ],
+        fixes: ['If 2FA setup fails, confirm the 6-digit TOTP code before it expires.'],
+        terms: ['profile', 'account', '2fa', 'two-factor', 'authenticator', 'password', 'avatar'],
+    },
+    {
+        id: 'guidelines',
+        icon: 'book-open',
+        title: 'Clinical Use Guidelines',
+        roles: ['user', 'staff', 'admin'],
+        summary: 'Care Attend is decision support. It prioritises outreach; it does not replace clinical judgement.',
+        steps: [
+            'Use risk and priority to decide who needs proactive contact first.',
+            'Do not describe patients as unreliable; use non-stigmatising language.',
+            'Check age group and active disease flags together, because priority is stronger when clinical vulnerability and age vulnerability combine.',
+            'Keep patient data minimised and session-scoped.',
+        ],
+        fixes: ['If model output conflicts with known clinical context, escalate to staff judgement and document the reason.'],
+        terms: ['guideline', 'guidelines', 'how it works', 'workflow', 'safe use', 'clinical judgement'],
+    },
+];
+
+function chatbotRoleName() {
+    return CHATBOT_ROLE_LABELS[currentRole] || currentRole || 'user';
+}
+
+function chatbotCanUse(feature) {
+    return !feature.roles || feature.roles.includes(currentRole);
+}
+
+function chatbotRolesText(roles) {
+    if (!roles || roles.length === 3) return 'all roles';
+    return roles.join(' / ');
+}
+
+function chatbotIcon(icon) {
+    return '<i data-lucide="' + escapeHtml(icon) + '" aria-hidden="true"></i>';
+}
+
+function chatbotList(items) {
+    return '<ul>' + items.map(item => '<li>' + escapeHtml(item) + '</li>').join('') + '</ul>';
+}
+
+function chatbotActionButton(feature, locked) {
+    if (locked) return '';
+    if (feature.tab) {
+        return '<button type="button" class="chatbot-mini-action" onclick="switchTab(\'' + feature.tab + '\')">Open ' + escapeHtml(feature.title) + '</button>';
+    }
+    if (feature.action) {
+        return '<button type="button" class="chatbot-mini-action" onclick="' + feature.action.call + '">' + escapeHtml(feature.action.label) + '</button>';
+    }
+    return '';
+}
+
+function chatbotFeatureCard(feature, opts) {
+    opts = opts || {};
+    const locked = opts.locked !== undefined ? opts.locked : !chatbotCanUse(feature);
+    const steps = opts.fixes ? feature.fixes || [] : feature.steps || [];
+    const classes = 'chatbot-guide-card' + (locked ? ' locked' : '');
+    return `
+        <div class="${classes}">
+            <div class="chatbot-guide-head">
+                <span class="chatbot-guide-icon">${chatbotIcon(feature.icon || 'circle-help')}</span>
+                <div>
+                    <strong>${escapeHtml(feature.title)}</strong>
+                    <span>${locked ? 'Locked for ' + escapeHtml(chatbotRoleName()) : 'Available to ' + escapeHtml(chatbotRolesText(feature.roles))}</span>
+                </div>
+            </div>
+            <p>${escapeHtml(feature.summary)}</p>
+            ${steps.length ? chatbotList(steps) : ''}
+            ${locked ? '<div class="chatbot-lock-note">Ask an admin to grant ' + escapeHtml(chatbotRolesText(feature.roles)) + ' access if this workflow is part of your job.</div>' : chatbotActionButton(feature, locked)}
+        </div>`;
+}
+
+function chatbotStandaloneCard(icon, title, summary, steps, label) {
+    return `
+        <div class="chatbot-guide-card">
+            <div class="chatbot-guide-head">
+                <span class="chatbot-guide-icon">${chatbotIcon(icon)}</span>
+                <div><strong>${escapeHtml(title)}</strong><span>${escapeHtml(label || 'Problem-solving')}</span></div>
+            </div>
+            <p>${escapeHtml(summary)}</p>
+            ${steps && steps.length ? chatbotList(steps) : ''}
+        </div>`;
+}
+
+function chatbotVisibleFeatures() {
+    return CHATBOT_FEATURES.filter(feature => chatbotCanUse(feature));
+}
+
+function chatbotFindFeature(q) {
+    return CHATBOT_FEATURES.find(feature =>
+        (feature.terms || []).some(term => q.includes(term))
+    );
+}
+
+function chatbotChips(labels) {
+    return '<div class="chatbot-chip-row">' + labels.map(label =>
+        '<button type="button" class="chatbot-inline-chip" onclick="sendSuggestion(\'' + escapeHtml(label) + '\')">' + escapeHtml(label) + '</button>'
+    ).join('') + '</div>';
+}
+
+function chatbotOverviewResponse() {
+    const visible = chatbotVisibleFeatures();
+    const headline = '<p>You are signed in as <strong>' + escapeHtml(chatbotRoleName()) + '</strong>. I will show the workflows your role can operate and explain locked tools clearly.</p>';
+    const cards = visible
+        .filter(f => ['assessment', 'results', 'dashboard', 'clinic', 'batch', 'bias', 'ethics', 'slots', 'nudge', 'admin', 'profile'].includes(f.id))
+        .map(f => chatbotFeatureCard(f))
+        .join('');
+    return headline + cards + chatbotChips(['How do I assess a patient?', 'Explain outreach priority', 'Fix a problem', 'What can admins do?']);
+}
+
+function chatbotWelcomeCopy() {
+    return 'Hi! I am your Care Attend assistant for the <strong>' + escapeHtml(chatbotRoleName()) + '</strong> role. Ask about features, icons, cards, results, outreach priority, guidelines, or fixing a workflow problem.';
+}
+
+function syncChatbotRoleCopy() {
+    const welcome = document.getElementById('chatbot-welcome');
+    if (welcome) welcome.innerHTML = chatbotWelcomeCopy();
+    const suggestions = document.getElementById('chat-suggestions');
+    if (suggestions) {
+        suggestions.innerHTML = [
+            'What can I do?',
+            'How do I assess a patient?',
+            'Explain outreach priority',
+            currentRole === 'admin' ? 'How does bias monitoring work?' : 'Fix a problem',
+        ].map(label => '<button class="suggestion-chip" onclick="sendSuggestion(\'' + escapeHtml(label) + '\')">' + escapeHtml(label) + '</button>').join('');
+    }
+    refreshIcons();
+}
+
+function chatbotPriorityResponse() {
+    const card = chatbotStandaloneCard(
+        'badge-alert',
+        'Outreach Priority',
+        'Priority combines disease risk and age group instead of using either one alone. That is safer for clinic operations because an older patient with active disease and high DNA risk should outrank a younger low-vulnerability patient with the same appointment risk.',
+        [
+            'P1: highest priority. Proactive contact, call-first workflow, transport/access support where relevant.',
+            'P2: targeted reminder. Use language-aware nudge and check practical barriers.',
+            'P3: routine reminder. Standard SMS or normal clinic pathway.',
+            'Drivers can include predicted DNA risk, active disease flags, age vulnerability, prior DNA history, disability and access barriers.',
+            'Use as decision support only; clinical judgement remains with staff.',
+        ],
+        'Risk + disease + age group'
+    );
+    return '<p><strong>Best priority method:</strong> use both disease and age group, plus DNA risk and access barriers. Disease-only misses age vulnerability; age-only misses clinical complexity.</p>' + card;
+}
+
+function chatbotRoleResponse() {
+    const rows = [
+        ['User', 'Assessment, Results, Account Centre, 2FA and guided help.'],
+        ['Staff', 'User tools plus Dashboard, Clinic List, Batch Upload, Slots and Patient Nudge.'],
+        ['Admin', 'Staff tools plus Bias Monitor, Ethics, Admin Console and session audit logs.'],
+    ];
+    return '<p><strong>Your current role:</strong> ' + escapeHtml(chatbotRoleName()) + '.</p>' +
+        '<div class="chatbot-role-table">' + rows.map(row =>
+            '<div><strong>' + row[0] + '</strong><span>' + row[1] + '</span></div>'
+        ).join('') + '</div>' +
+        '<p>Hidden tabs are intentional. The backend still enforces the same permission rules even if someone changes the browser UI.</p>';
+}
+
+function chatbotPrivacyResponse() {
+    return chatbotStandaloneCard(
+        'lock',
+        'Privacy and Security',
+        'Care Attend keeps patient prediction data session-scoped and minimised. Account data is separate from patient risk input.',
+        [
+            'Passwords are hashed with bcrypt.',
+            'Sessions expire after inactivity; remember-me sessions have a longer expiry.',
+            '2FA uses TOTP from Account Centre > Security.',
+            'No third-party analytics are used.',
+            'Only staff/admin roles can export patient result data.',
+        ],
+        'GDPR and account safety'
+    );
+}
+
+function chatbotTroubleshootingResponse(q) {
+    const cards = [
+        chatbotStandaloneCard('wifi-off', 'App or API not responding', 'Restart the local stack and verify the three expected services.', [
+            'Run ./start_all.sh.',
+            'Backend/website should answer on http://127.0.0.1:5000.',
+            'pgweb should answer on http://localhost:8081.',
+            'Flutter web should answer on http://localhost:8090.',
+            'Hard refresh if the browser kept an old cached bundle.',
+        ]),
+        chatbotStandaloneCard('clipboard-check', 'Assessment result missing', 'The Results view needs a successful assessment first.', [
+            'Return to Patient Assessment.',
+            'Check required values and valid ranges.',
+            'Run Assess Risk again.',
+            'If risk appears but exports are hidden, your role is user; staff/admin export only.',
+        ]),
+        chatbotStandaloneCard('file-warning', 'Batch CSV rejected', 'Batch upload accepts the template schema, not a PDF/report export.', [
+            'Download the batch template.',
+            'Required headers: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile.',
+            'Keep rows at 100 or fewer.',
+            'Use 0/1 values for binary flags.',
+        ]),
+        chatbotStandaloneCard('shield-alert', 'Feature hidden or locked', 'Role-based access hides tools that are outside your role.', [
+            'User: assessment and results.',
+            'Staff: clinic operations, dashboard, batch, slots and nudge.',
+            'Admin: governance, bias, ethics, user management and audit logs.',
+            'Ask an admin for the least-privilege role needed for your work.',
+        ]),
+    ];
+    if (q.includes('slow') || q.includes('jank') || q.includes('blank')) {
+        cards.unshift(chatbotStandaloneCard('gauge', 'Slow or blank UI', 'Most runtime slowness comes from stale servers, disabled browser graphics acceleration, or old cached bundles.', [
+            'Restart with ./start_all.sh.',
+            'Hard refresh the browser.',
+            'Enable browser graphics acceleration for CanvasKit.',
+            'Check the console for layout or permission errors.',
+        ]));
+    }
+    return '<p>Here is the fastest triage path for the issue.</p>' + cards.join('');
+}
+
+function chatbotGuidelinesResponse() {
+    const cards = ['guidelines', 'assessment', 'results', 'nudge']
+        .map(id => CHATBOT_FEATURES.find(f => f.id === id))
+        .filter(Boolean)
+        .map(feature => chatbotFeatureCard(feature))
+        .join('');
+    return '<p><strong>How it works:</strong> collect minimum necessary appointment and vulnerability signals, score DNA risk, explain drivers with SHAP, then prioritise outreach using risk + disease + age group + access barriers.</p>' + cards;
+}
+
 function toggleChatbot() {
     chatbotOpen = !chatbotOpen;
     document.getElementById('chatbot-panel').style.display = chatbotOpen ? 'flex' : 'none';
-    if (chatbotOpen && typeof lucide !== 'undefined') lucide.createIcons();
+    if (chatbotOpen) syncChatbotRoleCopy();
 }
 
 function sendSuggestion(text) {
@@ -2578,9 +2988,12 @@ function appendChatMessage(text, sender) {
     var div = document.createElement('div');
     div.className = 'chat-msg ' + sender;
     var avatar = sender === 'bot' ? '<div class="chat-avatar">AI</div>' : '<div class="chat-avatar">You</div>';
-    div.innerHTML = avatar + '<div class="chat-bubble">' + text + '</div>';
+    var bubbleClass = 'chat-bubble' + (sender === 'bot' ? ' bot-rich' : '');
+    var safeText = sender === 'user' ? escapeHtml(text) : text;
+    div.innerHTML = avatar + '<div class="' + bubbleClass + '">' + safeText + '</div>';
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
+    refreshIcons();
 }
 
 function showTypingIndicator() {
@@ -2600,31 +3013,37 @@ function removeTypingIndicator() {
 
 function getChatbotResponse(query) {
     var q = query.toLowerCase();
-    if (q.includes('assess') || q.includes('predict') || q.includes('risk')) {
-        return 'To assess a patient, go to the <strong>Assessment</strong> tab (press 1). Fill in demographics, appointment details, clinical flags, and IMD decile. Click "Assess Risk" to get a DNA prediction with SHAP explanations and recommended interventions.';
-    } else if (q.includes('shap') || q.includes('explain')) {
-        return '<strong>SHAP</strong> (SHapley Additive exPlanations) shows which factors contributed most to the prediction. Green bars reduce risk, red bars increase it. Each patient gets a personalised explanation — not a black box.';
-    } else if (q.includes('bias') || q.includes('fair')) {
-        return 'The <strong>Bias Monitor</strong> (tab 5) audits the model for fairness across age, gender, and IMD groups. It checks demographic parity and equalised odds with a 0.10 threshold per NHS AI ethics guidance. You can export PDF reports for governance.';
-    } else if (q.includes('privacy') || q.includes('gdpr') || q.includes('data')) {
-        return 'Care Attend is <strong>GDPR Article 5(1)(c) compliant</strong>. No patient data is stored — all predictions are session-scoped. Passwords are hashed with bcrypt. Sessions expire after 30 minutes. No third-party analytics.';
-    } else if (q.includes('batch') || q.includes('csv') || q.includes('upload')) {
-        return 'The <strong>Batch Upload</strong> tab (press 4) lets you upload a CSV of up to 100 patients. Required columns: Age, Gender, AppointmentLeadTimeDays, SMSReceived, PriorDNACount, IMDDecile. Optional columns: Hypertension, Diabetes, Alcoholism, Disability. Use Batch CSV export or <a href="/api/batch/template" download>download the CSV template</a>. Results download as CSV.';
-    } else if (q.includes('slot') || q.includes('overbook')) {
-        return 'The <strong>Slot Optimisation</strong> tab (press 7) analyses appointment slots for overbooking opportunities. Paste JSON patient data — slots with 40%+ DNA risk are flagged as overbookable.';
-    } else if (q.includes('nudge') || q.includes('message') || q.includes('patient comms')) {
-        return 'The <strong>Patient Nudge</strong> tab (press 8) generates personalised, non-stigmatising messages in English, Welsh, Urdu, or Polish based on the patient\'s risk profile.';
-    } else if (q.includes('2fa') || q.includes('two-factor') || q.includes('authenticator')) {
-        return 'Enable <strong>2FA</strong> in your Account Centre > Security tab. It uses TOTP — compatible with Google Authenticator, Authy, or any TOTP app. You\'ll need the 6-digit code to log in.';
-    } else if (q.includes('proxy') || q.includes('carer') || q.includes('digital exclusion')) {
-        return 'The <strong>Carer Proxy</strong> mode (Assessment tab) lets a family member or carer enter patient data on behalf of digitally excluded patients — bridging the gap for 3.8M UK adults who\'ve never used the internet.';
-    } else if (q.includes('shortcut') || q.includes('keyboard')) {
-        return 'Press <strong>?</strong> to see keyboard shortcuts. Number keys switch between the tabs available to your role. N = new assessment, D = dark mode, G = guided tour, Esc = close panels.';
-    } else if (q.includes('tour') || q.includes('guide') || q.includes('help')) {
-        return 'Press the <strong>?</strong> button in the header or press G to start the guided tour. It walks through the features available to your role, step by step.';
-    } else {
-        return 'I can help with: patient assessment, SHAP explanations, bias monitoring, batch upload, slot optimisation, patient nudge, 2FA security, carer proxy mode, and more. What would you like to know?';
+    if (['problem', 'fix', 'issue', 'error', 'not working', 'blank', 'slow', 'stuck', 'fail', 'fails', 'cannot', 'can not'].some(term => q.includes(term))) {
+        return chatbotTroubleshootingResponse(q);
     }
+    if (['priority', 'p1', 'p2', 'p3', 'disease', 'age group', 'age-group', 'outreach'].some(term => q.includes(term))) {
+        return chatbotPriorityResponse();
+    }
+    if (['privacy', 'gdpr', 'data', 'security', '2fa', 'two-factor', 'authenticator'].some(term => q.includes(term))) {
+        return chatbotPrivacyResponse();
+    }
+    if (['role', 'permission', 'access', 'locked', 'what can admins do', 'what can staff do', 'what can users do'].some(term => q.includes(term))) {
+        return chatbotRoleResponse();
+    }
+    if (['how it works', 'guideline', 'guidelines', 'workflow', 'safe use', 'clinical judgement', 'help'].some(term => q.includes(term))) {
+        return chatbotGuidelinesResponse();
+    }
+    if (['what can i do', 'features', 'functions', 'menu', 'everything', 'capabilities', 'cards', 'icons'].some(term => q.includes(term))) {
+        return chatbotOverviewResponse();
+    }
+
+    const feature = chatbotFindFeature(q);
+    if (feature) {
+        if (!chatbotCanUse(feature)) {
+            return '<p><strong>' + escapeHtml(feature.title) + '</strong> is available to <strong>' + escapeHtml(chatbotRolesText(feature.roles)) + '</strong>. Your current role is <strong>' + escapeHtml(chatbotRoleName()) + '</strong>.</p>' + chatbotFeatureCard(feature, { locked: true });
+        }
+        return chatbotFeatureCard(feature);
+    }
+
+    if (['hello', 'hi', 'hey'].some(term => q.includes(term))) {
+        return chatbotWelcomeCopy() + chatbotChips(['What can I do?', 'Explain outreach priority', 'Fix a problem']);
+    }
+    return chatbotOverviewResponse();
 }
 
 
