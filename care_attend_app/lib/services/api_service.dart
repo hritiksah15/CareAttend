@@ -221,7 +221,15 @@ class ApiService {
       });
 
   // Session risk-trajectory (client-side, mirrors the website).
+  static const int riskHistoryLimit = 5;
   static final List<Map<String, dynamic>> riskHistory = [];
+
+  static void recordRiskHistory(Map<String, dynamic> entry) {
+    riskHistory.add(entry);
+    if (riskHistory.length > riskHistoryLimit) {
+      riskHistory.removeRange(0, riskHistory.length - riskHistoryLimit);
+    }
+  }
 
   // ── Batch CSV scoring ──
 

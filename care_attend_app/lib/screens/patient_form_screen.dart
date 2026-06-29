@@ -107,8 +107,8 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
         disability: _disability ? 1 : 0,
         imdDecile: int.parse(_imdCtrl.text),
       );
-      // Append to the session risk trajectory (FR-09).
-      ApiService.riskHistory.add({
+      // Append to the session risk trajectory (FR-09): last five assessments.
+      ApiService.recordRiskHistory({
         'percentage': result['percentage'],
         'risk_tier': result['risk_tier'],
       });

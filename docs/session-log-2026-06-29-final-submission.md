@@ -63,6 +63,15 @@ of Git/source zips, and what remains before AT3 recording.
   - now includes batch-template/wrong-report CSV scenarios.
   - now includes dashboard module/detail workflow scenario.
 
+### FR-09 Risk Trajectory Closure
+
+- Web risk history now records through `recordRiskHistory()` and keeps only the
+  most recent five session assessments.
+- Flutter risk history now records through `ApiService.recordRiskHistory()` and
+  keeps only the most recent five session assessments.
+- Flutter logic coverage verifies that seven recorded assessments are trimmed to
+  the newest five.
+
 ## Verification Snapshot
 
 Most recent clean checks recorded in the docs pass:
@@ -73,7 +82,7 @@ Most recent clean checks recorded in the docs pass:
 - Web `node --check frontend/js/app.js` passed.
 - Dashboard JavaScript smoke test passed.
 - Flutter `flutter analyze --no-fatal-infos` passed.
-- Flutter `flutter test` passed with 29 tests.
+- Flutter `flutter test` passed with 30 tests.
 - Evidence-doc hygiene checks passed:
   - no stale "28 tests" references.
   - no tool-name attribution in docs.

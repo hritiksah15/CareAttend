@@ -40,6 +40,7 @@
 |----|-----------------|----------------|-----------------|:------:|
 | **US-002** | Practice dashboard (risk counts, breakdown) | `app.py:284` `/api/dashboard` | `test_feature_coverage::TestDashboard` | ✅ |
 | **US-011** | Export bias audit as PDF for governance | `/api/bias-audit`; frontend jsPDF export controls | `docs/feature_test_plan.md` UX8 scenario; `node --check frontend/js/app.js` | ✅ |
+| **US-012 / FR-09 evidence** | Risk trajectory line chart for the session's last five assessments | Web `frontend/js/app.js::recordRiskHistory`; Flutter `ApiService.recordRiskHistory`; `_RiskHistoryChart` | `care_attend_app/test/logic_test.dart::risk history keeps only the last five assessments`; `node --check frontend/js/app.js` | ✅ |
 | **Feature 10** | Mock NHS EHR integration + prototype FHIR R4 adapter | `app.py:/api/ehr/*`; `backend/fhir.py`; `docs/ehr_fhir_architecture.md` | `test_feature_coverage::TestEHR`; `test_new_endpoints::TestAppointmentWorklist` FHIR mapping tests | ✅ |
 | **Feature 12** | Prediction feedback loop | `app.py:327` `/api/feedback` | `test_feature_coverage::TestFeedback` | ✅ |
 | **Feature 13** | Natural-language risk summary | `app.py:_generate_nl_summary` | `test_feature_coverage::TestNLSummary` | ✅ |

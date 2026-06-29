@@ -44,15 +44,16 @@ Backend pytest collection:
 | `tests/test_robustness.py` | 5 |
 | **Total** | **241** |
 
-Flutter test coverage count: 29 tests across logic, widgets, accessibility,
-dashboard module cards, batch template button, notifications, app boot, and
-admin session-log widgets.
+Flutter test coverage count: 30 tests across logic, widgets, accessibility,
+dashboard module cards, batch template button, risk-history cap,
+notifications, app boot, and admin session-log widgets.
 
 ## Feature Sign-Off
 
 | Area | Status | Evidence |
 |---|---|---|
 | Single assessment | Pass | `/api/predict`, calibrated model, SHAP top factors, interventions, result export controls. |
+| Risk trajectory | Pass | Web and Flutter keep the session's last five assessments and render the Flutter line chart through `_RiskHistoryChart`. |
 | Batch CSV | Pass | Template endpoint, web/app template buttons, required-column tests, wide CSV happy path, Field/Value report handling/rejection message. |
 | Dashboard workflow | Pass | Web module cards + expandable result cards + clickable recent detail rows; Flutter module-card grid + expandable cards; widget test added. |
 | Clinic/outcomes workflow | Pass | Appointment records, action tracking, status updates, operational outcomes aggregation. |

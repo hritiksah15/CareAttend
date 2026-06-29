@@ -8,7 +8,7 @@ Verified against backend (`backend/`), Flutter app (`care_attend_app/`), web fro
 - Backend: 241 pytest tests run → **all pass**.
 - Models inspected directly: base = LogisticRegression, calibrated = CalibratedClassifierCV.
 - Perf + a11y: read actual result numbers, not just file presence.
-- Flutter: `flutter analyze` → **no issues**; `flutter test` → **29 tests pass, including AppCard hover/press, admin session-log rendering, batch template, and dashboard module-card coverage**. Toolchain at `~/development/flutter`. Full browser E2E not run (optional: `flutter run -d chrome`).
+- Flutter: `flutter analyze` → **no issues**; `flutter test` → **30 tests pass, including AppCard hover/press, admin session-log rendering, batch template, risk-history cap, and dashboard module-card coverage**. Toolchain at `~/development/flutter`. Full browser E2E not run (optional: `flutter run -d chrome`).
 
 ## Functional Requirements (by feature, IDs vary between Table 3.3 and MoSCoW p41)
 
@@ -22,7 +22,7 @@ Verified against backend (`backend/`), Flutter app (`care_attend_app/`), web fro
 | Age-sensitive tiers 18-64/65-74/75-84/85+ | FR-06 | ✅ | `derive_age_group`, interventions.py:66-70 (85+ + High≥75 escalation) |
 | Bias dashboard (parity + equalised odds) | FR-07 | ✅ | `/api/bias-audit`, bias_monitor.py:152-158 |
 | Batch CSV ≤100 records | FR-08 | ✅ | `/api/batch` app.py:332, 100-row cap, CSV out |
-| Risk trajectory chart (session) | FR-09 | ✅ | `_RiskHistoryChart` result_screen.dart:564, session-scoped |
+| Risk trajectory line chart (session last five) | FR-09 | ✅ | Web `recordRiskHistory` and Flutter `ApiService.recordRiskHistory` cap to five; `_RiskHistoryChart` renders a line chart |
 
 ## Non-Functional Requirements
 
