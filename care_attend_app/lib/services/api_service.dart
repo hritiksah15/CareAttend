@@ -368,6 +368,10 @@ class ApiService {
           String userId, String newRole) =>
       _put('/api/admin/users/$userId/role', body: {'role': newRole});
 
+  static Future<Map<String, dynamic>> adminApproveUser(String userId,
+          {String role = 'staff'}) =>
+      _post('/api/admin/users/$userId/approve', body: {'role': role});
+
   static Future<Map<String, dynamic>> adminDeleteUser(String userId) =>
       _delete('/api/admin/users/$userId');
 

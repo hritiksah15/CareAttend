@@ -23,7 +23,7 @@ in this automation session.
 | Web syntax | `node --check frontend/js/app.js` | Passed |
 | Web dashboard smoke | Direct JS runtime smoke against dashboard DOM stubs | Passed: module cards, batch module, expandable detail row, row toggle, outcomes, icon refresh |
 | Flutter static analysis | `flutter analyze --no-fatal-infos` | No issues |
-| Flutter tests | `flutter test` | Passed; 29 tests |
+| Flutter tests | `flutter test` | Passed; 33 tests |
 | Git state before docs pass | `git status --short --branch` | Clean after pushing `7343a15` |
 
 ## Current Automated Test Counts
@@ -44,9 +44,9 @@ Backend pytest collection:
 | `tests/test_robustness.py` | 5 |
 | **Total** | **241** |
 
-Flutter test coverage count: 30 tests across logic, widgets, accessibility,
+Flutter test coverage count: 33 tests across logic, widgets, accessibility,
 dashboard module cards, batch template button, risk-history cap,
-notifications, app boot, and admin session-log widgets.
+notifications, app boot, and admin session-log/user-activity widgets.
 
 ## Feature Sign-Off
 
@@ -58,6 +58,7 @@ notifications, app boot, and admin session-log widgets.
 | Dashboard workflow | Pass | Web module cards + expandable result cards + clickable recent detail rows; Flutter module-card grid + expandable cards; widget test added. |
 | Clinic/outcomes workflow | Pass | Appointment records, action tracking, status updates, operational outcomes aggregation. |
 | Auth/RBAC | Pass | Opaque sessions, role gates, admin approval, 2FA, rate limiting, audit logs. |
+| Admin user management | Pass | Flutter app now mirrors web actions: approve, save role, view user activity, delete, and refresh users/session logs. |
 | Governance | Pass | Bias monitor, trained threshold use, ethics framework, audit trail. |
 | Accessibility/usability | Pass with evidence caveat | WCAG/a11y and SUS docs exist; final screenshot proof still pending. |
 | Documentation | Pass with final proofreading caveat | Architecture, OpenAPI, traceability, model card, safety/FHIR/external validation docs, AT2 and AT3 evidence packs. |
