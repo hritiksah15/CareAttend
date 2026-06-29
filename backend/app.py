@@ -68,6 +68,7 @@ app = Flask(
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", os.urandom(32).hex())
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "postgresql+psycopg://localhost:5432/careattend")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["RESET_DEV_CODE"] = os.environ.get("RESET_DEV_CODE", "0").lower() in {"1", "true", "yes"}
 
 # CORS: restrict to an explicit allowlist in production via CORS_ORIGINS
 # (comma-separated). Defaults to "*" for local/dev convenience only.
@@ -299,11 +300,11 @@ def auth_forgot_password():
     code, emailed = request_password_reset(email)
     # Never reveal whether the account exists.
     resp = {"message": "If that email is registered, a reset code has been sent."}
-    # Dev convenience: when SMTP is not configured, return the code so the
-    # reset flow is testable without an email server.
-    if code and not emailed:
+    # Dev convenience only: expose the code only when explicitly opted in.
+    # Otherwise a hosted environment with missing SMTP would leak reset OTPs.
+    if code and not emailed and app.config.get("RESET_DEV_CODE"):
         resp["dev_code"] = code
-        resp["note"] = "Email is not configured (SMTP_HOST unset); code returned for testing only."
+        resp["note"] = "RESET_DEV_CODE is enabled; code returned for local testing only."
     return jsonify(resp)
 
 

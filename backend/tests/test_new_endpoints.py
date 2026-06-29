@@ -54,8 +54,10 @@ def client(app):
 @pytest.fixture(autouse=True)
 def clean_state(app):
     """Reset DB rows between tests."""
+    reset_dev_code = app.config.get("RESET_DEV_CODE", False)
     with app.app_context():
         yield
+        app.config["RESET_DEV_CODE"] = reset_dev_code
         for table in (
             "assessment_summaries",
             "outreach_actions",
@@ -521,14 +523,22 @@ class TestPasswordReset:
         assert res.status_code == 200
         assert "dev_code" not in json.loads(res.data)
 
+    def test_forgot_known_email_hides_dev_code_by_default(self, client, app):
+        app.config["RESET_DEV_CODE"] = False
+        login(client, username="resetme")
+        res = client.post("/auth/forgot-password", json={"email": "resetme@nhs.uk"})
+        assert res.status_code == 200
+        assert "dev_code" not in json.loads(res.data)
+
     def test_forgot_missing_email(self, client):
         res = client.post("/auth/forgot-password", json={})
         assert res.status_code == 400
 
-    def test_full_reset_flow(self, client):
+    def test_full_reset_flow(self, client, app):
+        app.config["RESET_DEV_CODE"] = True
         login(client, username="resetme")  # registers resetme@nhs.uk
         forgot = client.post("/auth/forgot-password", json={"email": "resetme@nhs.uk"})
-        code = json.loads(forgot.data)["dev_code"]  # SMTP unset in tests
+        code = json.loads(forgot.data)["dev_code"]
         reset = client.post(
             "/auth/reset-password",
             json={
@@ -557,7 +567,8 @@ class TestPasswordReset:
         )
         assert res.status_code == 400
 
-    def test_reset_short_password(self, client):
+    def test_reset_short_password(self, client, app):
+        app.config["RESET_DEV_CODE"] = True
         login(client, username="resetme3")
         code = json.loads(client.post("/auth/forgot-password", json={"email": "resetme3@nhs.uk"}).data)["dev_code"]
         res = client.post(
