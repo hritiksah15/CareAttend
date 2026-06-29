@@ -16,6 +16,8 @@ to [Semantic Versioning](https://semver.org/).
   icons and labels remain visible in light and dark themes.
 - Flutter web startup now keeps a branded boot/error screen instead of fading to
   a blank page when generated boot assets are missing or stale.
+- Flutter web startup now tolerates unavailable browser preference storage so
+  locale loading cannot throw during the first render.
 - Admin role changes in the Flutter app now require an explicit Save Role action
   instead of applying immediately on dropdown selection.
 

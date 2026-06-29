@@ -24,17 +24,26 @@ class LocaleController {
   final ValueNotifier<Locale> locale = ValueNotifier(const Locale('en'));
 
   Future<void> load() async {
-    final prefs = await SharedPreferences.getInstance();
-    final code = prefs.getString(_key);
-    if (code != null && names.containsKey(code)) {
-      locale.value = Locale(code);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final code = prefs.getString(_key);
+      if (code != null && names.containsKey(code)) {
+        locale.value = Locale(code);
+      }
+    } catch (_) {
+      // Locale persistence is best-effort. The app must still boot if browser
+      // storage or a platform plugin is unavailable.
     }
   }
 
   Future<void> set(String code) async {
     if (!names.containsKey(code)) return;
     locale.value = Locale(code);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_key, code);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_key, code);
+    } catch (_) {
+      // Keep the in-memory language change even when persistence is unavailable.
+    }
   }
 }
