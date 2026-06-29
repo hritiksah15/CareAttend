@@ -110,6 +110,7 @@ def evaluate_calibration(model_dir="models", data_path=DATA_PATH, n_bins=10):
 
     with open(os.path.join(model_dir, "calibration_report.json"), "w") as f:
         json.dump(report, f, indent=2)
+        f.write("\n")
 
     _maybe_plot(report, model_dir)
     return report
