@@ -8,6 +8,7 @@ export PATH="$HOME/development/flutter/bin:$PATH"
 BACKEND_SESSION="careattend_backend"
 PGWEB_SESSION="careattend_pgweb"
 FLUTTER_SESSION="careattend_flutter"
+STALE_STATIC_SESSION="careattend_static_8092"
 PID_DIR="${TMPDIR:-/tmp}"
 pidfile() { echo "${PID_DIR%/}/careattend_$1.pid"; }
 
@@ -76,8 +77,9 @@ if [ "${1:-}" = "stop" ]; then
   stop_session "$BACKEND_SESSION"
   stop_session "$PGWEB_SESSION"
   stop_session "$FLUTTER_SESSION"
-  for p in 5000 8090 8081; do free_port "$p"; done
-  echo "Stopped (ports 5000/8090/8081 freed)."
+  stop_session "$STALE_STATIC_SESSION"
+  for p in 5000 8090 8091 8092 8081; do free_port "$p"; done
+  echo "Stopped (ports 5000/8090/8091/8092/8081 freed)."
   exit 0
 fi
 
@@ -105,15 +107,21 @@ else
   echo "   ! pgweb not installed (brew install pgweb)"
 fi
 
-echo "── 3/3  Flutter app on Chrome (:8090)"
+echo "── 3/3  Flutter web app (:8090)"
 stop_session "$FLUTTER_SESSION"
+stop_session "$STALE_STATIC_SESSION"
 free_port 8090
+free_port 8091
+free_port 8092
 if command -v flutter >/dev/null; then
-  run_persistent "$FLUTTER_SESSION" /tmp/flutter_app.log "cd $(printf '%q' "$ROOT")/care_attend_app && export PATH=$(printf '%q' "$HOME")/development/flutter/bin:\$PATH && flutter run -d chrome --web-port=8090"
-  if wait_for_port 8090 90; then
-    echo "   ✓ http://localhost:8090"
+  # Build from current source on every launch and disable the local PWA service
+  # worker. This avoids Chrome serving an older cached Flutter app after a
+  # previous debug/release run.
+  run_persistent "$FLUTTER_SESSION" /tmp/flutter_app.log "cd $(printf '%q' "$ROOT")/care_attend_app && export PATH=$(printf '%q' "$HOME")/development/flutter/bin:\$PATH && flutter clean >/dev/null && flutter pub get >/dev/null && flutter build web --pwa-strategy=none --dart-define=API_BASE=http://127.0.0.1:5000 && cd build/web && python3 -m http.server 8090 --bind 127.0.0.1"
+  if wait_for_port 8090 180; then
+    echo "   ✓ http://127.0.0.1:8090"
   else
-    echo "   ! Flutter still building or failed; see /tmp/flutter_app.log"
+    echo "   ! Flutter build/server still starting or failed; see /tmp/flutter_app.log"
   fi
 else
   echo "   ! flutter not on PATH (export PATH=\"\$HOME/development/flutter/bin:\$PATH\")"

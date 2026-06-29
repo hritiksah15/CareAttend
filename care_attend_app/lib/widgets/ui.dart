@@ -107,6 +107,7 @@ class _AppCardState extends State<AppCard> {
                 ),
               ]
             : AppShadow.card);
+    final radius = BorderRadius.circular(AppRadius.lg);
     return MouseRegion(
       onEnter: (_) => _setHover(true),
       onExit: (_) {
@@ -129,13 +130,22 @@ class _AppCardState extends State<AppCard> {
                 Matrix4.translationValues(0, active && !_pressed ? -3 : 0, 0),
             transformAlignment: Alignment.center,
             decoration: BoxDecoration(
-              color: widget.color ?? cs.surface,
-              borderRadius: BorderRadius.circular(AppRadius.lg),
+              borderRadius: radius,
               boxShadow: shadows,
+            ),
+            foregroundDecoration: BoxDecoration(
+              borderRadius: radius,
               border: Border.all(color: borderColor, width: active ? 1.25 : 1),
             ),
-            padding: widget.padding,
-            child: widget.child,
+            child: Material(
+              color: widget.color ?? cs.surface,
+              borderRadius: radius,
+              clipBehavior: Clip.antiAlias,
+              child: Padding(
+                padding: widget.padding,
+                child: widget.child,
+              ),
+            ),
           ),
         ),
       ),

@@ -8,7 +8,7 @@ real NHS data out of scope per AT2 §1.3.
 standing between this and "world-class" is **evidential validity of the ML claims**, which
 — for a synthetic-data prototype — is an honesty-of-framing fix, not an engineering defect.
 
-**Baseline at review:** `241 backend tests pass` (`pytest`), CI + CodeQL + GHCR image
+**Baseline at review:** `242 backend tests pass` (`pytest`), CI + CodeQL + GHCR image
 publish configured.
 
 ---
@@ -92,7 +92,7 @@ These are not student-grade; they are the reasons this system is close to produc
   default; `SECRET_KEY`/`CORS` env-gated; audit log on privileged mutations and login/logout.
 - **Operability.** `/health` readiness probe (model + DB), structured request logging,
   uniform JSON error handlers (400/404/405/500 + catch-all), Alembic migrations,
-  CI + CodeQL + GHCR image build, 241 automated tests.
+  CI + CodeQL + GHCR image build, 242 automated tests.
 
 ## 4. The crown-jewel gap — ML evaluation circularity
 
@@ -158,13 +158,14 @@ the intended consequence of the unification. `slot_optimisation`'s bands are int
 left alone: they model slot economics (overbooking), a different question from clinical risk.
 
 **Finding 4 (fixed) — test-count drift.** `NHSX_ETHICS_MAPPING` (P1 evidence) had stale
-test-count text. It now reports **241** backend pytest tests, matching
+test-count text. It now reports **242** backend pytest tests, matching
 `pytest --collect-only -q`.
 
-**Finding 5 — write amplification.** `validate_token` (`auth.py:147`) updates
-`last_activity` and commits on **every** authenticated request. Fine at prototype/single-
-worker scale; at production concurrency this is a write hotspot. Mitigation when it matters:
-throttle the write (only persist if last_activity is > ~60s stale) or move sessions to Redis.
+**Finding 5 (fixed) — write amplification.** `validate_token` now throttles
+`last_activity` writes via `SESSION_ACTIVITY_WRITE_INTERVAL` (default 60s), avoiding
+a database write on every authenticated request while preserving the 30-minute session
+timeout semantics. Production multi-worker deployments should still consider Redis-backed
+sessions.
 
 **Finding 6 — login rate-limit (fixed).** `/auth/login` now throttles repeated failed
 attempts by IP + identifier and returns `429` with `Retry-After` after five failures in the
@@ -183,10 +184,10 @@ Redis or use a shared limiter.
 | Security (authn/z) | 🟢 Green | bcrypt, TOTP, revocable DB sessions, server+client RBAC, escalation guards, audit log, failed-login throttling. |
 | Observability | 🟢 Green | `/health`, structured logs, uniform JSON errors. |
 | CI/CD | 🟢 Green | CI + CodeQL + GHCR image publish; Alembic migrations. |
-| Testing | 🟢 Green | 241 passing tests across ML, API, auth, bias, robustness. |
+| Testing | 🟢 Green | 242 passing tests across ML, API, auth, bias, robustness. |
 | Interoperability | 🟡 Amber | Prototype FHIR R4 `Patient`/`Appointment` adapter implemented and tested; live EMIS/SystmOne/Spine connector remains a production gate. |
 | Data & ML validity | 🔴 Red | Metrics measure fit-to-generator, not generalisation; no real-world validation possible at this scope. **Honesty of framing is the deliverable.** |
-| Scalability | 🟡 Amber | Per-request session write; in-process model load is fine for one worker, needs care under concurrency. |
+| Scalability | 🟡 Amber | Session activity writes are throttled; in-process model load is fine for one worker, needs care under concurrency. |
 
 **Bottom line.** As an *academic prototype demonstrating a complete, calibrated, explainable,
 fairness-audited DNA-risk pipeline with production-grade engineering scaffolding*, this is
@@ -197,4 +198,4 @@ synthetic-fit, not generalisation. World-class is one honest paragraph away.
 ---
 *Code fixes applied in this review: tier single-source-of-truth (`ml/interventions.py`,
 `app.py` ×3 call sites); docstring accuracy (`app.py` module docstring, `data_generator.py`
-CTGAN note). Current suite collects 241 tests.*
+CTGAN note). Current suite collects 242 tests.*
