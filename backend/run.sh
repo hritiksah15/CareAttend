@@ -11,6 +11,21 @@ export FLASK_APP=app
 # 1. Activate the virtualenv if present.
 [ -f ../.venv/bin/activate ] && source ../.venv/bin/activate
 
+# 1b. Persistent SECRET_KEY so sessions/signed cookies survive restarts (dev).
+# Generated once into a gitignored file; production should set SECRET_KEY in the
+# environment instead. Without this, app.py falls back to a per-process random
+# key and every restart silently invalidates all logins.
+if [ -z "${SECRET_KEY:-}" ]; then
+  KEY_FILE="$(dirname "$0")/.secret_key"
+  if [ ! -s "$KEY_FILE" ]; then
+    (python -c 'import secrets; print(secrets.token_hex(32))' 2>/dev/null \
+      || openssl rand -hex 32) > "$KEY_FILE"
+    chmod 600 "$KEY_FILE"
+  fi
+  SECRET_KEY="$(cat "$KEY_FILE")"
+  export SECRET_KEY
+fi
+
 # 2. Ensure PostgreSQL is running (Homebrew service).
 if ! pg_isready -q 2>/dev/null; then
   echo "PostgreSQL not running — starting it..."
