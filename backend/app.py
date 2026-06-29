@@ -17,7 +17,7 @@ import time
 import uuid
 from datetime import date, datetime, timedelta
 
-from flask import Flask, render_template, request, jsonify, make_response
+from flask import Flask, render_template, request, jsonify, make_response, send_from_directory
 from flask_cors import CORS
 from sqlalchemy import text as _sql_text
 
@@ -155,6 +155,11 @@ def load_models():
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+@app.route("/favicon.ico", methods=["GET"])
+def favicon():
+    return send_from_directory(FRONTEND_DIR, "favicon.svg", mimetype="image/svg+xml")
 
 
 # ── Health / readiness probe (no auth — for load balancers & Docker) ──

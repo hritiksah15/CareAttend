@@ -284,18 +284,15 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(color: NHSTheme.lightBlue, width: 1),
                     ),
-                    child: Row(children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _nhsCtrl,
-                          decoration: const InputDecoration(
-                            labelText: 'NHS Number (e.g. NHS001)',
-                            isDense: true,
-                          ),
+                    child: _responsiveActionRow(
+                      field: TextField(
+                        controller: _nhsCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'NHS Number (e.g. NHS001)',
+                          isDense: true,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
+                      action: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                             minimumSize: const Size(120, 44)),
                         onPressed: _ehrLoading ? null : _autofillEhr,
@@ -307,7 +304,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                                     color: Colors.white, strokeWidth: 2))
                             : Text(t.autofill),
                       ),
-                    ]),
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Align(
@@ -323,74 +320,57 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                   // DEMOGRAPHICS
                   _sectionLabel(t.demographics),
                   const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: _ageCtrl,
-                          keyboardType: TextInputType.number,
-                          decoration:
-                              InputDecoration(labelText: '${t.age} *'),
-                          validator: (v) {
-                            final n = int.tryParse(v ?? '');
-                            if (n == null || n < 0 || n > 120) {
-                              return '0-120';
-                            }
-                            return null;
-                          },
-                          onChanged: (_) => _updateAgeGroup(),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: DropdownButtonFormField<int>(
-                          initialValue: _gender == -1 ? null : _gender,
-                          decoration:
-                              InputDecoration(labelText: '${t.gender} *'),
-                          items: [
-                            DropdownMenuItem(value: 0, child: Text(t.female)),
-                            DropdownMenuItem(value: 1, child: Text(t.male)),
-                          ],
-                          onChanged: (v) => setState(() => _gender = v ?? -1),
-                        ),
-                      ),
-                    ],
+                  _responsivePair(
+                    TextFormField(
+                      controller: _ageCtrl,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(labelText: '${t.age} *'),
+                      validator: (v) {
+                        final n = int.tryParse(v ?? '');
+                        if (n == null || n < 0 || n > 120) {
+                          return '0-120';
+                        }
+                        return null;
+                      },
+                      onChanged: (_) => _updateAgeGroup(),
+                    ),
+                    DropdownButtonFormField<int>(
+                      initialValue: _gender == -1 ? null : _gender,
+                      isExpanded: true,
+                      decoration: InputDecoration(labelText: '${t.gender} *'),
+                      items: [
+                        DropdownMenuItem(value: 0, child: Text(t.female)),
+                        DropdownMenuItem(value: 1, child: Text(t.male)),
+                      ],
+                      onChanged: (v) => setState(() => _gender = v ?? -1),
+                    ),
                   ),
                   const SizedBox(height: 20),
 
                   // APPOINTMENT DETAILS
                   _sectionLabel(t.appointmentDetails),
                   const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: _leadTimeCtrl,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                              labelText: '${t.leadTime} *'),
-                          validator: (v) {
-                            final n = int.tryParse(v ?? '');
-                            if (n == null || n < 0) return 'Required';
-                            return null;
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: TextFormField(
-                          controller: _priorDNACtrl,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                              labelText: '${t.priorDNA} *'),
-                          validator: (v) {
-                            final n = int.tryParse(v ?? '');
-                            if (n == null || n < 0) return 'Required';
-                            return null;
-                          },
-                        ),
-                      ),
-                    ],
+                  _responsivePair(
+                    TextFormField(
+                      controller: _leadTimeCtrl,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(labelText: '${t.leadTime} *'),
+                      validator: (v) {
+                        final n = int.tryParse(v ?? '');
+                        if (n == null || n < 0) return 'Required';
+                        return null;
+                      },
+                    ),
+                    TextFormField(
+                      controller: _priorDNACtrl,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(labelText: '${t.priorDNA} *'),
+                      validator: (v) {
+                        final n = int.tryParse(v ?? '');
+                        if (n == null || n < 0) return 'Required';
+                        return null;
+                      },
+                    ),
                   ),
                   const SizedBox(height: 12),
                   _buildCheckTile(t.smsReceived, _smsReceived,
@@ -502,6 +482,50 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
 
   Widget _buildCard({required Widget child}) =>
       AppCard(padding: const EdgeInsets.all(20), child: child);
+
+  Widget _responsiveActionRow({
+    required Widget field,
+    required Widget action,
+  }) =>
+      LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth < 430) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                field,
+                const SizedBox(height: AppSpace.md),
+                SizedBox(width: double.infinity, child: action),
+              ],
+            );
+          }
+          return Row(children: [
+            Expanded(child: field),
+            const SizedBox(width: AppSpace.md),
+            action,
+          ]);
+        },
+      );
+
+  Widget _responsivePair(Widget first, Widget second) => LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth < 430) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                first,
+                const SizedBox(height: AppSpace.md),
+                second,
+              ],
+            );
+          }
+          return Row(children: [
+            Expanded(child: first),
+            const SizedBox(width: AppSpace.md),
+            Expanded(child: second),
+          ]);
+        },
+      );
 
   Widget _sectionLabel(String text) => Text(
         text,

@@ -404,7 +404,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   size: 13, color: Colors.white)
                               : null,
                         ),
-                        if (MediaQuery.sizeOf(context).width >= 360) ...[
+                        if (MediaQuery.sizeOf(context).width >= 480) ...[
                           const SizedBox(width: 6),
                           Text(widget.username,
                               style: const TextStyle(
