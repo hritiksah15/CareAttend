@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:care_attend_app/utils/validators.dart';
 import 'package:care_attend_app/nhs_theme.dart';
 import 'package:care_attend_app/theme/design_tokens.dart';
@@ -71,6 +72,15 @@ void main() {
       'Alcoholism',
       'Disability',
     ]);
+  });
+
+  test('default API base URL is deployable and normalized', () {
+    expect(ApiService.baseUrl, isNotEmpty);
+    expect(ApiService.baseUrl.endsWith('/'), isFalse);
+    expect(Uri.parse(ApiService.baseUrl).hasScheme, isTrue);
+    if (!kIsWeb) {
+      expect(ApiService.baseUrl, 'http://10.0.2.2:5000');
+    }
   });
 
   test('risk history keeps only the last five assessments', () {
