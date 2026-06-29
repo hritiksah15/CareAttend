@@ -54,7 +54,7 @@ of Git/source zips, and what remains before AT3 recording.
 - `docs/final_qa_signoff_2026-06-28.md`:
   - current verification snapshot.
   - 241 backend test count.
-  - 29 Flutter test count.
+  - 33 Flutter test count.
   - remaining evidence limits.
 - `docs/screenshots/README.md`:
   - required screenshot names and acceptance rules.
@@ -72,6 +72,14 @@ of Git/source zips, and what remains before AT3 recording.
 - Flutter logic coverage verifies that seven recorded assessments are trimmed to
   the newest five.
 
+### Flutter Admin User Management
+
+- Flutter admin User Management now mirrors the web action model with approve,
+  save-role, activity, delete, and refresh icon actions.
+- Selecting a user exposes their login/logout and related audit activity, and
+  the Login Session Log filters to that selected user.
+- Flutter app package version bumped to `1.2.1+4`.
+
 ## Verification Snapshot
 
 Most recent clean checks recorded in the docs pass:
@@ -82,7 +90,7 @@ Most recent clean checks recorded in the docs pass:
 - Web `node --check frontend/js/app.js` passed.
 - Dashboard JavaScript smoke test passed.
 - Flutter `flutter analyze --no-fatal-infos` passed.
-- Flutter `flutter test` passed with 30 tests.
+- Flutter `flutter test` passed with 33 tests.
 - Evidence-doc hygiene checks passed:
   - no stale "28 tests" references.
   - no tool-name attribution in docs.
