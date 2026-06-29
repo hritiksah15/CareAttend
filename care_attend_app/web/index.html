@@ -47,6 +47,10 @@
       border: 3px solid rgba(255,255,255,.25); border-top-color: #41B6E6;
       animation: ca-rot .8s linear infinite;
     }
+    #ca-splash.ca-error .ca-spin { display: none; }
+    #ca-splash.ca-error p {
+      max-width: 360px; line-height: 1.5; opacity: .92; text-align: center;
+    }
     @keyframes ca-rot { to { transform: rotate(360deg); } }
     @media (prefers-reduced-motion: reduce) { #ca-splash .ca-spin { animation: none; } }
   </style>
@@ -64,25 +68,47 @@
   </div>
 
   <script>
-    // Remove the splash once Flutter has painted its first frame. Watch for the
-    // Flutter render host appearing, then fade the splash out.
+    // Remove the splash once Flutter has painted its first frame. If the
+    // generated boot files are missing, keep a useful error instead of fading
+    // to a blank white page.
     (function () {
+      var flutterPainted = false;
+
       function hide() {
+        flutterPainted = true;
         var s = document.getElementById('ca-splash');
         if (!s) return;
         s.classList.add('ca-hide');
         setTimeout(function () { if (s) s.remove(); }, 450);
       }
+
+      function fail(message) {
+        if (flutterPainted) return;
+        var s = document.getElementById('ca-splash');
+        if (!s) return;
+        s.classList.add('ca-error');
+        var text = s.querySelector('p');
+        if (text) text.textContent = message;
+      }
+
+      window.careAttendBootFailed = fail;
       window.addEventListener('flutter-first-frame', hide);
+
       // Fallback: observe DOM for Flutter's view host in case the event is missed.
       var obs = new MutationObserver(function () {
         if (document.querySelector('flutter-view, flt-glass-pane')) { hide(); obs.disconnect(); }
       });
       obs.observe(document.body, { childList: true, subtree: true });
-      // Hard fallback so the splash can never get stuck.
-      setTimeout(hide, 12000);
+
+      setTimeout(function () {
+        fail('Care Attend is still loading. If this stays on screen, rebuild the Flutter app and open it from a local server, not by double-clicking index.html.');
+      }, 12000);
     })();
   </script>
-  <script src="flutter_bootstrap.js" async></script>
+  <script
+    src="flutter_bootstrap.js"
+    async
+    onerror="window.careAttendBootFailed && window.careAttendBootFailed('Flutter boot files are missing. Run the Flutter app from VS Code or serve the generated build/web folder after rebuilding.');"
+  ></script>
 </body>
 </html>

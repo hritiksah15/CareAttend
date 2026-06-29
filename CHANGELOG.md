@@ -14,6 +14,8 @@ to [Semantic Versioning](https://semver.org/).
   activity, delete, and refreshing users/session logs.
 - Flutter admin action buttons now use explicit contrast-safe styling so their
   icons and labels remain visible in light and dark themes.
+- Flutter web startup now keeps a branded boot/error screen instead of fading to
+  a blank page when generated boot assets are missing or stale.
 - Admin role changes in the Flutter app now require an explicit Save Role action
   instead of applying immediately on dropdown selection.
 
