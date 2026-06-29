@@ -1064,13 +1064,13 @@
         <div class="chatbot-messages" id="chatbot-messages">
             <div class="chat-msg bot">
                 <div class="chat-avatar"><i data-lucide="bot" style="width:14px;height:14px;"></i></div>
-                <div class="chat-bubble">Hello! I'm your Care Attend assistant. I can help with risk assessments, bias monitoring, and navigating the app. What would you like to know?</div>
+                <div class="chat-bubble" id="chatbot-welcome">Hello! I'm your Care Attend assistant. I can help with the features available to your role, risk assessment, outreach priority, and safe problem-solving. What would you like to know?</div>
             </div>
             <div class="chat-suggestions" id="chat-suggestions">
-                <button class="suggestion-chip" onclick="sendSuggestion('How do I assess a patient?')">How to assess a patient?</button>
-                <button class="suggestion-chip" onclick="sendSuggestion('What is SHAP?')">What is SHAP?</button>
-                <button class="suggestion-chip" onclick="sendSuggestion('How does bias monitoring work?')">Bias monitoring?</button>
-                <button class="suggestion-chip" onclick="sendSuggestion('Tell me about data privacy')">Data privacy</button>
+                <button class="suggestion-chip" onclick="sendSuggestion('What can I do?')">What can I do?</button>
+                <button class="suggestion-chip" onclick="sendSuggestion('How do I assess a patient?')">Assess patient</button>
+                <button class="suggestion-chip" onclick="sendSuggestion('Explain outreach priority')">Outreach priority</button>
+                <button class="suggestion-chip" onclick="sendSuggestion('Fix a problem')">Fix problem</button>
             </div>
         </div>
         <div class="chatbot-input-area">
