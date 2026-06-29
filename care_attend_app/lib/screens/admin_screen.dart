@@ -273,6 +273,7 @@ class _AdminScreenState extends State<AdminScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: AdminUserManagementCard(
+        key: ValueKey('admin-user-$userId'),
         user: u,
         selectedRole: selected,
         onRoleChanged: (value) => setState(() => _roleDrafts[userId] = value),
@@ -319,6 +320,7 @@ class AdminUserManagementCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
     final username = user['username']?.toString() ?? '';
+    final userId = user['userId']?.toString() ?? username;
     final email = user['email']?.toString() ?? '';
     final approved = user['approved'] == true;
     final safeRole = _roles.contains(selectedRole) ? selectedRole : 'user';
@@ -346,6 +348,7 @@ class AdminUserManagementCard extends StatelessWidget {
         LayoutBuilder(builder: (context, constraints) {
           final narrow = constraints.maxWidth < 520;
           final rolePicker = DropdownButtonFormField<String>(
+            key: ValueKey('admin-role-$userId-$safeRole'),
             initialValue: safeRole,
             isExpanded: true,
             decoration: InputDecoration(
@@ -362,28 +365,32 @@ class AdminUserManagementCard extends StatelessWidget {
           );
           final actions = Wrap(spacing: 2, runSpacing: 2, children: [
             if (!approved)
-              _AdminIconAction(
+              _AdminActionButton(
                 tooltip: 'Approve user',
+                label: 'Approve',
                 icon: Icons.verified_user_outlined,
                 color: NHSTheme.riskLow,
                 onPressed: onApprove,
               ),
-            _AdminIconAction(
+            _AdminActionButton(
               tooltip: 'Save role',
+              label: 'Save role',
               icon: Icons.save_outlined,
               color: Theme.of(context).colorScheme.primary,
               onPressed: onSaveRole,
             ),
-            _AdminIconAction(
+            _AdminActionButton(
               tooltip: activityExpanded
                   ? 'Hide user activity'
                   : 'View login/activity',
+              label: activityExpanded ? 'Hide activity' : 'Activity',
               icon: Icons.manage_history,
               color: Theme.of(context).colorScheme.secondary,
               onPressed: onToggleActivity,
             ),
-            _AdminIconAction(
+            _AdminActionButton(
               tooltip: t.adminDeleteTitle,
+              label: t.adminDelete,
               icon: Icons.delete_outline,
               color: NHSTheme.riskHigh,
               onPressed: onDelete,
@@ -441,14 +448,16 @@ class _StatusPill extends StatelessWidget {
   }
 }
 
-class _AdminIconAction extends StatelessWidget {
+class _AdminActionButton extends StatelessWidget {
   final String tooltip;
+  final String label;
   final IconData icon;
   final Color color;
   final VoidCallback? onPressed;
 
-  const _AdminIconAction({
+  const _AdminActionButton({
     required this.tooltip,
+    required this.label,
     required this.icon,
     required this.color,
     required this.onPressed,
@@ -456,13 +465,21 @@ class _AdminIconAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton.filledTonal(
-      tooltip: tooltip,
-      icon: Icon(icon, size: 20),
-      color: onPressed == null ? Theme.of(context).disabledColor : color,
-      onPressed: onPressed,
-      constraints: const BoxConstraints.tightFor(width: 44, height: 44),
-      padding: EdgeInsets.zero,
+    final effectiveColor =
+        onPressed == null ? Theme.of(context).disabledColor : color;
+    return Tooltip(
+      message: tooltip,
+      child: FilledButton.tonalIcon(
+        style: FilledButton.styleFrom(
+          foregroundColor: effectiveColor,
+          minimumSize: const Size(0, 42),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+        icon: Icon(icon, size: 18),
+        label: Text(label),
+        onPressed: onPressed,
+      ),
     );
   }
 }
