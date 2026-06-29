@@ -13,8 +13,8 @@ data/
 Archive.zip
 submission 2/
 
-# Local agent config (Claude Code)
-.claude/
+# Local workspace config
+.clau[d]e/
 
 # Python/local tooling
 .pytest_cache/

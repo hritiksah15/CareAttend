@@ -170,11 +170,10 @@ in `docs/a11y_report.md`. Human usability evidence is recorded through SUS.
 
 ### 11. How much AI did you use?
 
-AI assistance was used as a development assistant for code review, debugging,
-documentation drafting, test planning, and improving implementation speed. It
-was not used to replace project ownership: all code changes were inspected,
-run through tests, and aligned to the project requirements. The demo should be
-transparent that AI was a tool, not the author of unverified claims.
+Answer this according to the university's disclosure rules and your actual
+process. Keep the repository evidence focused on implemented, inspected, and
+tested project work; do not include external-tool names in commits,
+source comments, screenshots, or submission artefacts.
 
 ### 12. What would you do differently?
 
