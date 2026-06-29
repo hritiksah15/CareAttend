@@ -14,10 +14,14 @@ flutter run
 ```
 
 Use a local backend on `http://127.0.0.1:5000` for web/desktop/iOS simulator, or
-`http://10.0.2.2:5000` for Android emulator. Override with:
+`http://10.0.2.2:5000` for Android emulator.
+
+Hosted Flutter web builds default to the same origin as the page, so a build
+served from the Flask/Gunicorn host calls that host automatically. For split
+frontend/API deployments, override with:
 
 ```bash
-flutter run --dart-define=API_BASE=http://127.0.0.1:5000
+flutter build web --release --dart-define=API_BASE=https://api.example.nhs.uk
 ```
 
 ## Verify

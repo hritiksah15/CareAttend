@@ -5,17 +5,41 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   // Backend host differs per platform:
-  //   - Web / iOS simulator / desktop: localhost
+  //   - Hosted web: same origin as the app (override for split deployments)
+  //   - Local web / iOS simulator / desktop: localhost
   //   - Android emulator: 10.0.2.2 maps to the host's localhost
   // Override at build time with --dart-define=API_BASE=http://<ip>:5000.
   static const String _envBase =
       String.fromEnvironment('API_BASE', defaultValue: '');
-  static final String baseUrl = _envBase.isNotEmpty
-      ? _envBase
-      : (kIsWeb ? 'http://127.0.0.1:5000' : 'http://10.0.2.2:5000');
+  static final String baseUrl =
+      _normaliseBaseUrl(_envBase.isNotEmpty ? _envBase : _defaultBaseUrl());
   static String? _token;
   static String role = 'user';
   static String? avatar; // base64 data-URL of the logged-in user's photo
+
+  static String _defaultBaseUrl() {
+    if (!kIsWeb) return 'http://10.0.2.2:5000';
+
+    final current = Uri.base;
+    final host = current.host.toLowerCase();
+    final isLocal = host == 'localhost' ||
+        host == '127.0.0.1' ||
+        host == '0.0.0.0' ||
+        host == '::1' ||
+        host == '[::1]';
+
+    if (isLocal && current.port != 5000) return 'http://127.0.0.1:5000';
+    if (current.hasScheme && current.hasAuthority) return current.origin;
+    return 'http://127.0.0.1:5000';
+  }
+
+  static String _normaliseBaseUrl(String value) {
+    var base = value.trim();
+    while (base.endsWith('/')) {
+      base = base.substring(0, base.length - 1);
+    }
+    return base;
+  }
 
   // Last patient assessed this session — lets the Nudge screen prefill from the
   // most recent Assessment (web mirrors the assessment form directly; the app
