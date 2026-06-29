@@ -19,7 +19,7 @@ in this automation session.
 |---|---|---|
 | Backend lint | `ruff check .` in `backend/` | Passed |
 | Backend tests | `pytest -q` in `backend/` | Passed; only existing sklearn deprecation warnings |
-| Backend collection | `pytest --collect-only -q` | 242 tests collected across 10 files |
+| Backend collection | `pytest --collect-only -q` | 245 tests collected across 10 files |
 | Web syntax | `node --check frontend/js/app.js` | Passed |
 | Web dashboard smoke | Direct JS runtime smoke against dashboard DOM stubs | Passed: module cards, batch module, expandable detail row, row toggle, outcomes, icon refresh |
 | Flutter static analysis | `flutter analyze --no-fatal-infos` | No issues |
@@ -42,7 +42,7 @@ Backend pytest collection:
 | `tests/test_new_endpoints.py` | 79 |
 | `tests/test_predictor.py` | 12 |
 | `tests/test_robustness.py` | 5 |
-| **Total** | **242** |
+| **Total** | **245** |
 
 Flutter test coverage count: 38 tests across logic, widgets, accessibility,
 dashboard module cards, batch template button, risk-history cap,

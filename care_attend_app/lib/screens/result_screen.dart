@@ -39,6 +39,8 @@ class ResultScreen extends StatelessWidget {
         return Icons.favorite_border;
       case 'calendar':
         return Icons.event_outlined;
+      case 'stethoscope':
+        return Icons.medical_services_outlined;
       default:
         return Icons.tips_and_updates_outlined;
     }
@@ -85,6 +87,8 @@ class ResultScreen extends StatelessWidget {
     final patient = result!['patient_summary'] as Map<String, dynamic>;
     final modelUsed = '${result!['model_used'] ?? 'Logistic Regression'}';
     final nlSummary = result!['nl_summary'] as String?;
+    final outreachPriority =
+        result!['outreach_priority'] as Map<String, dynamic>?;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -200,6 +204,11 @@ class ResultScreen extends StatelessWidget {
           // Age vulnerability banner (65+ amber, 85+ red — enhanced sensitivity)
           if (_ageOf(patient) >= 65) ...[
             _ageBanner(context, _ageOf(patient)),
+            const SizedBox(height: 16),
+          ],
+
+          if (outreachPriority != null) ...[
+            _priorityCard(context, outreachPriority),
             const SizedBox(height: 16),
           ],
 
@@ -506,6 +515,94 @@ class ResultScreen extends StatelessWidget {
 
   int _ageOf(Map<String, dynamic> patient) =>
       (patient['Age'] as num?)?.toInt() ?? 0;
+
+  Widget _priorityCard(BuildContext context, Map<String, dynamic> priority) {
+    final level = '${priority['level'] ?? 'P3'}'.toUpperCase();
+    final score = (priority['score'] as num?)?.toInt() ?? 0;
+    final drivers = (priority['drivers'] as List?)
+            ?.map((d) => '$d')
+            .where((d) => d.trim().isNotEmpty)
+            .toList() ??
+        const <String>[];
+    final accent = level == 'P1'
+        ? AppColors.riskHigh
+        : level == 'P2'
+            ? AppColors.riskMedium
+            : AppColors.riskLow;
+    final bg = NHSTheme.calloutBg(
+        context,
+        level == 'P1'
+            ? AppColors.riskHighBg
+            : level == 'P2'
+                ? AppColors.riskMediumBg
+                : AppColors.riskLowBg);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpace.lg),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border(left: BorderSide(color: accent, width: 4)),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Icon(Icons.medical_services_outlined, color: accent, size: 22),
+          const SizedBox(width: AppSpace.md),
+          Expanded(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('Outreach Priority',
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Theme.of(context).colorScheme.primary)),
+              const SizedBox(height: 2),
+              Text('${priority['action'] ?? priority['label'] ?? ''}',
+                  style: TextStyle(
+                      fontSize: 13,
+                      color: Theme.of(context).colorScheme.onSurface)),
+            ]),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: accent,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text('$level ($score)',
+                style: TextStyle(
+                    color: level == 'P2' ? Colors.black : Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 12)),
+          ),
+        ]),
+        if (drivers.isNotEmpty) ...[
+          const SizedBox(height: AppSpace.md),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              for (final driver in drivers)
+                Chip(
+                  visualDensity: VisualDensity.compact,
+                  label: Text(driver,
+                      style: const TextStyle(
+                          fontSize: 12, fontWeight: FontWeight.w600)),
+                ),
+            ],
+          ),
+        ],
+        if (priority['policy'] != null) ...[
+          const SizedBox(height: AppSpace.sm),
+          Text('${priority['policy']}',
+              style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant)),
+        ],
+      ]),
+    );
+  }
 
   /// Clinical age-vulnerability banner. 85+ flags enhanced sensitivity (red);
   /// 65-84 flags elevated vulnerability (amber). Risk-coloured text stays

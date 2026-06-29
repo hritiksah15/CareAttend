@@ -162,6 +162,8 @@ class TestPredictEndpoint:
         assert "risk_tier" in data
         assert "shap_values" in data
         assert "interventions" in data
+        assert "outreach_priority" in data
+        assert data["outreach_priority"]["level"] in ("P1", "P2", "P3")
         assert "age_group" in data
         assert "sessionId" in data
 

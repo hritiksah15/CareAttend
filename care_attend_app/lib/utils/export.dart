@@ -29,6 +29,7 @@ class Exporter {
 
   static Future<void> patientPdf(Map<String, dynamic> r) async {
     final shap = (r['shap_values'] as List?) ?? [];
+    final priority = r['outreach_priority'] as Map?;
     final doc = pw.Document();
     doc.addPage(pw.Page(build: (ctx) {
       return pw.Column(
@@ -45,6 +46,9 @@ class Exporter {
             _kv('Risk Score', '${r['percentage']}%'),
             _kv('Risk Tier', '${r['risk_tier']}'),
             _kv('Age Group', '${r['age_group']}'),
+            if (priority != null)
+              _kv('Outreach Priority',
+                  '${priority['level']} (${priority['score']})'),
             _kv('Model', '${r['model_used'] ?? 'Logistic Regression'}'),
             pw.SizedBox(height: 12),
             pw.Text('SHAP Risk Factors',

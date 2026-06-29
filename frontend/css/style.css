@@ -632,6 +632,62 @@ body > * {
     margin: 2px 4px 2px 0;
 }
 
+.priority-card {
+    border-left: 5px solid var(--nhs-blue);
+}
+.priority-card.priority-p1 { border-left-color: var(--risk-high); }
+.priority-card.priority-p2 { border-left-color: var(--risk-medium); }
+.priority-card.priority-p3 { border-left-color: var(--risk-low); }
+.priority-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.priority-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 72px;
+    padding: 8px 14px;
+    border-radius: 4px;
+    background: var(--nhs-blue);
+    color: var(--nhs-white);
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+}
+.priority-p1 .priority-badge { background: var(--risk-high); }
+.priority-p2 .priority-badge { background: var(--risk-medium); color: var(--nhs-black); }
+.priority-p3 .priority-badge { background: var(--risk-low); }
+.priority-action {
+    margin: 10px 0;
+    color: var(--nhs-dark-grey);
+    font-weight: 600;
+}
+.priority-drivers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.priority-drivers span {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 4px 10px;
+    background: var(--nhs-pale-grey);
+    color: var(--nhs-dark-grey);
+    font-size: 12px;
+    font-weight: 600;
+}
+.priority-policy {
+    margin-top: 10px;
+    color: var(--nhs-grey);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
 /* ── SHAP CHART ── */
 .shap-chart-container { max-width: 700px; margin: 0 auto; }
 .shap-legend {
@@ -1299,6 +1355,12 @@ body.dark-mode .patient-meta span { background: #3a3a4e; color: #c0c0c0; }
 body.dark-mode .risk-tier-badge.tier-low { background: #1e4a2e; color: #6fcf6f; }
 body.dark-mode .risk-tier-badge.tier-medium { background: #4a3a1e; color: #ffc857; }
 body.dark-mode .risk-tier-badge.tier-high { background: #4a1e1e; color: #ff7777; }
+body.dark-mode .priority-action { color: #d0d0d0; }
+body.dark-mode .priority-drivers span { background: #3a3a4e; color: #d0d0d0; }
+body.dark-mode .priority-policy { color: #a8a8b8; }
+body.dark-mode .priority-p1 .priority-badge { background: #4a1e1e; color: #ff7777; }
+body.dark-mode .priority-p2 .priority-badge { background: #4a3a1e; color: #ffc857; }
+body.dark-mode .priority-p3 .priority-badge { background: #1e4a2e; color: #6fcf6f; }
 
 /* Data tables (bias, cross-validation, McNemar, slots, admin, etc.) */
 .audit-table {

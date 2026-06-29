@@ -53,7 +53,7 @@ from auth import (
 )
 from ml.predictor import CareAttendPredictor
 from ml.bias_monitor import BiasMonitor
-from ml.interventions import generate_interventions
+from ml.interventions import build_outreach_priority, generate_interventions
 from notification_provider import provider as notification_provider, VALID_CHANNELS
 from fhir import appointment_to_fhir, patient_to_fhir
 
@@ -365,6 +365,7 @@ def predict():
     interventions, risk_tier, age_group = generate_interventions(
         patient, result["probability"], result["shap_values"], result["risk_tier"]
     )
+    outreach_priority = build_outreach_priority(patient, result["risk_tier"])
 
     nl_summary = _generate_nl_summary(patient, result, age_group)
     prediction_id = str(uuid.uuid4())
@@ -388,6 +389,7 @@ def predict():
             "risk_tier": result["risk_tier"],
             "shap_values": result["shap_values"],
             "interventions": interventions,
+            "outreach_priority": outreach_priority,
             "age_group": age_group,
             "model_used": result.get("model_used", "Logistic Regression"),
             "patient_summary": patient,
@@ -632,6 +634,7 @@ def batch_predict():
         _, risk_tier, age_group = generate_interventions(
             patient, pred["probability"], pred["shap_values"], pred["risk_tier"]
         )
+        outreach_priority = build_outreach_priority(patient, risk_tier)
         top_shap = pred["shap_values"][0]["label"] if pred["shap_values"] else ""
 
         results.append(
@@ -640,6 +643,8 @@ def batch_predict():
                 "age": patient["Age"],
                 "risk_probability": pred["percentage"],
                 "risk_tier": risk_tier,
+                "outreach_priority": outreach_priority["level"],
+                "priority_score": outreach_priority["score"],
                 "age_group": age_group,
                 "top_risk_factor": top_shap,
             }

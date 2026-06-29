@@ -402,6 +402,8 @@ class TestRBAC:
         assert res.status_code == 200
         body = res.data.decode()
         assert "risk_tier" in body
+        assert "outreach_priority" in body
+        assert "priority_score" in body
         assert "top_risk_factor" in body
 
     def test_batch_accepts_single_assessment_batch_export_csv(self, client):
