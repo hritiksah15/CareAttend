@@ -15,3 +15,30 @@ submission 2/
 
 # Local agent config (Claude Code)
 .claude/
+
+# Python/local tooling
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.sqlite
+*.sqlite3
+*.log
+
+# Flutter generated / machine-local (build/.dart_tool already in care_attend_app/.gitignore)
+care_attend_app/android/local.properties
+care_attend_app/ios/Flutter/Generated.xcconfig
+care_attend_app/ios/Flutter/flutter_export_environment.sh
+care_attend_app/ios/Flutter/ephemeral/
+care_attend_app/.flutter-plugins
+care_attend_app/.flutter-plugins-dependencies
+
+# Dependencies
+node_modules/
+frontend/node_modules/
+tools/a11y/node_modules/
+
+# Submission / output artefacts
+*.zip
+*.mp4
+*.mov
