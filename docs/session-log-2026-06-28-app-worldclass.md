@@ -80,7 +80,7 @@ glassmorphism on transient panels, notifications, branding, i18n, tests.
   AT2 judgement, satisfied-vs-gap tables, and world-class build order.
 - Replaced the scaffold Flutter README with a project-specific app README.
 - Updated stale evidence counts in README/traceability/audit/readiness docs to
-  242 backend tests and 38 Flutter tests.
+  245 backend tests and 38 Flutter tests.
 - Hardened Flutter API response handling so non-JSON proxy/server errors become
   controlled `ApiException` messages instead of raw decode failures.
 - Verified: full backend `pytest -q` passed, `flutter analyze` clean,
@@ -157,7 +157,7 @@ glassmorphism on transient panels, notifications, branding, i18n, tests.
   prototype FHIR boundary implemented, live connector/safety sign-off/external
   validation not falsely claimed.
 - Verified: OpenAPI route parity clean; backend `ruff check .` clean; backend
-  `pytest -q` passed with 242 collected tests; `node --check frontend/js/app.js`
+  `pytest -q` passed with 245 collected tests; `node --check frontend/js/app.js`
   passed; Flutter analyze clean; Flutter test passed with 38 tests.
 
 ## Batch CSV and Dashboard workflow closure — 2026-06-28

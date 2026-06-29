@@ -1,6 +1,14 @@
 from ml.data_generator import derive_age_group
 
 
+CONDITION_LABELS = {
+    "Diabetes": "diabetes",
+    "Alcoholism": "alcohol dependency",
+    "Disability": "registered disability",
+    "Hypertension": "hypertension",
+}
+
+
 INTERVENTION_RULES = {
     "high_prior_dna": {
         "title": "Proactive Phone Reminder",
@@ -25,6 +33,12 @@ INTERVENTION_RULES = {
         "description": "Refer to clinical team for welfare review. Patient may have unaddressed health barriers.",
         "icon": "alert",
         "priority": 1,
+    },
+    "condition_review": {
+        "title": "Condition-Aware Outreach Review",
+        "description": "Review clinical barriers before contact. Age group and long-term condition flags may affect attendance support needs.",
+        "icon": "stethoscope",
+        "priority": 2,
     },
     "sms_followup": {
         "title": "Enhanced SMS Follow-up",
@@ -53,6 +67,97 @@ INTERVENTION_RULES = {
 }
 
 
+def active_conditions(patient_data):
+    """Return human-readable active clinical condition flags."""
+    conditions = []
+    for field, label in CONDITION_LABELS.items():
+        try:
+            active = int(patient_data.get(field, 0)) == 1
+        except (TypeError, ValueError):
+            active = False
+        if active:
+            conditions.append(label)
+    return conditions
+
+
+def build_outreach_priority(patient_data, risk_tier):
+    """Composite support priority.
+
+    The DNA risk tier remains model-led. This separate layer ranks how quickly
+    staff should review attendance-support actions, using age vulnerability,
+    clinical condition burden, and practical access barriers. It must only
+    escalate support; it is not a diagnosis or treatment allocation decision.
+    """
+    age = int(patient_data.get("Age", 0) or 0)
+    age_group = derive_age_group(age)
+    conditions = active_conditions(patient_data)
+    score = 0
+    drivers = []
+
+    if risk_tier == "High":
+        score += 3
+        drivers.append("High DNA risk")
+    elif risk_tier == "Medium":
+        score += 1
+        drivers.append("Medium DNA risk")
+
+    if age >= 85:
+        score += 3
+        drivers.append("85+ age group")
+    elif age >= 75:
+        score += 2
+        drivers.append("75-84 age group")
+    elif age >= 65:
+        score += 1
+        drivers.append("65-74 age group")
+
+    high_impact_conditions = {"diabetes", "alcohol dependency", "registered disability"}
+    for condition in conditions:
+        if condition in high_impact_conditions:
+            score += 1
+            drivers.append(condition)
+    if "hypertension" in conditions and (age >= 65 or len(conditions) >= 2):
+        score += 1
+        drivers.append("hypertension")
+    if len(conditions) >= 2:
+        score += 1
+        drivers.append("multiple condition flags")
+
+    if patient_data.get("PriorDNACount", 0) >= 2:
+        score += 1
+        drivers.append("previous missed appointments")
+    if patient_data.get("IMDDecile", 10) <= 3:
+        score += 1
+        drivers.append("high deprivation context")
+    if patient_data.get("SMSReceived", 1) == 0:
+        score += 1
+        drivers.append("no SMS reminder")
+
+    if score >= 5:
+        level = "P1"
+        label = "Priority 1 - urgent outreach review"
+        action = "Review today and confirm the safest attendance support route."
+    elif score >= 3:
+        level = "P2"
+        label = "Priority 2 - proactive outreach"
+        action = "Contact before appointment and remove practical attendance barriers."
+    else:
+        level = "P3"
+        label = "Priority 3 - routine reminder"
+        action = "Use standard reminder workflow unless local context changes."
+
+    return {
+        "level": level,
+        "label": label,
+        "score": score,
+        "age_group": age_group,
+        "conditions": conditions,
+        "drivers": drivers[:6],
+        "action": action,
+        "policy": "Composite support priority; DNA risk tier remains model-led and this does not allocate treatment.",
+    }
+
+
 def generate_interventions(patient_data, risk_probability, shap_values, risk_tier=None):
     """Build the ranked intervention list for a patient.
 
@@ -67,6 +172,8 @@ def generate_interventions(patient_data, risk_probability, shap_values, risk_tie
     if risk_tier is None:
         risk_tier = _get_risk_tier(risk_probability)
     top_features = [sv["feature"] for sv in shap_values[:3]] if shap_values else []
+    priority = build_outreach_priority(patient_data, risk_tier)
+    has_age_condition_complexity = age >= 65 and bool(priority["conditions"])
 
     if patient_data.get("PriorDNACount", 0) >= 2 or "PriorDNACount" in top_features:
         interventions.append(INTERVENTION_RULES["high_prior_dna"])
@@ -77,6 +184,8 @@ def generate_interventions(patient_data, risk_probability, shap_values, risk_tie
         interventions.append(INTERVENTION_RULES["carer_alert"])
     if age >= 85 or (risk_tier == "High" and age >= 75):
         interventions.append(INTERVENTION_RULES["clinical_triage"])
+    elif risk_tier in {"High", "Medium"} and has_age_condition_complexity:
+        interventions.append(INTERVENTION_RULES["condition_review"])
 
     if patient_data.get("Disability", 0) == 1:
         interventions.append(INTERVENTION_RULES["disability_support"])

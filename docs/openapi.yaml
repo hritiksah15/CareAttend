@@ -806,6 +806,18 @@ components:
               label: { type: string }
               direction: { type: string, enum: [risk-increasing, risk-decreasing] }
         interventions: { type: array, items: { type: object } }
+        outreach_priority:
+          type: object
+          description: Composite support priority; model DNA risk remains separate from clinical diagnosis or treatment allocation.
+          properties:
+            level: { type: string, enum: [P1, P2, P3] }
+            label: { type: string }
+            score: { type: integer }
+            age_group: { type: string }
+            conditions: { type: array, items: { type: string } }
+            drivers: { type: array, items: { type: string } }
+            action: { type: string }
+            policy: { type: string }
         age_group: { type: string }
         nl_summary: { type: string }
 

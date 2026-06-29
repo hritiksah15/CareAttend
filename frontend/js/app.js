@@ -845,6 +845,7 @@ function renderResults(result) {
 
     renderGauge(result.percentage, tier);
     renderShapChart(result.shap_values);
+    renderOutreachPriority(result.outreach_priority);
     renderInterventions(result.interventions);
 
     // NL summary display (Feature 13)
@@ -947,12 +948,36 @@ function renderShapChart(shapValues) {
 const ICONS = {
     phone: '&#128222;', car: '&#128663;', users: '&#128101;',
     alert: '&#9888;', message: '&#128172;', accessibility: '&#9855;',
-    heart: '&#10084;', calendar: '&#128197;',
+    heart: '&#10084;', calendar: '&#128197;', stethoscope: '&#129658;',
 };
 
 const PRIORITY_COLORS = {
     1: '#DA291C', 2: '#FFB81C', 3: '#007F3B',
 };
+
+function renderOutreachPriority(priority) {
+    const card = document.getElementById('outreach-priority-card');
+    if (!card) return;
+    if (!priority || !priority.level) {
+        card.style.display = 'none';
+        return;
+    }
+
+    const level = String(priority.level).toUpperCase();
+    card.style.display = 'block';
+    card.className = `card priority-card priority-${level.toLowerCase()}`;
+    document.getElementById('outreach-priority-badge').textContent =
+        `${level} (${Number(priority.score) || 0})`;
+    document.getElementById('outreach-priority-action').textContent =
+        priority.action || priority.label || 'Use standard outreach workflow.';
+
+    const drivers = Array.isArray(priority.drivers) ? priority.drivers : [];
+    document.getElementById('outreach-priority-drivers').innerHTML = drivers.length
+        ? drivers.map(d => `<span>${escapeHtml(d)}</span>`).join('')
+        : '<span>No escalation drivers</span>';
+    document.getElementById('outreach-priority-policy').textContent =
+        priority.policy || 'Decision-support only; clinical judgement remains with staff.';
+}
 
 function renderInterventions(interventions) {
     const container = document.getElementById('interventions-list');
@@ -2768,6 +2793,7 @@ function exportPatientPDF() {
     doc.text('Risk Assessment', 14, y); y += 8;
 
     var r = lastResult;
+    var priority = r.outreach_priority || null;
 
     // Render a table via autoTable, or fall back to plain text lines if the
     // autotable plugin failed to load. Returns the next y position.
@@ -2790,6 +2816,7 @@ function exportPatientPDF() {
         ['Risk Score', String(r.percentage)],
         ['Risk Tier', r.risk_tier],
         ['Age Group', r.age_group],
+        ['Outreach Priority', priority ? (priority.level + ' (' + priority.score + ')') : 'Not available'],
         ['Model', r.model_used || 'Logistic Regression'],
     ], y);
 
