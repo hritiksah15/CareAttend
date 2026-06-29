@@ -22,9 +22,12 @@
     .form-grid { grid-template-columns: 1fr; gap: 12px; }
     .checkbox-grid { grid-template-columns: 1fr; }
 
-    .risk-header { flex-direction: column; align-items: center; text-align: center; gap: 16px; }
-    .risk-gauge-container { width: 160px; height: 160px; }
+    .risk-header { flex-direction: column; align-items: center; text-align: center; gap: 18px; }
+    .risk-gauge-container { width: 180px; height: 180px; margin: 0 auto; }
+    .risk-gauge-container canvas { width: 100% !important; height: 100% !important; }
+    .risk-info { width: 100%; flex: 0 0 100%; }
     .risk-percentage { font-size: 32px; }
+    .risk-tier-badge { margin-top: 2px; }
 
     .metrics-row { grid-template-columns: repeat(2, 1fr); gap: 8px; }
     .metric-box { padding: 12px 6px; }
@@ -84,7 +87,8 @@
     .header-content { flex-direction: column; align-items: flex-start; gap: 4px; }
     .header-right { margin-top: 8px; width: 100%; justify-content: space-between; }
 
-    .tab-btn { font-size: 11px; padding: 10px 6px; }
+    .tab-nav { justify-content: flex-start; -webkit-overflow-scrolling: touch; scroll-snap-type: x proximity; }
+    .tab-btn { flex: 0 0 auto; min-width: 104px; font-size: 11px; padding: 10px 8px; scroll-snap-align: start; }
     .tab-icon { display: none; }
 
     .form-grid { grid-template-columns: 1fr; }

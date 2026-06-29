@@ -2398,13 +2398,10 @@ body.dark-mode .proxy-active-badge { background: #1a3a1a; border-color: #2d7a2d;
     animation: pulseGlow 1.5s ease-out;
 }
 
-/* Chatbot FAB idle pulse */
-.chatbot-fab {
-    animation: fabBounce 3s ease-in-out infinite;
-}
+/* Keep the chatbot FAB visually steady. Continuous transform animation makes
+   the target unstable for pointer/touch automation and can drop real taps. */
 .chatbot-fab:hover {
-    animation: none;
-    transform: scale(1.1);
+    transform: scale(1.06);
 }
 
 /* Modal/overlay entrance */
