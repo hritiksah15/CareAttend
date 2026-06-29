@@ -103,7 +103,7 @@ paths:
     post:
       tags: [Auth]
       summary: Request a password-reset code
-      description: "Generates a 6-digit OTP and emails it to the address if registered. Always returns the same message regardless of whether the account exists (no account enumeration). When SMTP is not configured the code is returned in `dev_code` for testing only."
+      description: "Generates a 6-digit OTP and emails it to the address if registered. Always returns the same message regardless of whether the account exists (no account enumeration). `dev_code` is returned only when SMTP is not configured and `RESET_DEV_CODE=1` is explicitly enabled for local testing."
       security: []
       requestBody:
         required: true
@@ -123,7 +123,7 @@ paths:
                 type: object
                 properties:
                   message: { type: string }
-                  dev_code: { type: string, description: "Only present when SMTP_HOST is unset (testing)" }
+                  dev_code: { type: string, description: "Only present when SMTP_HOST is unset and RESET_DEV_CODE=1 (local testing)" }
                   note: { type: string }
         "400": { $ref: "#/components/responses/BadRequest" }
 

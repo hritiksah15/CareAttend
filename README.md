@@ -123,6 +123,7 @@ The image runs gunicorn via `wsgi:app` as a non-root user with a `/health` healt
 | `DATABASE_URL`  | SQLAlchemy connection string              | local PostgreSQL |
 | `CORS_ORIGINS`  | Comma-separated allowlist (or `*`)        | `*` |
 | `FLASK_DEBUG`   | `1` enables the debugger (dev only)       | `0` |
+| `RESET_DEV_CODE`| `1` returns password-reset OTPs in responses for local demos only | `0` |
 | `PORT`          | Dev server port                           | `5000` |
 
 ### Flutter app
