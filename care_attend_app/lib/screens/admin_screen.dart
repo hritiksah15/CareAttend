@@ -465,20 +465,52 @@ class _AdminActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveColor =
-        onPressed == null ? Theme.of(context).disabledColor : color;
+    final cs = Theme.of(context).colorScheme;
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final disabled = onPressed == null;
+    final fg = disabled ? cs.onSurfaceVariant.withValues(alpha: 0.48) : color;
+    final bg = disabled
+        ? cs.surfaceContainerHighest.withValues(alpha: dark ? 0.35 : 0.55)
+        : color.withValues(alpha: dark ? 0.18 : 0.09);
+    final border = disabled
+        ? cs.outline.withValues(alpha: 0.18)
+        : color.withValues(alpha: dark ? 0.56 : 0.42);
+
     return Tooltip(
       message: tooltip,
-      child: FilledButton.tonalIcon(
-        style: FilledButton.styleFrom(
-          foregroundColor: effectiveColor,
-          minimumSize: const Size(0, 42),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      child: Semantics(
+        button: true,
+        enabled: !disabled,
+        label: tooltip,
+        child: Material(
+          color: bg,
+          borderRadius: BorderRadius.circular(8),
+          child: InkWell(
+            onTap: onPressed,
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 42),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: border),
+              ),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                Icon(icon, size: 18, color: fg),
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: fg,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0,
+                  ),
+                ),
+              ]),
+            ),
+          ),
         ),
-        icon: Icon(icon, size: 18),
-        label: Text(label),
-        onPressed: onPressed,
       ),
     );
   }

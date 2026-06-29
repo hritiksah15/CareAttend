@@ -12,6 +12,8 @@ to [Semantic Versioning](https://semver.org/).
 - Flutter admin User Management now matches the web admin action model with
   visible icon+label actions for approval, saving role changes, viewing user
   activity, delete, and refreshing users/session logs.
+- Flutter admin action buttons now use explicit contrast-safe styling so their
+  icons and labels remain visible in light and dark themes.
 - Admin role changes in the Flutter app now require an explicit Save Role action
   instead of applying immediately on dropdown selection.
 
