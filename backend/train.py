@@ -18,6 +18,7 @@ def main():
 
     with open("models/training_results.json", "w") as f:
         json.dump(results, f, indent=2)
+        f.write("\n")
 
     print("\n" + "=" * 60)
     print("  Training Complete!")
