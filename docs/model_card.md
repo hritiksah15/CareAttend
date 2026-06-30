@@ -4,6 +4,8 @@
 
 **Last updated:** June 2026 · **Version:** v1.0 (prototype) · **Owner:** Hritik Kumar Sah (B00923557)
 
+Latest verification evidence: `docs/system_accuracy_report_2026-06-30.md`.
+
 ---
 
 ## 1. Model details
