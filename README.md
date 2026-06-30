@@ -135,12 +135,24 @@ flutter run            # device/emulator
 flutter build web      # release web build
 ```
 
+## Deployment
+
+Recommended prototype hosting:
+
+- Render Blueprint for Flask + PostgreSQL: [`render.yaml`](render.yaml)
+- Firebase Hosting for Flutter web: [`firebase.json`](firebase.json)
+- Step-by-step runbook: [Render + Firebase deployment guide](docs/deployment_guide_render_firebase.md)
+
 ## Testing
 
 ```bash
 cd backend
 pytest -q              # 245 tests across 10 suites
 ruff check .           # lint
+
+cd ../care_attend_app
+flutter analyze
+flutter test           # 39 tests
 ```
 
 Tests are forced onto a throwaway SQLite database (see
@@ -170,7 +182,8 @@ In-depth project docs live in [`docs/`](docs/):
   [Literature review sources](docs/literature_review_sources.md) ·
   [SUS testing template](docs/sus_testing_template.md) ·
   [SUS response sheet](docs/sus_responses_template.csv) ·
-  [SUS results](docs/sus_results_2026-06-28.md)
+  [SUS results](docs/sus_results_2026-06-28.md) ·
+  [Deployment guide](docs/deployment_guide_render_firebase.md)
 - [DPIA/DCB0129 safety outline](docs/dpia_dcb0129_safety.md) ·
   [External validation plan](docs/external_validation_plan.md)
 
