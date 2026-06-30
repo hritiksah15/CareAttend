@@ -22,12 +22,17 @@ class AppType {
 
     final merged = base.copyWith(
       displayLarge: heading.displayLarge?.copyWith(fontWeight: FontWeight.w700),
-      displayMedium: heading.displayMedium?.copyWith(fontWeight: FontWeight.w700),
+      displayMedium:
+          heading.displayMedium?.copyWith(fontWeight: FontWeight.w700),
       displaySmall: heading.displaySmall?.copyWith(fontWeight: FontWeight.w700),
-      headlineLarge: heading.headlineLarge?.copyWith(fontWeight: FontWeight.w700),
-      headlineMedium: heading.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
-      headlineSmall: heading.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
-      titleLarge: heading.titleLarge?.copyWith(fontWeight: FontWeight.w700, fontSize: 22),
+      headlineLarge:
+          heading.headlineLarge?.copyWith(fontWeight: FontWeight.w700),
+      headlineMedium:
+          heading.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
+      headlineSmall:
+          heading.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+      titleLarge: heading.titleLarge
+          ?.copyWith(fontWeight: FontWeight.w700, fontSize: 22),
       titleMedium: heading.titleMedium?.copyWith(fontWeight: FontWeight.w600),
       titleSmall: heading.titleSmall?.copyWith(fontWeight: FontWeight.w600),
       bodyLarge: body.bodyLarge?.copyWith(fontSize: 16, height: 1.5),

@@ -30,7 +30,7 @@ unchanged after recording, and source code submitted as a zip.
 | 8:15-9:15 | Admin/governance | Show bias monitor, ethics, admin approval/session log. | Governance, fairness, and auditability are first-class features. |
 | 9:15-11:15 | Backend code | `backend/app.py`, `auth.py`, `models.py`, `ml/predictor.py`. | Routes validate input, call calibrated model, persist only necessary summaries/actions, enforce roles, audit security events. |
 | 11:15-12:30 | Frontend/app code | Flutter `ApiService`, `dashboard_screen.dart`, `batch_screen.dart`; web `frontend/js/app.js`. | The app and web clients share API contracts and expose role-appropriate workflows. |
-| 12:30-13:30 | Testing and QA | Run or show evidence for pytest, Flutter analyze/test, JS syntax, dashboard smoke, sample CSV tests. | 245 backend tests and 38 Flutter tests pass; key risk areas have automated coverage. |
+| 12:30-13:30 | Testing and QA | Run or show evidence for pytest, Flutter analyze/test, JS syntax, dashboard smoke, sample CSV tests. | 245 backend tests and 39 Flutter tests pass; key risk areas have automated coverage. |
 | 13:30-14:30 | Limitations | Synthetic data, no live NHS connector, safety documents are outlines; screenshot evidence is complete separately. | Honest scope control: engineering prototype is strong; clinical deployment requires real validation and signed governance. |
 | 14:30-15:00 | Conclusion | Summarise aim met, main achievement, next step. | The main achievement is an explainable, governed, role-secured prediction-to-action workflow. |
 
@@ -210,7 +210,7 @@ audit, and support included.
   real-world clinical effectiveness.
 - FHIR support is a prototype adapter, not a live EMIS/SystmOne/Spine connector.
 - DPIA/DCB0129 documents are outlines, not signed deployment approvals.
-- Screenshots/video evidence must be captured from the final executable build.
+- Screenshot evidence is captured in `docs/screenshots/`; the demo video was recorded separately outside Git for submission upload.
 
 ## Final Examiner Sentence
 

@@ -115,107 +115,119 @@ class _LoginScreenState extends State<LoginScreen> {
           const OfflineBanner(),
           Expanded(
             child: SingleChildScrollView(
-        child: Column(
-          children: [
-            // NHS Blue Hero Header
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(24, 48, 24, 40),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [NHSTheme.blue, NHSTheme.darkBlue],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
               child: Column(
                 children: [
-                  const Align(
-                    alignment: AlignmentDirectional.centerEnd,
-                    child: LanguageButton(color: Colors.white),
-                  ),
+                  // NHS Blue Hero Header
                   Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.4), width: 2),
-                      color: Colors.white.withValues(alpha: 0.15),
+                    width: double.infinity,
+                    padding: const EdgeInsets.fromLTRB(24, 48, 24, 40),
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [NHSTheme.blue, NHSTheme.darkBlue],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                     ),
-                    child: const Center(
-                      child: Text('+',
-                          style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white)),
+                    child: Column(
+                      children: [
+                        const Align(
+                          alignment: AlignmentDirectional.centerEnd,
+                          child: LanguageButton(color: Colors.white),
+                        ),
+                        Container(
+                          width: 56,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.4),
+                                width: 2),
+                            color: Colors.white.withValues(alpha: 0.15),
+                          ),
+                          child: const Center(
+                            child: Text('+',
+                                style: TextStyle(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white)),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(t.appTitle,
+                            style: const TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                letterSpacing: -0.5)),
+                        const SizedBox(height: 4),
+                        Text(t.appSubtitle,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.white.withValues(alpha: 0.8))),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Text(t.appTitle,
-                      style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                          letterSpacing: -0.5)),
-                  const SizedBox(height: 4),
-                  Text(t.appSubtitle,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white.withValues(alpha: 0.8))),
+
+                  // Form area
+                  Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: _showRegister
+                        ? _buildRegisterForm()
+                        : _buildLoginForm(),
+                  ),
+
+                  // Data Protection Notice (GDPR NFR-01)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: NHSTheme.riskLowBg,
+                        border: Border.all(color: const Color(0xFFC8E6C9)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        children: [
+                          Text(t.dataProtection,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: NHSTheme.riskLow)),
+                          const SizedBox(height: 6),
+                          Text(t.noDataStored,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant)),
+                          Text(t.sessionCleared,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant)),
+                          Text(t.gdprCompliant,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant)),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
-
-            // Form area
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: _showRegister ? _buildRegisterForm() : _buildLoginForm(),
-            ),
-
-            // Data Protection Notice (GDPR NFR-01)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: NHSTheme.riskLowBg,
-                  border: Border.all(color: const Color(0xFFC8E6C9)),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  children: [
-                    Text(t.dataProtection,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: NHSTheme.riskLow)),
-                    const SizedBox(height: 6),
-                    Text(t.noDataStored,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-                    Text(t.sessionCleared,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-                    Text(t.gdprCompliant,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
-            ),
-          ],
-        ),
     );
   }
 
@@ -223,12 +235,13 @@ class _LoginScreenState extends State<LoginScreen> {
     final t = AppLocalizations.of(context);
     return Column(
       children: [
-        Text(t.welcomeBack,
-            style: Theme.of(context).textTheme.titleLarge),
+        Text(t.welcomeBack, style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 4),
         Text(t.signInDesc,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+            style: TextStyle(
+                fontSize: 14,
+                color: Theme.of(context).colorScheme.onSurfaceVariant)),
         const SizedBox(height: 24),
         TextField(
           controller: _loginUsername,
@@ -280,8 +293,8 @@ class _LoginScreenState extends State<LoginScreen> {
               ? const SizedBox(
                   height: 20,
                   width: 20,
-                  child:
-                      CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  child: CircularProgressIndicator(
+                      color: Colors.white, strokeWidth: 2))
               : Text(t.login),
         ),
         const SizedBox(height: 20),
@@ -294,7 +307,8 @@ class _LoginScreenState extends State<LoginScreen> {
           }),
           style: OutlinedButton.styleFrom(
             minimumSize: const Size(double.infinity, 48),
-            side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
+            side: BorderSide(
+                color: Theme.of(context).colorScheme.primary, width: 2),
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           ),
@@ -313,7 +327,9 @@ class _LoginScreenState extends State<LoginScreen> {
             style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
         const SizedBox(height: 4),
         Text('Register for practice access',
-            style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+            style: TextStyle(
+                fontSize: 14,
+                color: Theme.of(context).colorScheme.onSurfaceVariant)),
         const SizedBox(height: 24),
         TextField(
           controller: _regUsername,
@@ -338,7 +354,9 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Align(
             alignment: Alignment.centerLeft,
             child: Text(passwordHint,
-                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                style: TextStyle(
+                    fontSize: 11,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ),
         ),
         const SizedBox(height: 16),
@@ -351,8 +369,8 @@ class _LoginScreenState extends State<LoginScreen> {
               ? const SizedBox(
                   height: 20,
                   width: 20,
-                  child:
-                      CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  child: CircularProgressIndicator(
+                      color: Colors.white, strokeWidth: 2))
               : const Text('CREATE ACCOUNT'),
         ),
         const SizedBox(height: 20),
@@ -366,7 +384,8 @@ class _LoginScreenState extends State<LoginScreen> {
           }),
           style: OutlinedButton.styleFrom(
             minimumSize: const Size(double.infinity, 48),
-            side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
+            side: BorderSide(
+                color: Theme.of(context).colorScheme.primary, width: 2),
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           ),
