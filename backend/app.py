@@ -1264,15 +1264,32 @@ def run_cv_evaluation():
     import pandas as pd
     from ml.data_generator import FEATURE_NAMES
 
-    test_path = "models/test_data.csv"
-    if not os.path.exists(test_path):
-        return jsonify({"error": "Test data not available"}), 404
+    cache_path = "models/cross_validation_results.json"
+    if os.path.exists(cache_path):
+        with open(cache_path) as f:
+            cached = json.load(f)
+        cached.setdefault("cached", True)
+        return jsonify(cached)
 
     data_path = "data/synthetic_dataset.csv"
+    source = "synthetic training data"
     if not os.path.exists(data_path):
-        return jsonify({"error": "Training data not available"}), 404
+        data_path = "models/test_data.csv"
+        source = "held-out test data fallback"
+
+    if not os.path.exists(data_path):
+        return jsonify(
+            {
+                "error": "Evaluation data not available",
+                "detail": "Neither data/synthetic_dataset.csv nor models/test_data.csv is present.",
+            }
+        ), 503
 
     df = pd.read_csv(data_path)
+    missing = [col for col in [*FEATURE_NAMES, "NoShow"] if col not in df.columns]
+    if missing:
+        return jsonify({"error": "Evaluation data invalid", "missing_columns": missing}), 500
+
     X = df[FEATURE_NAMES].values
     y = df["NoShow"].values
 
@@ -1280,6 +1297,17 @@ def run_cv_evaluation():
     X_scaled = scaler.fit_transform(X)
 
     results = run_cross_validation(X_scaled, y, n_splits=5)
+    results["cached"] = False
+    results["dataset"] = {
+        "source": source,
+        "path": data_path,
+        "rows": int(len(df)),
+    }
+    try:
+        with open(cache_path, "w") as f:
+            json.dump(results, f)
+    except Exception:
+        logger.exception("Could not write cross-validation cache")
     return jsonify(results)
 
 

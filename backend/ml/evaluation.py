@@ -6,10 +6,7 @@ Supports AT4 Quality Assurance section with evidence of methodological rigour.
 
 import numpy as np
 from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import (
-    f1_score, recall_score, precision_score, roc_auc_score,
-    accuracy_score
-)
+from sklearn.metrics import f1_score, recall_score, precision_score, roc_auc_score, accuracy_score
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neural_network import MLPClassifier
@@ -25,12 +22,14 @@ def run_cross_validation(X, y, n_splits=5, random_state=42):
     models = {
         "Logistic Regression": LogisticRegression(max_iter=1000, random_state=random_state),
         "Random Forest": RandomForestClassifier(
-            n_estimators=200, max_depth=20, min_samples_split=5,
-            class_weight="balanced", random_state=random_state
+            n_estimators=200, max_depth=20, min_samples_split=5, class_weight="balanced", random_state=random_state
         ),
         "MLP Neural Network": MLPClassifier(
-            hidden_layer_sizes=(64, 32), max_iter=500, random_state=random_state,
-            early_stopping=True, validation_fraction=0.15
+            hidden_layer_sizes=(64, 32),
+            max_iter=500,
+            random_state=random_state,
+            early_stopping=True,
+            validation_fraction=0.15,
         ),
     }
 
@@ -49,14 +48,16 @@ def run_cross_validation(X, y, n_splits=5, random_state=42):
             y_prob = model.predict_proba(X_test)[:, 1]
             y_pred_all[test_idx] = y_pred
 
-            fold_metrics.append({
-                "fold": fold_idx + 1,
-                "f1": float(f1_score(y_test, y_pred)),
-                "recall": float(recall_score(y_test, y_pred)),
-                "precision": float(precision_score(y_test, y_pred)),
-                "roc_auc": float(roc_auc_score(y_test, y_prob)),
-                "accuracy": float(accuracy_score(y_test, y_pred)),
-            })
+            fold_metrics.append(
+                {
+                    "fold": fold_idx + 1,
+                    "f1": float(f1_score(y_test, y_pred)),
+                    "recall": float(recall_score(y_test, y_pred)),
+                    "precision": float(precision_score(y_test, y_pred)),
+                    "roc_auc": float(roc_auc_score(y_test, y_prob)),
+                    "accuracy": float(accuracy_score(y_test, y_pred)),
+                }
+            )
 
         f1_scores = [m["f1"] for m in fold_metrics]
         recall_scores = [m["recall"] for m in fold_metrics]
@@ -82,17 +83,15 @@ def run_cross_validation(X, y, n_splits=5, random_state=42):
     for i in range(len(model_names)):
         for j in range(i + 1, len(model_names)):
             name_a, name_b = model_names[i], model_names[j]
-            p_value = _mcnemar_test(
-                np.array(results[name_a]["y_pred"]),
-                np.array(results[name_b]["y_pred"]),
-                y
+            p_value = _mcnemar_test(np.array(results[name_a]["y_pred"]), np.array(results[name_b]["y_pred"]), y)
+            significance_tests.append(
+                {
+                    "model_a": name_a,
+                    "model_b": name_b,
+                    "mcnemar_p_value": p_value,
+                    "significant_at_005": p_value < 0.05,
+                }
             )
-            significance_tests.append({
-                "model_a": name_a,
-                "model_b": name_b,
-                "mcnemar_p_value": p_value,
-                "significant_at_005": p_value < 0.05,
-            })
 
     return {
         "n_splits": n_splits,
@@ -119,8 +118,8 @@ def _bootstrap_ci(scores, confidence=0.95, n_bootstrap=1000):
 
 def _mcnemar_test(y_pred_a, y_pred_b, y_true):
     """McNemar's test for statistical significance between two classifiers."""
-    correct_a = (y_pred_a == y_true)
-    correct_b = (y_pred_b == y_true)
+    correct_a = y_pred_a == y_true
+    correct_b = y_pred_b == y_true
 
     # b: A correct, B wrong; c: A wrong, B correct
     b = int(np.sum(correct_a & ~correct_b))
@@ -130,7 +129,10 @@ def _mcnemar_test(y_pred_a, y_pred_b, y_true):
         return 1.0
 
     if b + c < 25:
-        result = stats.binom_test(b, b + c, 0.5)
+        if hasattr(stats, "binomtest"):
+            result = stats.binomtest(b, b + c, 0.5).pvalue
+        else:  # pragma: no cover - compatibility with older SciPy only.
+            result = stats.binom_test(b, b + c, 0.5)
     else:
         chi2 = (abs(b - c) - 1) ** 2 / (b + c)
         result = float(stats.chi2.sf(chi2, 1))

@@ -309,16 +309,14 @@ class TestModelInfo:
 
 
 class TestCrossValidation:
-    @pytest.mark.skipif(
-        not (os.path.exists("data/synthetic_dataset.csv") and os.path.exists("models/test_data.csv")),
-        reason="Evaluation datasets not present",
-    )
     def test_cv_runs(self, client):
         token = login(client, role="admin")
         res = client.post("/api/evaluation/cross-validation", headers=auth(token))
         assert res.status_code == 200
         data = json.loads(res.data)
-        assert isinstance(data, (dict, list))
+        assert "models" in data
+        assert data["cached"] is True
+        assert data["dataset"]["rows"] == 15000
 
 
 # ── Role-Based Access Control (FR-04) ──
