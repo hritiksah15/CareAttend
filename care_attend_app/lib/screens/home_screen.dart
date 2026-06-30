@@ -55,10 +55,13 @@ class _HomeScreenState extends State<HomeScreen> {
   // Visit counter per tab — bumping it rebuilds the screen (via its key) so
   // data screens (dashboard, bias, ethics) refresh live instead of showing stale state.
   final Map<int, int> _visit = {};
-  void _go(int i) => setState(() {
-        _currentIndex = i;
-        _visit[i] = (_visit[i] ?? 0) + 1;
-      });
+  void _go(int i) {
+    final next = _canOpenIndex(i) ? i : 0;
+    setState(() {
+      _currentIndex = next;
+      _visit[next] = (_visit[next] ?? 0) + 1;
+    });
+  }
 
   // Stack order — index used by IndexedStack and every nav target.
   // roles gate visibility to mirror the backend role_required rules.
@@ -80,6 +83,23 @@ class _HomeScreenState extends State<HomeScreen> {
   List<_NavItem> get _visibleItems => _all
       .where((it) => it.roles == null || it.roles!.contains(ApiService.role))
       .toList();
+
+  _NavItem? _itemForIndex(int index) {
+    for (final item in _all) {
+      if (item.index == index) return item;
+    }
+    return null;
+  }
+
+  bool _canOpenIndex(int index) {
+    final item = _itemForIndex(index);
+    return item == null ||
+        item.roles == null ||
+        item.roles!.contains(ApiService.role);
+  }
+
+  bool _shouldMountIndex(int index) =>
+      index == 0 || index == _currentIndex || _visit.containsKey(index);
 
   /// Localized label for a nav item, keyed by its stack index.
   String _navLabel(AppLocalizations t, _NavItem it) {
@@ -304,6 +324,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _screenFor(int i) {
+    if (!_canOpenIndex(i) || !_shouldMountIndex(i)) {
+      return const SizedBox.shrink();
+    }
     switch (i) {
       case 0:
         return PatientFormScreen(onResult: _onPredictionResult);
