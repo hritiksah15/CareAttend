@@ -19,6 +19,7 @@ recorded separately outside Git for submission upload.
 | Backend lint | `ruff check .` in `backend/` | Passed |
 | Backend tests | `pytest -q` in `backend/` | Passed; only existing sklearn deprecation warnings |
 | Backend collection | `pytest --collect-only -q` | 245 tests collected across 10 files |
+| Model accuracy | `docs/system_accuracy_report_2026-06-30.md` | Held-out F1 0.7241, recall 0.7484, ROC-AUC 0.9110 |
 | Web syntax | `node --check frontend/js/app.js` | Passed |
 | Web dashboard smoke | Direct JS runtime smoke against dashboard DOM stubs | Passed: module cards, batch module, expandable detail row, row toggle, outcomes, icon refresh |
 | Flutter static analysis | `flutter analyze` | No issues |

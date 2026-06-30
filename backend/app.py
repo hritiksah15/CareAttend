@@ -1276,7 +1276,7 @@ NHSX_ETHICS_MAPPING = {
             "evidence": [
                 "F1 >= 0.72 and Recall >= 0.70 validated on held-out test set (NFR-04)",
                 "4-model comparison (LR, RF, XGBoost, LightGBM) with threshold optimisation",
-                "241 automated pytest tests covering all modules",
+                "245 automated pytest tests covering all modules",
                 "SMOTE applied to training partition only - no data leakage",
             ],
         },
