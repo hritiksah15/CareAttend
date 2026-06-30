@@ -14,7 +14,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.careattend.app"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
