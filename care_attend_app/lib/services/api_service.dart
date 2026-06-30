@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   // Backend host differs per platform:
-  //   - Hosted web: same origin as the app unless a split API is provided.
+  //   - Hosted web: Render API by default.
   //   - Installed mobile/desktop apps: hosted Render API by default.
   //   - Local development: override with --dart-define=API_BASE=http://<ip>:5000.
   static const String _envBase =
@@ -28,8 +28,7 @@ class ApiService {
         host == '[::1]';
 
     if (isLocal && current.port != 5000) return 'http://127.0.0.1:5000';
-    if (current.hasScheme && current.hasAuthority) return current.origin;
-    return 'http://127.0.0.1:5000';
+    return 'https://careattend-api.onrender.com';
   }
 
   static String _normaliseBaseUrl(String value) {
@@ -57,7 +56,7 @@ class ApiService {
   static const String _offlineMessage =
       "Can't reach the server. Check your connection and try again.";
 
-  static const Duration _timeout = Duration(seconds: 12);
+  static const Duration _timeout = Duration(seconds: 30);
 
   static Map<String, String> get _headers => {
         'Content-Type': 'application/json',
