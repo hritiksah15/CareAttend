@@ -19,7 +19,7 @@ Current realistic mark position:
 |---|---:|---|---:|
 | Problem Definition | 20% | Clear aim, bounded NHS/GDPR scope, SMART-style implementation evidence. Needs final quantified problem-impact paragraph in the submitted report. | 17-18/20 |
 | Context Investigation | 20% | Strong health-AI/fairness/context docs and competitor positioning. Needs synthesis phrasing and final source alignment. | 16-17/20 |
-| Software Definition | 40% | Strongest area: implemented FR/NFRs, RTM, C4/ERD docs, OpenAPI, app/web/backend, 245 backend tests, 38 Flutter tests. | 37-39/40 |
+| Software Definition | 40% | Strongest area: implemented FR/NFRs, RTM, C4/ERD docs, OpenAPI, app/web/backend, 245 backend tests, 39 Flutter tests. | 37-39/40 |
 | Planning | 15% | Sprint/session logs, risk framing, evidence of fix-and-verify loops. Needs final deviation/reflection log in report prose. | 12-14/15 |
 | Communication | 5% | README, model card, architecture, traceability, production review. Needs final proofread, captions, Harvard consistency. | 4/5 |
 
@@ -43,7 +43,7 @@ validity.
 | Security | bcrypt, strong-password policy, TOTP, opaque DB-backed sessions, RBAC, admin approval flow, audit log, self-lockout protections. |
 | Operational value | Clinic list, appointment status, notifications, delivery lifecycle, outreach actions, outcomes dashboard, slots, patient nudges. |
 | App/web parity | Flutter app now includes styled AppCard surfaces, bottom-nav overlap fix, colorful ethics/bias views, admin session log. Web admin also has session log. |
-| Testing evidence | Backend suite collected 245 tests and passed; Flutter analyze is clean; Flutter test passes 38 tests; JS syntax and Python compile checks pass. |
+| Testing evidence | Backend suite collected 245 tests and passed; Flutter analyze is clean; Flutter test passes 39 tests; JS syntax and Python compile checks pass. |
 | Professional communication | Root README, app README, architecture, model card, production-readiness review, session logs, feature plan, SUS template. |
 
 ## Current Weaknesses That Could Lose Marks
@@ -52,9 +52,9 @@ validity.
 |---|---|---|
 | Synthetic-data overclaiming | Biggest academic risk. Metrics fit the generator, not real NHS populations. | In report/demo, state metrics are synthetic-fit only and real-world validation is out of scope. Use the paragraph in `docs/production-readiness-review.md`. |
 | Human usability evidence now documented | WCAG automation is strong, and the 5-person role-adjusted SUS study adds human usability evidence. | Reference `docs/sus_results_2026-06-28.md`: mean SUS 74.0/100 with three reported findings. |
-| UAT evidence for export/admin/session-log | Some frontend features are verified by build/tests but not human scenario evidence. | Capture a short scenario table: login, admin session log, assessment, result export, bias/ethics, mobile nav. |
-| Requirement wording drift | Older docs had stale counts and old NFR-01 wording. Some FR numbering differs between report/table. | Before submission, align exact FR/NFR wording in the report and RTM. Keep 245 backend tests / 38 Flutter tests consistent. |
-| App visual evidence missing from report | The app has been fixed, but markers cannot infer that from code. | Include screenshots of app home, results, admin session log, ethics/bias color, mobile bottom-nav spacing. |
+| UAT evidence for export/admin/session-log | Some frontend features are best evidenced by scenario proof rather than unit tests. | Covered by `docs/feature_test_plan.md` plus UX1-UX11 screenshot evidence. |
+| Requirement wording drift | Older docs had stale counts and old NFR-01 wording. Some FR numbering differs between report/table. | Before submission, align exact FR/NFR wording in the submitted report and RTM. Keep 245 backend tests / 39 Flutter tests consistent. |
+| App visual evidence in report | The app has been fixed and captured, but markers must see the captures in the final report/demo. | Include the existing UX screenshots for results, admin session log, ethics/bias color, mobile bottom-nav spacing, dashboard, and batch upload. |
 | Production hardening not complete | External pentest, signed DPIA/DCB0129, live EHR connector approval, and real-world validation are not expected for AT2 but matter for "real NHS product". | Frame as production gates, not missing AT2 scope. |
 
 ## App Version Audit
@@ -63,7 +63,7 @@ validity.
 |---|---|---|
 | Hover style | Satisfied on desktop/web pointer surfaces through `AppCard` `MouseRegion`. Not expected on Chrome mobile emulation/touch; touch devices do not produce hover. |
 | Bottom navigation hiding content | Fixed in Flutter by removing body extension behind the nav surface. |
-| Chatbot/results/cards hiding under nav | Fixed by the same bottom-nav layout correction. Needs screenshot evidence. |
+| Chatbot/results/cards hiding under nav | Fixed by the same bottom-nav layout correction. Screenshot evidence is complete in UX1-UX11. |
 | Ethics graph/color | Fixed in Flutter with semantic metric bars/cards; web bias bars now use semantic gradients. |
 | Card style parity | All remaining Flutter `Card(` usages under `care_attend_app/lib` were migrated to `AppCard`. |
 | Admin session logs | Implemented in backend, Flutter admin screen, and web admin screen. Login/logout now persist to audit logs. |
@@ -149,7 +149,7 @@ Commands run during this pass:
 | `python -m py_compile backend/...` | Passed |
 | `node --check frontend/js/app.js` | Passed |
 | `flutter analyze` | No issues |
-| `flutter test` | 38 tests passed |
+| `flutter test` | 39 tests passed |
 | `flutter build web` | Succeeded; Flutter wasm dry-run note is informational |
 
 OpenAPI refresh completed after this audit: `docs/openapi.yaml` now documents

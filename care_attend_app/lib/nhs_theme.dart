@@ -88,7 +88,8 @@ class NHSTheme {
         elevation: 0,
         scrolledUnderElevation: 2,
         centerTitle: true,
-        titleTextStyle: textTheme.titleLarge?.copyWith(color: white, fontSize: 20),
+        titleTextStyle:
+            textTheme.titleLarge?.copyWith(color: white, fontSize: 20),
       ),
       cardTheme: CardThemeData(
         color: dark ? AppColors.darkSurface : white,
@@ -111,7 +112,8 @@ class NHSTheme {
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         iconTheme: WidgetStateProperty.resolveWith((states) {
           final sel = states.contains(WidgetState.selected);
-          return IconThemeData(size: 26, color: sel ? (dark ? lightBlue : blue) : grey);
+          return IconThemeData(
+              size: 26, color: sel ? (dark ? lightBlue : blue) : grey);
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final sel = states.contains(WidgetState.selected);
@@ -126,14 +128,17 @@ class NHSTheme {
           backgroundColor: dark ? lightBlue : blue,
           foregroundColor: dark ? AppColors.ink : white,
           minimumSize: const Size(double.infinity, 52),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
-          textStyle: textTheme.labelLarge?.copyWith(fontSize: 16, letterSpacing: 0.3),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md)),
+          textStyle:
+              textTheme.labelLarge?.copyWith(fontSize: 16, letterSpacing: 0.3),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           minimumSize: const Size(0, 48),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md)),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -143,24 +148,30 @@ class NHSTheme {
         fillColor: dark ? AppColors.darkBg : white,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: BorderSide(color: dark ? AppColors.darkOutline : grey, width: 1.5),
+          borderSide: BorderSide(
+              color: dark ? AppColors.darkOutline : grey, width: 1.5),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: BorderSide(color: dark ? AppColors.darkOutline : grey, width: 1.5),
+          borderSide: BorderSide(
+              color: dark ? AppColors.darkOutline : grey, width: 1.5),
         ),
-        labelStyle: TextStyle(color: dark ? AppColors.darkOnSurfaceVariant : darkGrey),
-        hintStyle: TextStyle(color: dark ? AppColors.darkOnSurfaceVariant : grey),
+        labelStyle:
+            TextStyle(color: dark ? AppColors.darkOnSurfaceVariant : darkGrey),
+        hintStyle:
+            TextStyle(color: dark ? AppColors.darkOnSurfaceVariant : grey),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
           borderSide: BorderSide(color: dark ? lightBlue : blue, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: dark ? AppColors.darkSurfaceAlt : AppColors.paleGrey,
         labelStyle: textTheme.bodySmall,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.lg)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.lg)),
         side: BorderSide.none,
       ),
       dialogTheme: DialogThemeData(
@@ -177,8 +188,8 @@ class NHSTheme {
       ),
       dropdownMenuTheme: DropdownMenuThemeData(
         menuStyle: MenuStyle(
-          backgroundColor: WidgetStatePropertyAll(
-              dark ? AppColors.darkSurfaceAlt : white),
+          backgroundColor:
+              WidgetStatePropertyAll(dark ? AppColors.darkSurfaceAlt : white),
           surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
         ),
       ),
@@ -192,7 +203,8 @@ class NHSTheme {
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md)),
       ),
       dividerTheme: const DividerThemeData(space: 1, thickness: 1),
     );

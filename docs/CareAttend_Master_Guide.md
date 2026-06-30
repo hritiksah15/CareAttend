@@ -58,21 +58,21 @@ You currently train 4 models then select one. Examiners ask "why these / why thi
 
 ## PART 2 — AT2 Report (45%) handled against the rubric matrix
 
-AT2 = **Challenge Definition Report**. It is the single biggest chunk of marks. Below is every criterion, its weight, what the marker wants, your current evidence, and the **gap to close for a distinction (80%+)**.
+AT2 = **Challenge Definition Report**. It is the single biggest chunk of marks. Below is every criterion, its weight, what the marker wants, your current evidence, and the final report action needed to make the evidence visible.
 
-| Criterion | Weight | What marker rewards | You already have | **Gap → distinction** |
+| Criterion | Weight | What marker rewards | You already have | Final report action |
 |-----------|:--:|---------------------|------------------|------------------------|
-| **Problem Definition** | 20% | Clear aim, justified scope, SMART objectives, MoSCoW Won't-Haves | Aim, 7 SMART objectives→sprints, scope bounded by GDPR/NHS | Add a quantified **problem-impact paragraph** (£216M, 15M appts, cite NHS Digital). Make each objective measurably testable. |
-| **Context Investigation** | 20% | Lit review with synthesis (not summary), legal/ethical/social context, competitor analysis | Carreras-García, Mohammadi, Caton & Haas, Lundberg; 4-product table; GDPR Art 5 | **Synthesise, don't list.** Add Nelson (2019), Obermeyer (2019 — racial bias in health algorithms, *the* citation), Harris (2016). Add a **"gap in literature" paragraph** that your project fills. |
-| **Software Definition** | 40% | Requirements (MoSCoW), UML, ERD, architecture, testing strategy — all **traceable** to objectives | 9 FR + 6 NFR, 12 user stories, 9 UML diagrams, ERD, 6-level test method | Add a **traceability matrix** (objective → requirement → test). This single table is what separates 70 from 85. Ensure every diagram is *referenced in the prose*, not just dumped. |
-| **Planning** | 15% | Agile justified vs alternatives, sprint plan, Gantt, **risk register with scoring** | 6 sprints, Gantt, Trello, 8 risks (ISO 31000), Agile-vs-Waterfall justification | Add **deviation log** ("planned X, actually did Y, because…") — markers love honest reflection. |
-| **Communication** | 5% | Academic tone, Harvard referencing, captioned figures, structure | 17 references, captioned tables | Get to **20+ quality refs** (IEEE/BMJ/Lancet Digital Health). Consistent caption style. One proofread pass. |
+| **Problem Definition** | 20% | Clear aim, justified scope, SMART objectives, MoSCoW Won't-Haves | Aim, 7 SMART objectives→sprints, scope bounded by GDPR/NHS | Keep the quantified problem-impact paragraph and measurable objectives prominent in the submitted report. |
+| **Context Investigation** | 20% | Lit review with synthesis (not summary), legal/ethical/social context, competitor analysis | Literature, comparator framing, GDPR/NHS safety context, synthetic-data limitation framing | Use synthesis language: show the gap CareAttend fills, then state why real NHS validation remains out of scope. |
+| **Software Definition** | 40% | Requirements (MoSCoW), UML, ERD, architecture, testing strategy — all **traceable** to objectives | FR/NFRs, user stories, architecture/ERD, OpenAPI, traceability matrix, 245 backend tests, 39 Flutter tests | Cite `docs/traceability_matrix.md`, `docs/architecture.md`, `docs/openapi.yaml`, and the final test counts. |
+| **Planning** | 15% | Agile justified vs alternatives, sprint plan, Gantt, **risk register with scoring** | Sprint/session logs, deviation/fix-and-verify evidence, risk and production-gate framing | Present deviations honestly: planned prototype evolved into persisted operational workflow while preserving privacy-minimised prediction data. |
+| **Communication** | 5% | Academic tone, Harvard referencing, captioned figures, structure | README, model card, architecture, traceability, production review, screenshot pack, SUS results | Do one final proofread for captions, Harvard consistency, and no clinical overclaiming. |
 
 ### The 40% bucket is where you win or lose — priority order
-1. **Traceability matrix** (objective ↔ FR/NFR ↔ UML ↔ test). Highest ROI.
-2. Architecture diagram (C4 model: Context → Container → Component).
-3. ERD matches the *actual* PostgreSQL schema (you have `users, sessions, audit_logs, feedback, carer_proxies`). Verify diagram == reality.
-4. Testing methodology described as a **strategy** (unit → integration → ML validation → bias → UAT/SUS → security), each level justified.
+1. Cite the completed **traceability matrix** (objective ↔ FR/NFR ↔ UML ↔ test).
+2. Cite the architecture diagrams (C4 model, component view, ERD).
+3. Explain the NFR-01 privacy boundary: raw prediction feature vectors are not persisted; operational workflow data is.
+4. Present testing as a **strategy**: unit → integration → ML validation → bias → UAT/SUS → security.
 
 ### Distinction-level differentiators (the 5% that pushes 78→85)
 - **Critical analysis voice** throughout: every design choice states *the alternative you rejected and why*.
@@ -105,13 +105,13 @@ Two tracks. **Track A** = things that raise your COM668 grade now (do before AT3
 
 | # | Build | Why it scores | Effort | Files |
 |--|-------|--------------|:--:|-------|
-| A1 | **Automated tests for the new endpoints** (carer proxy, slots, nudge, 2FA, audit) | Memory says these are only manually tested. QA marks (AT4 800w) + NFR evidence. | M | `backend/tests/` |
-| A2 | **Traceability matrix** doc | Directly targets AT2 40% bucket | S | `docs/traceability_matrix.md` |
-| A3 | **Model card + probability calibration** | "Production-grade" signal, cheap | M | `ml/pipeline.py`, `docs/model_card.md` |
-| A4 | **C4 architecture diagram** (Mermaid) | AT2 design marks | S | `docs/architecture.md` |
-| A5 | **SUS usability test** (5 users) + write-up | AT4 QA section needs a real number | M | `docs/sus_testing_template.md` |
-| A6 | **Health-check + structured logging + error handling** audit | Robustness = NFR evidence | S | `app.py` |
-| A7 | **OpenAPI/Swagger spec** for the REST API | Professional, demoable | M | `docs/openapi.yaml` |
+| A1 | **Automated tests for the new endpoints** (carer proxy, slots, nudge, 2FA, audit) | Complete: backend suite now has 245 passing tests. | Done | `backend/tests/` |
+| A2 | **Traceability matrix** doc | Complete: directly targets AT2 40% bucket. | Done | `docs/traceability_matrix.md` |
+| A3 | **Model card + probability calibration** | Complete: calibrated model and limitation framing documented. | Done | `ml/pipeline.py`, `docs/model_card.md` |
+| A4 | **C4 architecture diagram** (Mermaid) | Complete: architecture and ERD evidence exist. | Done | `docs/architecture.md` |
+| A5 | **SUS usability test** (5 users) + write-up | Complete: mean SUS 74.0/100, above the 68 target. | Done | `docs/sus_results_2026-06-28.md` |
+| A6 | **Health-check + structured logging + error handling** audit | Complete: `/health`, audit logs, role gates, rate limits, and launcher checks verified. | Done | `backend/app.py`, `backend/auth.py` |
+| A7 | **OpenAPI/Swagger spec** for the REST API | Complete: API contract documented. | Done | `docs/openapi.yaml` |
 
 ### TRACK B — real-world product hardening (post-submission, for Visa/startup)
 

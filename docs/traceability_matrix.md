@@ -2,7 +2,7 @@
 
 **Purpose:** Prove every requirement traces from objective → design → implementation → test. This single table is the highest-ROI artefact for the AT2 *Software Definition* criterion (40% of AT2). Paste into the report and reference it from the requirements section.
 
-**How it was built:** Requirement IDs harvested directly from `@requirement` tags in the source (`grep -rEn "FR-|NFR-|US-" backend/`). Implementation and test columns are verified file references, not claims. **Action for you:** replace each *Requirement (description)* cell with the exact wording from your AT2 report so the matrix is word-identical to your requirements section.
+**How it was built:** Requirement IDs harvested directly from `@requirement` tags in the source (`grep -rEn "FR-|NFR-|US-" backend/`). Implementation and test columns are verified file references, not claims. When copying this into the submitted report, keep requirement wording consistent with the final requirements section.
 
 **Test status:** 245 pytest tests, all passing (June 2026).
 

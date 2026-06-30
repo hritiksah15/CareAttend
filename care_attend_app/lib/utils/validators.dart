@@ -5,8 +5,12 @@ String? passwordError(String pw) {
     return 'Password must be at least 8 characters with an uppercase letter, '
         'a lowercase letter, a number and a symbol';
   }
-  if (!RegExp(r'[A-Z]').hasMatch(pw)) return 'Password needs an uppercase letter';
-  if (!RegExp(r'[a-z]').hasMatch(pw)) return 'Password needs a lowercase letter';
+  if (!RegExp(r'[A-Z]').hasMatch(pw)) {
+    return 'Password needs an uppercase letter';
+  }
+  if (!RegExp(r'[a-z]').hasMatch(pw)) {
+    return 'Password needs a lowercase letter';
+  }
   if (!RegExp(r'\d').hasMatch(pw)) return 'Password needs a number';
   if (!RegExp(r'[^A-Za-z0-9]').hasMatch(pw)) return 'Password needs a symbol';
   return null;

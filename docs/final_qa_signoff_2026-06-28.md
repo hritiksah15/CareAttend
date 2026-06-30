@@ -1,17 +1,16 @@
 # Final QA Sign-Off Snapshot
 
-Date: 2026-06-28
-Branch: `app-worldclass-phase1`
-Latest pushed commit checked: `7343a15 Add dashboard workflow cards`
+Date: 2026-06-30
+Branch: `master`
+Latest local verification baseline: `4e3caf7 fix(app): avoid hidden restricted API loads`
 
 ## Executive Status
 
 CareAttend is in a stable, defensible state for AT3 recording and final report
 evidence. Backend, web JavaScript, Flutter analysis, Flutter tests, batch CSV
-handling, and dashboard workflow checks are green. The main remaining evidence
-gap is visual proof: real screenshots/video must still be captured from the
-running web and Flutter apps because the in-app browser backend was unavailable
-in this automation session.
+handling, and dashboard workflow checks are green. Visual evidence is complete:
+UX1-UX11 screenshots are saved in `docs/screenshots/`, and the demo video was
+recorded separately outside Git for submission upload.
 
 ## Automated Verification
 
@@ -22,9 +21,9 @@ in this automation session.
 | Backend collection | `pytest --collect-only -q` | 245 tests collected across 10 files |
 | Web syntax | `node --check frontend/js/app.js` | Passed |
 | Web dashboard smoke | Direct JS runtime smoke against dashboard DOM stubs | Passed: module cards, batch module, expandable detail row, row toggle, outcomes, icon refresh |
-| Flutter static analysis | `flutter analyze --no-fatal-infos` | No issues |
-| Flutter tests | `flutter test` | Passed; 38 tests |
-| Git state before docs pass | `git status --short --branch` | Clean after pushing `7343a15` |
+| Flutter static analysis | `flutter analyze` | No issues |
+| Flutter tests | `flutter test` | Passed; 39 tests |
+| Git state before final docs pass | `git status --short --branch` | Clean at audit start |
 
 ## Current Automated Test Counts
 
@@ -44,10 +43,10 @@ Backend pytest collection:
 | `tests/test_robustness.py` | 5 |
 | **Total** | **245** |
 
-Flutter test coverage count: 38 tests across logic, widgets, accessibility,
+Flutter test coverage count: 39 tests across logic, widgets, accessibility,
 dashboard module cards, batch template button, risk-history cap,
 notifications, app boot, AppCard/ListTile ink handling, compact admin layout,
-and admin session-log/user-activity widgets.
+admin session-log/user-activity widgets, and role-gated hidden-tab loading.
 
 ## Feature Sign-Off
 
@@ -71,14 +70,14 @@ and admin session-log/user-activity widgets.
 | No real NHS data validation | Real data requires data-sharing approval and ethics/IG governance. | "Metrics validate the synthetic-data prototype and pipeline, not clinical effectiveness." |
 | No live EHR connector | EMIS/SystmOne/Spine integration needs contracts, security review, and deployment approvals. | "FHIR adapter is a prototype boundary, not a live NHS connector." |
 | DPIA/DCB0129 are not signed | Academic prototype can outline safety governance but cannot sign deployment approval. | "Safety documents are production-readiness outlines." |
-| Browser screenshots not captured in this session | In-app browser backend unavailable; source and tests still verified. | "Screenshots must be captured manually before final submission." |
+| Browser automation limitation | In-app browser backend unavailable; final screenshots were captured through the local running app/web stack and stored in `docs/screenshots/`. | "Screenshot evidence is complete; video is uploaded separately if required." |
 | Some frontend flows are UAT-evidence rather than unit-tested | Export/print and visual layout are best verified with screenshots/video. | "Use the feature test plan and screenshot manifest for final proof." |
 
-## Manual QA Still Required Before Recording
+## Manual QA Evidence Completed
 
 Use `docs/feature_test_plan.md` and `docs/screenshots/README.md`.
 
-Minimum manual pass:
+Minimum evidence pass:
 
 | ID | Required recording/screenshot proof |
 |---|---|
@@ -100,9 +99,9 @@ Minimum manual pass:
 | Code builds/tests | Go |
 | AT3 technical story | Go |
 | Rubric alignment | Go |
-| Screenshot evidence | No-go until captured manually |
+| Screenshot evidence | Go: UX1-UX11 captured in `docs/screenshots/` |
 | Clinical deployment claim | No-go; must remain prototype-only |
 
-Final recommendation: record AT3 after manually capturing the screenshot/video
-evidence. The codebase itself is ready; the remaining risk is presentation and
-evidence, not core implementation.
+Final recommendation: use the existing screenshots and upload the separately
+recorded demo video if required. The codebase and evidence pack are ready; the
+remaining risk is overclaiming clinical deployment, not core implementation.

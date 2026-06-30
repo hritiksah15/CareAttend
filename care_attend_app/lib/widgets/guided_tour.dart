@@ -7,22 +7,25 @@ class GuidedTour {
   static const _steps = <Map<String, dynamic>>[
     {
       'title': 'Welcome to Care Attend',
-      'body': 'This NHS tool predicts which patients may miss appointments (DNAs) '
-          'and explains why with SHAP. This tour walks through the features '
-          'available to your role.',
+      'body':
+          'This NHS tool predicts which patients may miss appointments (DNAs) '
+              'and explains why with SHAP. This tour walks through the features '
+              'available to your role.',
       'tab': null,
     },
     {
       'title': '1. Patient Assessment',
-      'body': 'Enter age, gender, lead time, prior DNAs, clinical flags and IMD '
-          'decile, then Assess Risk. Use EHR auto-fill or Carer Proxy for '
-          'digitally excluded patients.',
+      'body':
+          'Enter age, gender, lead time, prior DNAs, clinical flags and IMD '
+              'decile, then Assess Risk. Use EHR auto-fill or Carer Proxy for '
+              'digitally excluded patients.',
       'tab': 0,
     },
     {
       'title': '2. Risk Results',
-      'body': 'Read the DNA risk, the SHAP factors and recommended interventions. '
-          'Log whether the patient attended with the feedback buttons.',
+      'body':
+          'Read the DNA risk, the SHAP factors and recommended interventions. '
+              'Log whether the patient attended with the feedback buttons.',
       'tab': 1,
     },
     {

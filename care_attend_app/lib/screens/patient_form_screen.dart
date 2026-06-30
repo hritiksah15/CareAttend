@@ -175,8 +175,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                       DropdownMenuItem(
                           value: 'carer', child: Text('Registered carer')),
                       DropdownMenuItem(
-                          value: 'social_worker',
-                          child: Text('Social worker')),
+                          value: 'social_worker', child: Text('Social worker')),
                       DropdownMenuItem(
                           value: 'neighbour', child: Text('Neighbour')),
                       DropdownMenuItem(
@@ -201,8 +200,8 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                   TextField(
                       controller: reason,
                       maxLines: 2,
-                      decoration:
-                          const InputDecoration(labelText: 'Reason (optional)')),
+                      decoration: const InputDecoration(
+                          labelText: 'Reason (optional)')),
                 ],
               ),
             ),
@@ -214,13 +213,12 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                 onPressed: () => Navigator.pop(ctx),
                 child: const Text('Cancel')),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(120, 48)),
+              style: ElevatedButton.styleFrom(minimumSize: const Size(120, 48)),
               onPressed: () async {
-                if (name.text.trim().isEmpty ||
-                    patientId.text.trim().isEmpty) {
+                if (name.text.trim().isEmpty || patientId.text.trim().isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                      content: Text('Carer name and patient identifier required')));
+                      content:
+                          Text('Carer name and patient identifier required')));
                   return;
                 }
                 try {
@@ -273,7 +271,9 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                   const SizedBox(height: 4),
                   Text(t.assessmentIntro,
                       style: TextStyle(
-                          fontSize: 14, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                          fontSize: 14,
+                          color:
+                              Theme.of(context).colorScheme.onSurfaceVariant)),
                   const SizedBox(height: 16),
 
                   // EHR AUTO-FILL
@@ -402,8 +402,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                   TextFormField(
                     controller: _imdCtrl,
                     keyboardType: TextInputType.number,
-                    decoration:
-                        InputDecoration(labelText: '${t.imdDecile} *'),
+                    decoration: InputDecoration(labelText: '${t.imdDecile} *'),
                     validator: (v) {
                       final n = int.tryParse(v ?? '');
                       if (n == null || n < 1 || n > 10) return '1-10';
@@ -424,7 +423,10 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                       child: Text(t.ageGroupLine(_ageGroup!),
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                              fontSize: 14, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                              fontSize: 14,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant)),
                     ),
                   const SizedBox(height: 16),
 
@@ -452,19 +454,22 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
               decoration: BoxDecoration(
                 color: NHSTheme.calloutBg(context, const Color(0xFFF0F7FF)),
                 borderRadius: BorderRadius.circular(8),
-                border:
-                    const Border(left: BorderSide(color: NHSTheme.lightBlue, width: 4)),
+                border: const Border(
+                    left: BorderSide(color: NHSTheme.lightBlue, width: 4)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(t.aboutTool,
                       style: TextStyle(
-                          fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.primary)),
+                          fontWeight: FontWeight.w700,
+                          color: Theme.of(context).colorScheme.primary)),
                   const SizedBox(height: 6),
                   Text(t.aboutToolDesc,
                       style: TextStyle(
-                          fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                          fontSize: 13,
+                          color:
+                              Theme.of(context).colorScheme.onSurfaceVariant)),
                   const SizedBox(height: 6),
                   Text(t.dataHandling,
                       style: TextStyle(
@@ -537,7 +542,8 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
         ),
       );
 
-  Widget _buildCheckTile(String label, bool value, ValueChanged<bool> onChanged) =>
+  Widget _buildCheckTile(
+          String label, bool value, ValueChanged<bool> onChanged) =>
       InkWell(
         onTap: () => onChanged(!value),
         borderRadius: BorderRadius.circular(4),
