@@ -5,6 +5,9 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 export DATABASE_URL="${DATABASE_URL:-postgresql+psycopg://localhost:5432/careattend}"
+export PGHOST="${PGHOST:-localhost}"
+export PGPORT="${PGPORT:-5432}"
+export PG_MAINTENANCE_DB="${PG_MAINTENANCE_DB:-postgres}"
 export PORT="${PORT:-5000}"
 export FLASK_APP=app
 
@@ -27,15 +30,15 @@ if [ -z "${SECRET_KEY:-}" ]; then
 fi
 
 # 2. Ensure PostgreSQL is running (Homebrew service).
-if ! pg_isready -q 2>/dev/null; then
+if ! pg_isready -q -d "$PG_MAINTENANCE_DB" 2>/dev/null; then
   echo "PostgreSQL not running — starting it..."
   brew services start postgresql@16 >/dev/null 2>&1 || true
-  for _ in $(seq 1 20); do pg_isready -q && break; sleep 0.5; done
+  for _ in $(seq 1 20); do pg_isready -q -d "$PG_MAINTENANCE_DB" && break; sleep 0.5; done
 fi
-pg_isready -q || { echo "ERROR: PostgreSQL did not come up."; exit 1; }
+pg_isready -q -d "$PG_MAINTENANCE_DB" || { echo "ERROR: PostgreSQL did not come up."; exit 1; }
 
 # 3. Ensure the database exists.
-if ! psql -lqt 2>/dev/null | cut -d'|' -f1 | grep -qw careattend; then
+if ! psql -d "$PG_MAINTENANCE_DB" -lqt 2>/dev/null | cut -d'|' -f1 | grep -qw careattend; then
   echo "Creating database 'careattend'..."
   createdb careattend
 fi
