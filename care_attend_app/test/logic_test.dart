@@ -79,7 +79,7 @@ void main() {
     expect(ApiService.baseUrl.endsWith('/'), isFalse);
     expect(Uri.parse(ApiService.baseUrl).hasScheme, isTrue);
     if (!kIsWeb) {
-      expect(ApiService.baseUrl, 'http://10.0.2.2:5000');
+      expect(ApiService.baseUrl, 'https://careattend-api.onrender.com');
     }
   });
 
