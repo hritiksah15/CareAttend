@@ -5,10 +5,9 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   // Backend host differs per platform:
-  //   - Hosted web: same origin as the app (override for split deployments)
-  //   - Local web / iOS simulator / desktop: localhost
-  //   - Android emulator: 10.0.2.2 maps to the host's localhost
-  // Override at build time with --dart-define=API_BASE=http://<ip>:5000.
+  //   - Hosted web: same origin as the app unless a split API is provided.
+  //   - Installed mobile/desktop apps: hosted Render API by default.
+  //   - Local development: override with --dart-define=API_BASE=http://<ip>:5000.
   static const String _envBase =
       String.fromEnvironment('API_BASE', defaultValue: '');
   static final String baseUrl =
@@ -18,7 +17,7 @@ class ApiService {
   static String? avatar; // base64 data-URL of the logged-in user's photo
 
   static String _defaultBaseUrl() {
-    if (!kIsWeb) return 'http://10.0.2.2:5000';
+    if (!kIsWeb) return 'https://careattend-api.onrender.com';
 
     final current = Uri.base;
     final host = current.host.toLowerCase();
