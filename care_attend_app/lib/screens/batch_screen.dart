@@ -28,7 +28,7 @@ class _BatchScreenState extends State<BatchScreen> {
       _rows = [];
     });
     try {
-      final picked = await FilePicker.pickFiles(
+      final picked = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['csv'],
         withData: true,
