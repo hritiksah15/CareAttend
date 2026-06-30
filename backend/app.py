@@ -65,8 +65,26 @@ app = Flask(
     static_folder=FRONTEND_DIR,
     static_url_path="/static",
 )
+
+
+def _normalise_database_url(url: str) -> str:
+    """Use psycopg v3 for plain Postgres URLs from managed hosts.
+
+    Render and other PaaS providers usually expose DATABASE_URL as
+    ``postgresql://...`` or ``postgres://...``. SQLAlchemy otherwise looks for
+    psycopg2, but this project intentionally ships psycopg v3.
+    """
+    if url.startswith("postgres://"):
+        return "postgresql+psycopg://" + url[len("postgres://") :]
+    if url.startswith("postgresql://"):
+        return "postgresql+psycopg://" + url[len("postgresql://") :]
+    return url
+
+
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", os.urandom(32).hex())
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "postgresql+psycopg://localhost:5432/careattend")
+app.config["SQLALCHEMY_DATABASE_URI"] = _normalise_database_url(
+    os.environ.get("DATABASE_URL", "postgresql+psycopg://localhost:5432/careattend")
+)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["RESET_DEV_CODE"] = os.environ.get("RESET_DEV_CODE", "0").lower() in {"1", "true", "yes"}
 

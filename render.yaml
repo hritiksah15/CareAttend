@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: careattend-api
+    runtime: python
+    rootDir: .
+    region: frankfurt
+    buildCommand: cd backend && pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: cd backend && gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 wsgi:app
+    initialDeployHook: cd backend && flask --app app create-admin
+    healthCheckPath: /health
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: FLASK_DEBUG
+        value: "0"
+      - key: RESET_DEV_CODE
+        value: "0"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: careattend-db
+          property: connectionString
+      # Set this to the Firebase Hosting origin after deploying the Flutter app,
+      # e.g. https://careattend.web.app. "*" is acceptable only for prototype/demo.
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: CAREATTEND_ADMIN_USER
+        sync: false
+      - key: CAREATTEND_ADMIN_EMAIL
+        sync: false
+      - key: CAREATTEND_ADMIN_PASSWORD
+        sync: false
+
+databases:
+  - name: careattend-db
+    region: frankfurt
+    plan: basic-256mb
+    databaseName: careattend
+    user: careattend
