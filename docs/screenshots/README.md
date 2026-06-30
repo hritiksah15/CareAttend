@@ -1,14 +1,16 @@
 # Screenshot Evidence Pack
 
 Date created: 2026-06-28
-Status: pending capture
+Last captured: 2026-06-30
+Status: complete
 
 This folder is the evidence pack for the UI checklist in
 `docs/feature_test_plan.md`.
 
-Automation note: screenshots could not be captured in this session
-because the in-app browser backend was unavailable and the browser list was
-empty. Do not mark this pack complete until real screenshots are added.
+Automation note: screenshots were captured from the running local web and
+Flutter web apps with headless Chrome/Playwright after starting the full stack
+with `./start_all.sh`. The in-app browser backend was unavailable, so this pack
+uses real local browser renders saved directly under `docs/screenshots/`.
 
 ## Capture Setup
 
@@ -68,14 +70,14 @@ http://localhost:8090
 
 | ID | Captured | Pass/fail | Notes |
 |---|---|---|---|
-| UX1 | no | pending | Browser capture unavailable in automation session. |
-| UX2 | no | pending | Browser capture unavailable in automation session. |
-| UX3 | no | pending | Browser capture unavailable in automation session. |
-| UX4 | no | pending | Browser capture unavailable in automation session. |
-| UX5 | no | pending | Browser capture unavailable in automation session. |
-| UX6 | no | pending | Browser capture unavailable in automation session. |
-| UX7 | no | pending | Browser capture unavailable in automation session. |
-| UX8 | no | pending | Browser capture unavailable in automation session. |
-| UX9 | no | pending | Browser capture unavailable in automation session. |
-| UX10 | no | pending | Added after dashboard workflow cards; capture before AT3 recording. |
-| UX11 | no | pending | Added after batch CSV template fix; capture before AT3 recording. |
+| UX1 | yes | pass | Flutter admin Login Session Log rows visible at 390 x 844. |
+| UX2 | yes | pass | Web admin Login Session Log shows fresh login/logout rows at 1440 x 900. |
+| UX3 | yes | pass | Flutter Bias Monitor shows colored audit metrics after running the audit. |
+| UX4 | yes | pass | Flutter Ethics screen shows colored framework coverage/status cards. |
+| UX5 | yes | pass | Flutter Results screen shows outreach priority, SHAP bars, interventions, chatbot button, and clear bottom-nav spacing. |
+| UX6 | yes | pass | Flutter desktop hover capture shows the assessment AppCard with visible border/shadow state. |
+| UX7 | yes | pass | Flutter mobile press capture shows active touch feedback on the Auto-fill control. |
+| UX8 | yes | pass | Web Results export controls are visible after five assessments and risk-history capture. |
+| UX9 | yes | pass | Flutter 320px bottom navigation labels fit and content remains above the nav. |
+| UX10 | yes | pass | Web dashboard module cards and expanded recent-assessment detail are visible. |
+| UX11 | yes | pass | Web batch upload shows template action, accepted wide CSV guidance, and successful uploaded results. |
