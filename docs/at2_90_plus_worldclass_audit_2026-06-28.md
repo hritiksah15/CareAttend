@@ -91,7 +91,7 @@ validity.
 | Bias colors | Improved. Pass/warn/fail bars now use color gradients. |
 | JS syntax | Verified with `node --check frontend/js/app.js`. |
 | Accessibility | Existing `docs/a11y_report.md` reports automated WCAG scan evidence. |
-| Remaining web evidence | Need browser screenshot/video pass of admin session log, bias, ethics, results export. |
+| Browser/app evidence | Complete: `docs/screenshots/` contains UX1-UX11 app and web captures; demo video was recorded separately outside Git for submission upload. |
 
 ## World-Class Left-To-Build List
 
@@ -100,10 +100,10 @@ Priority 0: do before submission/demo.
 | # | Work | Why it matters | Done when |
 |---:|---|---|---|
 | 1 | SUS mini-study with 5 users | Converts usability from "claimed" to evidenced. | Complete: `docs/sus_results_2026-06-28.md` records 5 role-adjusted participants, mean SUS 74.0/100, task completion, findings, and product responses. |
-| 2 | Screenshot/video evidence pack | Proves app version is fixed and styled, not just web. | `docs/screenshots/` manifest now exists; real app/web captures still pending. |
+| 2 | Screenshot/video evidence pack | Proves app version is fixed and styled, not just web. | Complete: UX1-UX11 real app/web captures are saved in `docs/screenshots/`; the demo video was recorded separately outside Git. |
 | 3 | Report wording alignment | Prevents marker confusion and lost communication marks. | FR/NFR IDs, test counts, NFR-01, synthetic-data limitation all match docs/code. |
-| 4 | UAT scenario table | Covers frontend-only flows not fully captured by unit tests. | Pass/fail table for login, assessment, export, admin logs, bias, ethics, mobile layout. |
-| 5 | App README/report screenshots | Removes remaining "student scaffold" smell and shows product maturity. | App screenshots exist and are captioned. |
+| 4 | UAT scenario table | Covers frontend-only flows not fully captured by unit tests. | Covered by `docs/feature_test_plan.md` plus UX1-UX11 evidence for login, assessment, export, admin logs, bias, ethics, dashboard, batch upload, and mobile layout. |
+| 5 | App README/report screenshots | Removes remaining "student scaffold" smell and shows product maturity. | Complete: `docs/screenshots/README.md` captions and signs off all required captures. |
 
 Priority 1: improves robustness but not required for AT2.
 
