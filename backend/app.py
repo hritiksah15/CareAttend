@@ -17,6 +17,7 @@ import time
 import uuid
 from datetime import date, datetime, timedelta
 
+import click
 from flask import Flask, render_template, request, jsonify, make_response, send_from_directory
 from flask_cors import CORS
 from sqlalchemy import text as _sql_text
@@ -2258,21 +2259,27 @@ def create_admin_command():
     first admin must be created here. Credentials come from the environment so
     they are never hard-coded:
         CAREATTEND_ADMIN_USER, CAREATTEND_ADMIN_EMAIL, CAREATTEND_ADMIN_PASSWORD
-    Run: `flask --app app create-admin`. Idempotent — promotes if user exists.
+    Run: `flask --app app create-admin`. Idempotent — promotes and syncs the
+    password if the user exists, so credential rotation through env vars works.
     """
     username = os.environ.get("CAREATTEND_ADMIN_USER")
     email = os.environ.get("CAREATTEND_ADMIN_EMAIL")
     password = os.environ.get("CAREATTEND_ADMIN_PASSWORD")
     if not (username and email and password):
-        print("Set CAREATTEND_ADMIN_USER, CAREATTEND_ADMIN_EMAIL and CAREATTEND_ADMIN_PASSWORD first.")
-        return
+        raise click.ClickException(
+            "Set CAREATTEND_ADMIN_USER, CAREATTEND_ADMIN_EMAIL and CAREATTEND_ADMIN_PASSWORD first."
+        )
+
+    if validate_password(password):
+        raise click.ClickException("Could not create admin — check the username/email/password meet the rules.")
 
     db.create_all()
     existing = User.query.filter((User.username == username) | (User.email == email)).first()
     if existing:
         existing.role = "admin"
+        existing.password_hash = _hash_password(password)
         db.session.commit()
-        print(f"Promoted existing account '{existing.username}' to admin.")
+        print(f"Synced admin account '{existing.username}'.")
         return
 
     _, error = register_user(username, email, password, "admin")
@@ -2280,8 +2287,7 @@ def create_admin_command():
         # Note: 'error' is a static validation message (e.g. the password rule),
         # never the credential itself — but keep it out of the printed line so
         # no value derived from the password call reaches stdout.
-        print("Could not create admin — check the username/email/password meet the rules.")
-        return
+        raise click.ClickException("Could not create admin — check the username/email/password meet the rules.")
     print(f"Admin account '{username}' created.")
 
 
