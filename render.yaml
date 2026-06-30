@@ -23,10 +23,9 @@ services:
         fromDatabase:
           name: careattend-db
           property: connectionString
-      # Set this to the Firebase Hosting origin after deploying the Flutter app,
-      # e.g. https://careattend.web.app. "*" is acceptable only for prototype/demo.
+      # Firebase Hosting origins for the Flutter web app.
       - key: CORS_ORIGINS
-        value: "*"
+        value: "https://careattend-64793.web.app,https://careattend-64793.firebaseapp.com"
       - key: CAREATTEND_ADMIN_USER
         sync: false
       - key: CAREATTEND_ADMIN_EMAIL

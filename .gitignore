@@ -40,6 +40,7 @@ care_attend_app/.flutter-plugins-dependencies
 node_modules/
 frontend/node_modules/
 tools/a11y/node_modules/
+.firebase/
 
 # Submission / output artefacts
 *.zip
