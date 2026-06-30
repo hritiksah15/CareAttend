@@ -68,6 +68,6 @@
 - **Fairness governance, staff approval, notification delivery:** automated-tested ✅ (added June 2026)
 - **NFR-02 (performance):** latency benchmark captured ✅ — `docs/perf_benchmark.md` + repeatable `backend/benchmark_latency.py` (June 2026).
 - **NFR-03 (accessibility/usability):** WCAG 2.2 AA automated scan captured ✅ — `docs/a11y_report.md` + repeatable `tools/a11y/` harness, 0 violations after fixing 3 contrast defects (June 2026). SUS evidence captured ✅ — `docs/sus_results_2026-06-28.md`, mean SUS 74.0/100 above the 68 target.
-- **Remaining evidence polish:** Screenshot/video evidence remains pending for final report polish. External clinical gates (signed DPIA/DCB0129, real EHR connector approval, real-data validation, pen test/DSPT) remain outside the academic prototype.
+- **Evidence polish:** Screenshot evidence is complete in `docs/screenshots/` (UX1-UX11), and the demo video was recorded separately outside Git for submission upload. External clinical gates (signed DPIA/DCB0129, real EHR connector approval, real-data validation, pen test/DSPT) remain outside the academic prototype.
 
 **Distinction tip:** in the report prose, state *"every Must requirement is traced to an automated test; Should/Could items to UAT"* and cite this table. That sentence + table is what moves the 40% bucket from 70 to 85.

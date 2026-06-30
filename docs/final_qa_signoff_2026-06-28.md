@@ -61,7 +61,7 @@ and admin session-log/user-activity widgets.
 | Auth/RBAC | Pass | Opaque sessions, role gates, admin approval, 2FA, rate limiting, audit logs. |
 | Admin user management | Pass | Flutter app now mirrors web actions: approve, save role, view user activity, delete, and refresh users/session logs. |
 | Governance | Pass | Bias monitor, trained threshold use, ethics framework, audit trail. |
-| Accessibility/usability | Pass with evidence caveat | WCAG/a11y and SUS docs exist; final screenshot proof still pending. |
+| Accessibility/usability | Pass | WCAG/a11y and SUS docs exist; UX1-UX11 screenshot proof is complete in `docs/screenshots/`. |
 | Documentation | Pass with final proofreading caveat | Architecture, OpenAPI, traceability, model card, safety/FHIR/external validation docs, AT2 and AT3 evidence packs. |
 
 ## Known Limitations
