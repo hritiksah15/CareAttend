@@ -1,7 +1,7 @@
 # Session Log — Final Submission Readiness
 
 Date: 2026-06-29
-**Superseded baseline note (2026-07-01):** use `master` at `5c9f741` for final
+**Superseded baseline note (2026-07-01):** use `master` at `6c86456` for final
 GitHub/source-zip/demo evidence. Older `app-worldclass-phase1` references below
 are historical session context only.
 
@@ -181,6 +181,10 @@ files are not included:
 ```bash
 git archive --format=zip --output CareAttend-source.zip master
 ```
+
+For exact reproducibility, create the source zip from commit `6c86456` or from
+`master` while it points to that commit. Leave Dependabot major-version PRs for a
+post-submission branch.
 
 ## Remaining Manual Task Before AT3
 

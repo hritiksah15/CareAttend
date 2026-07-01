@@ -159,6 +159,15 @@ Tests are forced onto a throwaway SQLite database (see
 [backend/tests/conftest.py](backend/tests/conftest.py)) so they can never touch a real
 PostgreSQL instance.
 
+## Submission Baseline
+
+Stable AT3/source-zip/deployed baseline: `master` at
+`6c86456 fix: avoid benchmark credential false positive`.
+
+Keep open Dependabot major-version PRs out of the submission baseline. They
+should be reviewed later on a separate branch because ML/runtime and Flutter UI
+major upgrades need their own regression pass.
+
 ## CI/CD
 
 GitHub Actions ([.github/workflows/](.github/workflows/)):

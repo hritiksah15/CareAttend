@@ -2,7 +2,11 @@
 
 Date: 2026-07-01
 Branch: `master`
-Current verified commit baseline: `5c9f741 Disable stale Firebase app shell caching`
+Current verified submission baseline: `6c86456 fix: avoid benchmark credential false positive`
+
+Freeze note: keep this `master` commit as the AT3/source-zip/deployed baseline.
+Open Dependabot major-version PRs are intentionally deferred until after
+submission because ML and Flutter major upgrades need separate regression work.
 
 Purpose: use this document as the speaking plan for AT3 and as preparation for
 technical questions. It is aligned to the COM668 handbook guidance for AT3:

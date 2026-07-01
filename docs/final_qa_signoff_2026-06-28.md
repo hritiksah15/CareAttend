@@ -2,7 +2,7 @@
 
 Date: 2026-07-01
 Branch: `master`
-Latest local verification baseline: local working tree after 2026-07-01 audit fixes
+Latest verified submission baseline: `6c86456 fix: avoid benchmark credential false positive`
 
 ## Executive Status
 
@@ -24,7 +24,9 @@ recorded separately outside Git for submission upload.
 | Web dashboard smoke | Direct JS runtime smoke against dashboard DOM stubs | Passed: module cards, batch module, expandable detail row, row toggle, outcomes, icon refresh |
 | Flutter static analysis | `flutter analyze` | No issues |
 | Flutter tests | `flutter test` | Passed; 39 tests |
-| Git state before final docs pass | `git status --short --branch` | Audit fixes pending commit |
+| Security audit | `pip-audit`, `npm audit`, `bandit`, `detect-secrets` | Passed; CVE dependency pins updated |
+| Hosted smoke | Firebase + Render health/login/predict | Passed after Render redeploy |
+| GitHub gates | CI, CodeQL, GHCR publish | Passed for `6c86456` |
 
 ## Current Automated Test Counts
 
@@ -106,3 +108,10 @@ Minimum evidence pass:
 Final recommendation: use the existing screenshots and upload the separately
 recorded demo video if required. The codebase and evidence pack are ready; the
 remaining risk is overclaiming clinical deployment, not core implementation.
+
+## Submission Baseline Freeze
+
+Use `master` at commit `6c86456` for AT3 recording, final source zip, and
+deployed demonstration evidence. Do not merge Dependabot major-version PRs into
+the submission baseline; handle them in a separate branch after viva/submission
+because they may change ML runtime behaviour or Flutter UI rendering.

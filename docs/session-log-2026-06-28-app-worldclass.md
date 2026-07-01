@@ -1,6 +1,6 @@
 # Session Log — App Worldclass Pass (2026-06-27 → 28)
 
-**Superseded baseline note (2026-07-01):** use `master` at `5c9f741` for final
+**Superseded baseline note (2026-07-01):** use `master` at `6c86456` for final
 GitHub/source-zip/demo evidence. The branch and test counts below are historical
 session evidence from 2026-06-28, not the current submission baseline.
 
