@@ -469,7 +469,14 @@ class TestRBAC:
         assert "do not upload the PDF/report CSV" in error
 
     def test_sample_batch_template_has_required_then_optional_columns(self):
-        template = os.path.join(os.path.dirname(__file__), "..", "..", "docs", "sample_batch_upload.csv")
+        template = os.path.join(
+            os.path.dirname(__file__),
+            "..",
+            "..",
+            "docs",
+            "model-and-data",
+            "sample_batch_upload.csv",
+        )
         with open(template, encoding="utf-8") as f:
             header = f.readline().strip().split(",")
         assert header[: len(BATCH_REQUIRED_COLUMNS)] == list(BATCH_REQUIRED_COLUMNS)
