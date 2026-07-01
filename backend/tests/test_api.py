@@ -78,10 +78,15 @@ class TestAuthEndpoints:
 
     def test_login(self, client):
         client.post("/auth/register", json={"username": "asha", "email": "asha@nhs.uk", "password": "Password123!"})
-        res = client.post("/auth/login", json={"username": "asha", "password": "Password123!"})
+        res = client.post(
+            "/auth/login",
+            json={"username": "asha", "password": "Password123!"},
+            environ_overrides={"wsgi.url_scheme": "https"},
+        )
         assert res.status_code == 200
         data = json.loads(res.data)
         assert "token" in data
+        assert "Secure" in res.headers["Set-Cookie"]
 
     def test_login_by_email(self, client):
         client.post("/auth/register", json={"username": "asha", "email": "asha@nhs.uk", "password": "Password123!"})
