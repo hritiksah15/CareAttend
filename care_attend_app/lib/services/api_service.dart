@@ -54,9 +54,10 @@ class ApiService {
   // Generic (non-localized) fallback for connectivity failures surfaced through
   // ApiException; the always-visible OfflineBanner carries the localized UX.
   static const String _offlineMessage =
-      "Can't reach the server. Check your connection and try again.";
+      "Can't reach the server. If the hosted demo has been idle, it may be "
+      "waking up. Try again shortly.";
 
-  static const Duration _timeout = Duration(seconds: 120);
+  static const Duration _timeout = Duration(seconds: 30);
 
   static Map<String, String> get _headers => {
         'Content-Type': 'application/json',

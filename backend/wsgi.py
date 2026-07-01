@@ -3,7 +3,7 @@
 
 Run with a real WSGI server, e.g.:
 
-    gunicorn --bind 0.0.0.0:5000 --workers 2 wsgi:app
+    gunicorn --bind 0.0.0.0:5000 --workers 1 --preload wsgi:app
 
 Importing ``app`` alone does NOT load the ML models or ensure the database —
 that work only ran inside ``app.py``'s ``if __name__ == "__main__"`` block, so a
