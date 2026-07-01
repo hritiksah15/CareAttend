@@ -4,7 +4,7 @@ Date completed: 2026-06-28
 Status: complete for 5-person proxy SUS evidence
 
 Five anonymised proxy participants completed the CareAttend usability script in
-`docs/sus_testing_template.md`. Roles were aligned to application access:
+`docs/testing-and-validation/sus_testing_template.md`. Roles were aligned to application access:
 staff participants completed staff-visible workflows, while the Bias Monitoring
 task was assigned only to admin/governance participants because `/api/bias-audit`
 and the Bias Monitor UI are admin-only.
@@ -12,7 +12,7 @@ and the Bias Monitor UI are admin-only.
 ## Scoring Command
 
 ```bash
-python3 tools/sus/calculate_sus.py docs/sus_responses_template.csv
+python3 tools/sus/calculate_sus.py docs/testing-and-validation/sus_responses_template.csv
 ```
 
 ## Results Summary

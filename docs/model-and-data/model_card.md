@@ -4,7 +4,7 @@
 
 **Last updated:** June 2026 · **Version:** v1.0 (prototype) · **Owner:** Hritik Kumar Sah (B00923557)
 
-Latest verification evidence: `docs/system_accuracy_report_2026-06-30.md`.
+Latest verification evidence: `docs/model-and-data/system_accuracy_report_2026-06-30.md`.
 
 ---
 
@@ -73,4 +73,4 @@ Probabilities are post-hoc calibrated (`ml/calibration.py`); calibrators fit on 
 - **Data drift:** synthetic→real transfer untested; requires re-validation on real NHS data before deployment.
 
 ## 8. Caveats & next steps
-- Not for clinical use until: real-data retraining, external (geographic/temporal) validation, DCB0129 clinical safety case, DPIA. See `docs/CareAttend_Master_Guide.md` Track B.
+- Not for clinical use until: real-data retraining, external (geographic/temporal) validation, DCB0129 clinical safety case, DPIA. See `docs/project-management/CareAttend_Master_Guide.md` Track B.

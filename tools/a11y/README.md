@@ -17,7 +17,7 @@ and dark themes**:
 Standard: **WCAG 2.0 / 2.1 / 2.2, Level A + AA**
 (`wcag2a, wcag2aa, wcag21a, wcag21aa, wcag22aa`).
 
-The latest results and method writeup live in [`docs/a11y_report.md`](../../docs/a11y_report.md).
+The latest results and method writeup live in [`docs/testing-and-validation/a11y_report.md`](../../docs/testing-and-validation/a11y_report.md).
 
 ## Run
 
@@ -47,7 +47,7 @@ A11Y_URL=http://127.0.0.1:5000 A11Y_USER=<user> A11Y_PASS=<pass> node axe_scan.m
 The script exits non-zero if any violation is found, so it can gate a manual
 QA workflow. It is intentionally **not** wired into required CI (a browser-based
 job is not worth gating `master` on) — it is a runnable evidence artifact, the
-same model as `backend/benchmark_latency.py` / `docs/perf_benchmark.md`.
+same model as `backend/benchmark_latency.py` / `docs/testing-and-validation/perf_benchmark.md`.
 
 ## Environment variables
 

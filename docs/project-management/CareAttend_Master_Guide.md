@@ -49,10 +49,10 @@ You currently train 4 models then select one. Examiners ask "why these / why thi
 **The examiner-winning sentence:** *"We deliberately selected the interpretable Logistic Regression over higher-capacity models because in a clinical decision-support context, the ability to audit and explain every prediction (DCB0129, GDPR Art 22, NHSX principle 'explainability') outweighs marginal accuracy — a justified engineering trade-off, not a limitation."*
 
 ### ML production status and remaining gates
-- **Probability calibration:** complete. `ml/calibration.py` fits sigmoid/isotonic calibration, saves `model_calibrated.joblib`, re-derives `threshold_calibrated.joblib`, and records Brier/reliability evidence in `docs/model_card.md`.
-- **Model card:** complete in `docs/model_card.md`.
+- **Probability calibration:** complete. `ml/calibration.py` fits sigmoid/isotonic calibration, saves `model_calibrated.joblib`, re-derives `threshold_calibrated.joblib`, and records Brier/reliability evidence in `docs/model-and-data/model_card.md`.
+- **Model card:** complete in `docs/model-and-data/model_card.md`.
 - **Fairness governance:** complete for monitoring. `ml/bias_monitor.py` returns PASS/ACTION_REQUIRED governance verdicts, recommended review actions, and audit-log entries. Model-level mitigation such as reweighing remains a production research gate because it requires retraining, recalibration, threshold re-derivation, and re-audit.
-- **Temporal/geographic validation:** protocol documented in `docs/external_validation_plan.md`; real external validation still requires representative NHS datasets.
+- **Temporal/geographic validation:** protocol documented in `docs/testing-and-validation/external_validation_plan.md`; real external validation still requires representative NHS datasets.
 
 ---
 
@@ -64,7 +64,7 @@ AT2 = **Challenge Definition Report**. It is the single biggest chunk of marks. 
 |-----------|:--:|---------------------|------------------|------------------------|
 | **Problem Definition** | 20% | Clear aim, justified scope, SMART objectives, MoSCoW Won't-Haves | Aim, 7 SMART objectives→sprints, scope bounded by GDPR/NHS | Keep the quantified problem-impact paragraph and measurable objectives prominent in the submitted report. |
 | **Context Investigation** | 20% | Lit review with synthesis (not summary), legal/ethical/social context, competitor analysis | Literature, comparator framing, GDPR/NHS safety context, synthetic-data limitation framing | Use synthesis language: show the gap CareAttend fills, then state why real NHS validation remains out of scope. |
-| **Software Definition** | 40% | Requirements (MoSCoW), UML, ERD, architecture, testing strategy — all **traceable** to objectives | FR/NFRs, user stories, architecture/ERD, OpenAPI, traceability matrix, 246 backend tests, 39 Flutter tests | Cite `docs/traceability_matrix.md`, `docs/architecture.md`, `docs/openapi.yaml`, and the final test counts. |
+| **Software Definition** | 40% | Requirements (MoSCoW), UML, ERD, architecture, testing strategy — all **traceable** to objectives | FR/NFRs, user stories, architecture/ERD, OpenAPI, traceability matrix, 246 backend tests, 39 Flutter tests | Cite `docs/governance-and-safety/traceability_matrix.md`, `docs/system-design/architecture.md`, `docs/system-design/openapi.yaml`, and the final test counts. |
 | **Planning** | 15% | Agile justified vs alternatives, sprint plan, Gantt, **risk register with scoring** | Sprint/session logs, deviation/fix-and-verify evidence, risk and production-gate framing | Present deviations honestly: planned prototype evolved into persisted operational workflow while preserving privacy-minimised prediction data. |
 | **Communication** | 5% | Academic tone, Harvard referencing, captioned figures, structure | README, model card, architecture, traceability, production review, screenshot pack, SUS results | Do one final proofread for captions, Harvard consistency, and no clinical overclaiming. |
 
@@ -106,12 +106,12 @@ Two tracks. **Track A** = things that raise your COM668 grade now (do before AT3
 | # | Build | Why it scores | Effort | Files |
 |--|-------|--------------|:--:|-------|
 | A1 | **Automated tests for the new endpoints** (carer proxy, slots, nudge, 2FA, audit) | Complete: backend suite now has 246 passing tests. | Done | `backend/tests/` |
-| A2 | **Traceability matrix** doc | Complete: directly targets AT2 40% bucket. | Done | `docs/traceability_matrix.md` |
-| A3 | **Model card + probability calibration** | Complete: calibrated model and limitation framing documented. | Done | `ml/pipeline.py`, `docs/model_card.md` |
-| A4 | **C4 architecture diagram** (Mermaid) | Complete: architecture and ERD evidence exist. | Done | `docs/architecture.md` |
-| A5 | **SUS usability test** (5 users) + write-up | Complete: mean SUS 74.0/100, above the 68 target. | Done | `docs/sus_results_2026-06-28.md` |
+| A2 | **Traceability matrix** doc | Complete: directly targets AT2 40% bucket. | Done | `docs/governance-and-safety/traceability_matrix.md` |
+| A3 | **Model card + probability calibration** | Complete: calibrated model and limitation framing documented. | Done | `ml/pipeline.py`, `docs/model-and-data/model_card.md` |
+| A4 | **C4 architecture diagram** (Mermaid) | Complete: architecture and ERD evidence exist. | Done | `docs/system-design/architecture.md` |
+| A5 | **SUS usability test** (5 users) + write-up | Complete: mean SUS 74.0/100, above the 68 target. | Done | `docs/testing-and-validation/sus_results_2026-06-28.md` |
 | A6 | **Health-check + structured logging + error handling** audit | Complete: `/health`, audit logs, role gates, rate limits, and launcher checks verified. | Done | `backend/app.py`, `backend/auth.py` |
-| A7 | **OpenAPI/Swagger spec** for the REST API | Complete: API contract documented. | Done | `docs/openapi.yaml` |
+| A7 | **OpenAPI/Swagger spec** for the REST API | Complete: API contract documented. | Done | `docs/system-design/openapi.yaml` |
 
 ### TRACK B — real-world product hardening (post-submission, for Visa/startup)
 

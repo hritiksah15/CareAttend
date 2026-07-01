@@ -19,7 +19,7 @@ recorded separately outside Git for submission upload.
 | Backend lint | `ruff check .` in `backend/` | Passed |
 | Backend tests | `pytest -q` in `backend/` | Passed; only existing sklearn deprecation warnings |
 | Backend collection | `pytest --collect-only -q` | 246 tests collected across 10 files |
-| Model accuracy | `docs/system_accuracy_report_2026-06-30.md` | Held-out F1 0.7241, recall 0.7484, ROC-AUC 0.9110 |
+| Model accuracy | `docs/model-and-data/system_accuracy_report_2026-06-30.md` | Held-out F1 0.7241, recall 0.7484, ROC-AUC 0.9110 |
 | Web syntax | `node --check frontend/js/app.js` | Passed |
 | Web dashboard smoke | Direct JS runtime smoke against dashboard DOM stubs | Passed: module cards, batch module, expandable detail row, row toggle, outcomes, icon refresh |
 | Flutter static analysis | `flutter analyze` | No issues |
@@ -78,7 +78,7 @@ admin session-log/user-activity widgets, and role-gated hidden-tab loading.
 
 ## Manual QA Evidence Completed
 
-Use `docs/feature_test_plan.md` and `docs/screenshots/README.md`.
+Use `docs/testing-and-validation/feature_test_plan.md` and `docs/screenshots/README.md`.
 
 Minimum evidence pass:
 

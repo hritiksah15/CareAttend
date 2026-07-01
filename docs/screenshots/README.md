@@ -5,7 +5,7 @@ Last captured: 2026-06-30
 Status: complete
 
 This folder is the evidence pack for the UI checklist in
-`docs/feature_test_plan.md`.
+`docs/testing-and-validation/feature_test_plan.md`.
 
 Automation note: screenshots were captured from the running local web and
 Flutter web apps with headless Chrome/Playwright after starting the full stack

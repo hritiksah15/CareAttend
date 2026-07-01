@@ -3,7 +3,7 @@
 **Scope of this document:** automated accessibility evidence for the CareAttend
 web client. This is the *automated* half of NFR-03 (usability / accessibility);
 the human half — a System Usability Scale (SUS) study with real users — is
-tracked separately in `docs/sus_testing_template.md` and cannot be replaced by an
+tracked separately in `docs/testing-and-validation/sus_testing_template.md` and cannot be replaced by an
 automated scan.
 
 ## Standard and method

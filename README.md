@@ -141,7 +141,7 @@ Recommended prototype hosting:
 
 - Render Blueprint for Flask + PostgreSQL: [`render.yaml`](render.yaml)
 - Firebase Hosting for Flutter web: [`firebase.json`](firebase.json)
-- Step-by-step runbook: [Render + Firebase deployment guide](docs/deployment_guide_render_firebase.md)
+- Step-by-step runbook: [Render + Firebase deployment guide](docs/system-design/deployment_guide_render_firebase.md)
 
 ## Testing
 
@@ -161,8 +161,12 @@ PostgreSQL instance.
 
 ## Submission Baseline
 
-Stable AT3/source-zip/deployed baseline: `master` at
+Stable runtime/deployed baseline:
 `6c86456 fix: avoid benchmark credential false positive`.
+
+The current `master` branch is the submission branch and may contain documentation-only
+updates on top of that runtime baseline. Those documentation commits do not change the
+hosted app behaviour.
 
 Keep open Dependabot major-version PRs out of the submission baseline. They
 should be reviewed later on a separate branch because ML/runtime and Flutter UI
@@ -185,21 +189,26 @@ GitHub Actions ([.github/workflows/](.github/workflows/)):
 
 ## Documentation
 
-In-depth project docs live in [`docs/`](docs/):
+In-depth project docs live in [`docs/`](docs/). Start with the
+[documentation index](docs/README.md), then use the key evidence files below:
 
-- [Architecture](docs/architecture.md) · [Model card](docs/model_card.md) ·
-  [OpenAPI spec](docs/openapi.yaml) ·
-  [FHIR integration architecture](docs/ehr_fhir_architecture.md)
-- [Traceability matrix](docs/traceability_matrix.md) ·
-  [AT3 viva evidence pack](docs/at3_viva_evidence_pack.md) ·
-  [Final QA sign-off](docs/final_qa_signoff_2026-06-28.md) ·
-  [Literature review sources](docs/literature_review_sources.md) ·
-  [SUS testing template](docs/sus_testing_template.md) ·
-  [SUS response sheet](docs/sus_responses_template.csv) ·
-  [SUS results](docs/sus_results_2026-06-28.md) ·
-  [Deployment guide](docs/deployment_guide_render_firebase.md)
-- [DPIA/DCB0129 safety outline](docs/dpia_dcb0129_safety.md) ·
-  [External validation plan](docs/external_validation_plan.md)
+- [Architecture](docs/system-design/architecture.md) · [Model card](docs/model-and-data/model_card.md) ·
+  [OpenAPI spec](docs/system-design/openapi.yaml) ·
+  [FHIR integration architecture](docs/system-design/ehr_fhir_architecture.md)
+- [Traceability matrix](docs/governance-and-safety/traceability_matrix.md) ·
+  [AT3 viva evidence pack](docs/assessment-evidence/at3_viva_evidence_pack.md) ·
+  [Final QA sign-off](docs/governance-and-safety/final_qa_signoff_2026-06-28.md) ·
+  [Literature review sources](docs/project-management/literature_review_sources.md) ·
+  [SUS testing template](docs/testing-and-validation/sus_testing_template.md) ·
+  [SUS response sheet](docs/testing-and-validation/sus_responses_template.csv) ·
+  [SUS results](docs/testing-and-validation/sus_results_2026-06-28.md) ·
+  [Deployment guide](docs/system-design/deployment_guide_render_firebase.md)
+- [DPIA/DCB0129 safety outline](docs/governance-and-safety/dpia_dcb0129_safety.md) ·
+  [External validation plan](docs/testing-and-validation/external_validation_plan.md)
+
+Local agent/session notes are intentionally excluded by `.gitignore`
+(`docs/session-logs/`, `session-log-*.md`, local screen dumps, and supervisor
+brief drafts) and should not be included in the source zip.
 
 Contributing guidelines: [CONTRIBUTING.md](CONTRIBUTING.md) ·
 Security policy: [.github/SECURITY.md](.github/SECURITY.md) ·

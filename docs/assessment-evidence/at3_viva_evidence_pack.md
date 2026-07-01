@@ -59,7 +59,7 @@ Assessment example:
 
 Batch file:
 
-- Use `docs/sample_batch_upload.csv` or `docs/dummy_patient_batch_upload.csv`.
+- Use `docs/model-and-data/sample_batch_upload.csv` or `docs/model-and-data/dummy_patient_batch_upload.csv`.
 - Required columns: `Age,Gender,AppointmentLeadTimeDays,SMSReceived,PriorDNACount,IMDDecile`.
 - Optional columns: `Hypertension,Diabetes,Alcoholism,Disability`.
 
@@ -72,7 +72,7 @@ Batch file:
 | ML inference | `backend/ml/predictor.py` | scaler, calibrated model, trained threshold, SHAP top factors, risk-tier mapping. |
 | Interventions | `backend/ml/interventions.py` | rule engine converts risk factors into ranked outreach actions. |
 | Fairness governance | `backend/ml/bias_monitor.py` | demographic parity, equalised odds, governance verdict, trained threshold use. |
-| Batch CSV | `backend/app.py`, `docs/sample_batch_upload.csv` | canonical wide template, 100-row cap, Field/Value handling, targeted error message. |
+| Batch CSV | `backend/app.py`, `docs/model-and-data/sample_batch_upload.csv` | canonical wide template, 100-row cap, Field/Value handling, targeted error message. |
 | Flutter API boundary | `care_attend_app/lib/services/api_service.dart` | central headers, timeouts, offline flag, response handling. |
 | Flutter dashboard | `care_attend_app/lib/screens/dashboard_screen.dart` | module cards, expandable result cards, details/actions, widget test coverage. |
 | Web dashboard | `frontend/js/app.js`, `frontend/templates/index.html` | module cards, role-aware navigation, expandable panels, clickable table rows. |
@@ -170,7 +170,7 @@ tiers, non-technical summaries, and multilingual nudge support.
 WCAG 2.2 AA-oriented work: contrast checks, light/dark theme support, labelled
 controls, keyboard-friendly web rows, tap targets, not relying only on colour,
 responsive mobile layouts, readable dashboard cards, and accessibility evidence
-in `docs/a11y_report.md`. Human usability evidence is recorded through SUS.
+in `docs/testing-and-validation/a11y_report.md`. Human usability evidence is recorded through SUS.
 
 ### 11. How much AI did you use?
 
