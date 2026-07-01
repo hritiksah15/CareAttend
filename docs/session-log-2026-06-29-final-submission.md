@@ -1,6 +1,10 @@
 # Session Log — Final Submission Readiness
 
 Date: 2026-06-29
+**Superseded baseline note (2026-07-01):** use `master` at `5c9f741` for final
+GitHub/source-zip/demo evidence. Older `app-worldclass-phase1` references below
+are historical session context only.
+
 Branch: `app-worldclass-phase1`
 Latest pushed baseline at start of this log: `e4d69c1 Add AT3 QA evidence pack`
 
@@ -53,8 +57,8 @@ of Git/source zips, and what remains before AT3 recording.
   - answers for technical, soft-skill, and entrepreneurial questions.
 - `docs/final_qa_signoff_2026-06-28.md`:
   - current verification snapshot.
-  - 245 backend test count.
-  - 33 Flutter test count.
+  - 246 backend test count.
+  - 39 Flutter test count.
   - remaining evidence limits.
 - `docs/screenshots/README.md`:
   - required screenshot names and acceptance rules.
@@ -86,13 +90,13 @@ Most recent clean checks recorded in the docs pass:
 
 - Backend `ruff check .` passed.
 - Backend `pytest -q` passed with only existing sklearn deprecation warnings.
-- Backend `pytest --collect-only -q` collected 245 tests.
+- Backend `pytest --collect-only -q` collected 246 tests.
 - Web `node --check frontend/js/app.js` passed.
 - Dashboard JavaScript smoke test passed.
 - Flutter `flutter analyze --no-fatal-infos` passed.
-- Flutter `flutter test` passed with 38 tests.
+- Flutter `flutter test` passed with 39 tests.
 - Evidence-doc hygiene checks passed:
-  - no stale "28 tests" references.
+  - no stale old Flutter test-count references.
   - no tool-name attribution in docs.
   - `git diff --check` passed before the evidence commit.
 
@@ -175,7 +179,7 @@ After any final cleanup commit, create the source zip from Git so ignored local
 files are not included:
 
 ```bash
-git archive --format=zip --output CareAttend-source.zip app-worldclass-phase1
+git archive --format=zip --output CareAttend-source.zip master
 ```
 
 ## Remaining Manual Task Before AT3

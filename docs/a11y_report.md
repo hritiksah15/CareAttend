@@ -45,8 +45,8 @@ same change set, after which the scan was re-run to confirm.
 
 ### Defects found and fixed
 
-The first stable scan reported **9 colour-contrast failures** (WCAG 2.2 SC 1.4.3,
-Level AA, 4.5:1 for normal text), all traced to three root causes in
+The stable scans reported colour-contrast failures (WCAG 2.2 SC 1.4.3,
+Level AA, 4.5:1 for normal text), all traced to fixable colour-token choices in
 `frontend/css/style.css`:
 
 | # | Element(s) | Before | After | Fix |
@@ -54,6 +54,7 @@ Level AA, 4.5:1 for normal text), all traced to three root causes in
 | 1 | Primary buttons in dark mode (`.btn-primary`) | 4.24:1 (white on `#4a7bc7`) | 5.15:1 | Darkened dark-mode button blue to `#3a6cbf` |
 | 2 | Field hints (`.field-hint`, e.g. "0 – 120 years") | 1.94:1 light / 2.61:1 dark | 5.27:1 / 6.05:1 | Hint colour `#5a6b78`; added dark-mode override `#9aa6b0` |
 | 3 | Session-timer text (`#session-countdown` on blue header) | 3.97:1 | 6.94:1 | Timer text colour `#e8eef5` |
+| 4 | Outreach priority policy text (`#outreach-priority-policy`) | 1.94:1 (`#aeb7bd` on `#f8fafb`) | 7.40:1 | Use `var(--nhs-dark-grey)` for secondary policy text |
 
 The fixes preserve the existing visual hierarchy (hints/timer still read as
 secondary text) and were checked against rendered screenshots in both themes to
@@ -83,4 +84,4 @@ npm install && npx playwright install chromium
 ./run_scan.sh
 ```
 
-Last run: 0 violations (WCAG 2.2 AA, light + dark, landing/assessment/results).
+Last run: 2026-07-01, 0 violations (WCAG 2.2 AA, light + dark, landing/assessment/results).

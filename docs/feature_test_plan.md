@@ -1,4 +1,4 @@
-# Care Attend — Feature Test Plan (all roles) — v1.2.0
+# Care Attend — Feature Test Plan (all roles) — v1.2.1
 
 Manual test script. Three roles: `user` (registered, unapproved), `staff`, `admin`.
 Tests every feature, the role gate, the steps, and the expected outcome.
@@ -252,7 +252,7 @@ curl -s localhost:5000/api/audit-log -H "Authorization: Bearer $TOKEN_ADMIN" \
 
 Automated curl harness, all 3 roles seeded (admin via CLI, staff via approval, user unapproved).
 
-**30 / 30 functional + role-gate checks PASS.** Backend `pytest`: **245 passed**.
+**30 / 30 functional + role-gate checks PASS.** Current backend `pytest`: **246 passed** (verified 2026-07-01).
 
 | Group | Result |
 |---|---|

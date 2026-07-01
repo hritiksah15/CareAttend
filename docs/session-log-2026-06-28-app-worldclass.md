@@ -1,7 +1,11 @@
 # Session Log — App Worldclass Pass (2026-06-27 → 28)
 
+**Superseded baseline note (2026-07-01):** use `master` at `5c9f741` for final
+GitHub/source-zip/demo evidence. The branch and test counts below are historical
+session evidence from 2026-06-28, not the current submission baseline.
+
 Branch: `app-worldclass-phase1` · Latest pushed baseline: `7343a15` ·
-Verified: `flutter analyze` clean (0 issues), 38 tests pass, web build OK,
+Verified: `flutter analyze` clean (0 issues), the then-current Flutter test suite passed, web build OK,
 live Playwright screenshots on `:8090`.
 
 ## Goal
@@ -80,7 +84,8 @@ glassmorphism on transient panels, notifications, branding, i18n, tests.
   AT2 judgement, satisfied-vs-gap tables, and world-class build order.
 - Replaced the scaffold Flutter README with a project-specific app README.
 - Updated stale evidence counts in README/traceability/audit/readiness docs to
-  245 backend tests and 38 Flutter tests.
+  the then-current backend and Flutter suites; current final baseline is
+  246 backend tests and 39 Flutter tests.
 - Hardened Flutter API response handling so non-JSON proxy/server errors become
   controlled `ApiException` messages instead of raw decode failures.
 - Verified: full backend `pytest -q` passed, `flutter analyze` clean,
@@ -118,7 +123,7 @@ glassmorphism on transient panels, notifications, branding, i18n, tests.
   can be rendered independently in tests.
 - Added widget coverage for login/logout rows and filtering of unrelated audit
   actions.
-- Verified: `flutter analyze` clean, `flutter test` passed with 38 tests,
+- Verified: `flutter analyze` clean, `flutter test` passed for the then-current suite,
   `flutter build web` succeeded.
 
 ## Screenshot evidence pack setup — 2026-06-28
@@ -157,8 +162,8 @@ glassmorphism on transient panels, notifications, branding, i18n, tests.
   prototype FHIR boundary implemented, live connector/safety sign-off/external
   validation not falsely claimed.
 - Verified: OpenAPI route parity clean; backend `ruff check .` clean; backend
-  `pytest -q` passed with 245 collected tests; `node --check frontend/js/app.js`
-  passed; Flutter analyze clean; Flutter test passed with 38 tests.
+  `pytest -q` passed for the then-current backend suite; `node --check frontend/js/app.js`
+  passed; Flutter analyze clean; Flutter test passed for the then-current suite.
 
 ## Batch CSV and Dashboard workflow closure — 2026-06-28
 - Fixed the batch-upload CSV experience around the real required wide format:

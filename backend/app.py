@@ -117,6 +117,9 @@ _START_TIME = time.time()
 
 @app.after_request
 def _log_request(response):
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
     logger.info("%s %s -> %s", request.method, request.path, response.status_code)
     return response
 
@@ -187,16 +190,26 @@ def favicon():
 @app.route("/health", methods=["GET"])
 def health():
     db_ok = True
+    auth_tables_ok = True
     try:
         db.session.execute(_sql_text("SELECT 1"))
     except Exception:
         db_ok = False
-    healthy = predictor is not None and db_ok
+        db.session.rollback()
+    if db_ok:
+        try:
+            db.session.execute(_sql_text("SELECT 1 FROM users LIMIT 1"))
+            db.session.execute(_sql_text("SELECT 1 FROM sessions LIMIT 1"))
+        except Exception:
+            auth_tables_ok = False
+            db.session.rollback()
+    healthy = predictor is not None and db_ok and auth_tables_ok
     return jsonify(
         {
             "status": "ok" if healthy else "degraded",
             "model_loaded": predictor is not None,
             "database": "ok" if db_ok else "unavailable",
+            "auth_tables": "ok" if auth_tables_ok else "unavailable",
             "uptime_seconds": round(time.time() - _START_TIME, 1),
         }
     ), (200 if healthy else 503)
@@ -1323,7 +1336,7 @@ NHSX_ETHICS_MAPPING = {
             "evidence": [
                 "F1 >= 0.72 and Recall >= 0.70 validated on held-out test set (NFR-04)",
                 "4-model comparison (LR, RF, XGBoost, LightGBM) with threshold optimisation",
-                "245 automated pytest tests covering all modules",
+                "246 automated pytest tests covering all modules",
                 "SMOTE applied to training partition only - no data leakage",
             ],
         },

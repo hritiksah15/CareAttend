@@ -54,7 +54,7 @@ curl https://YOUR_RENDER_SERVICE.onrender.com/health
 Expected response:
 
 ```json
-{"database":"ok","model_loaded":true,"status":"ok"}
+{"auth_tables":"ok","database":"ok","model_loaded":true,"status":"ok"}
 ```
 
 ## 2. Deploy Flutter Web App on Firebase
@@ -70,7 +70,7 @@ Build the Flutter web app with the Render backend URL:
 
 ```bash
 cd /Users/hritiksah/Downloads/CareAttend/care_attend_app
-flutter build web --release --pwa-strategy=none --dart-define=API_BASE=https://YOUR_RENDER_SERVICE.onrender.com
+flutter build web --release --dart-define=API_BASE=https://YOUR_RENDER_SERVICE.onrender.com
 ```
 
 From the repo root, deploy the already-built `care_attend_app/build/web` folder:
