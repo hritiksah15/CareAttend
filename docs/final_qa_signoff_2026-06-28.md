@@ -1,8 +1,8 @@
 # Final QA Sign-Off Snapshot
 
-Date: 2026-06-30
+Date: 2026-07-01
 Branch: `master`
-Latest local verification baseline: `4e3caf7 fix(app): avoid hidden restricted API loads`
+Latest local verification baseline: local working tree after 2026-07-01 audit fixes
 
 ## Executive Status
 
@@ -18,13 +18,13 @@ recorded separately outside Git for submission upload.
 |---|---|---|
 | Backend lint | `ruff check .` in `backend/` | Passed |
 | Backend tests | `pytest -q` in `backend/` | Passed; only existing sklearn deprecation warnings |
-| Backend collection | `pytest --collect-only -q` | 245 tests collected across 10 files |
+| Backend collection | `pytest --collect-only -q` | 246 tests collected across 10 files |
 | Model accuracy | `docs/system_accuracy_report_2026-06-30.md` | Held-out F1 0.7241, recall 0.7484, ROC-AUC 0.9110 |
 | Web syntax | `node --check frontend/js/app.js` | Passed |
 | Web dashboard smoke | Direct JS runtime smoke against dashboard DOM stubs | Passed: module cards, batch module, expandable detail row, row toggle, outcomes, icon refresh |
 | Flutter static analysis | `flutter analyze` | No issues |
 | Flutter tests | `flutter test` | Passed; 39 tests |
-| Git state before final docs pass | `git status --short --branch` | Clean at audit start |
+| Git state before final docs pass | `git status --short --branch` | Audit fixes pending commit |
 
 ## Current Automated Test Counts
 
@@ -38,11 +38,11 @@ Backend pytest collection:
 | `tests/test_calibration.py` | 5 |
 | `tests/test_data_generator.py` | 23 |
 | `tests/test_feature_coverage.py` | 50 |
-| `tests/test_interventions.py` | 10 |
+| `tests/test_interventions.py` | 13 |
 | `tests/test_new_endpoints.py` | 79 |
 | `tests/test_predictor.py` | 12 |
-| `tests/test_robustness.py` | 5 |
-| **Total** | **245** |
+| `tests/test_robustness.py` | 6 |
+| **Total** | **246** |
 
 Flutter test coverage count: 39 tests across logic, widgets, accessibility,
 dashboard module cards, batch template button, risk-history cap,

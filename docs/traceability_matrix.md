@@ -4,7 +4,7 @@
 
 **How it was built:** Requirement IDs harvested directly from `@requirement` tags in the source (`grep -rEn "FR-|NFR-|US-" backend/`). Implementation and test columns are verified file references, not claims. When copying this into the submitted report, keep requirement wording consistent with the final requirements section.
 
-**Test status:** 245 pytest tests, all passing (June 2026).
+**Test status:** 246 pytest tests and 39 Flutter tests, all passing (verified 2026-07-01).
 
 ---
 

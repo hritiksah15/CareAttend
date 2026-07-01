@@ -147,7 +147,7 @@ Recommended prototype hosting:
 
 ```bash
 cd backend
-pytest -q              # 245 tests across 10 suites
+pytest -q              # 246 tests across 10 suites
 ruff check .           # lint
 
 cd ../care_attend_app
@@ -166,8 +166,13 @@ GitHub Actions ([.github/workflows/](.github/workflows/)):
 - **`ci.yml`** — backend lint (ruff) + tests + WSGI smoke + hardcoded-credential scan,
   dependency audit (pip-audit), frontend JS syntax check, Flutter analyze + test, Docker
   build, and a rendered CI summary. Runs on every push and on PRs to `master`.
+- **`app-ci.yml`** — path-gated Flutter pipeline for app changes: localization generation,
+  strict analyze, widget tests, and a release web build using the pinned Flutter toolchain.
+- **`android-package.yml`** — manual and path-gated Android release packaging for APK/AAB
+  artifacts, with optional signing from GitHub Actions secrets.
 - **`deploy.yml`** — builds the backend image, gates it behind a live health + smoke test,
   then publishes to **GHCR** (`ghcr.io/hritiksah15/careattend-backend`) on push to `master`.
+- **`codeql.yml`** — GitHub CodeQL static security analysis.
 
 ## Documentation
 

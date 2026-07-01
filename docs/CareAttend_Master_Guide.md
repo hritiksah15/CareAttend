@@ -64,7 +64,7 @@ AT2 = **Challenge Definition Report**. It is the single biggest chunk of marks. 
 |-----------|:--:|---------------------|------------------|------------------------|
 | **Problem Definition** | 20% | Clear aim, justified scope, SMART objectives, MoSCoW Won't-Haves | Aim, 7 SMART objectives→sprints, scope bounded by GDPR/NHS | Keep the quantified problem-impact paragraph and measurable objectives prominent in the submitted report. |
 | **Context Investigation** | 20% | Lit review with synthesis (not summary), legal/ethical/social context, competitor analysis | Literature, comparator framing, GDPR/NHS safety context, synthetic-data limitation framing | Use synthesis language: show the gap CareAttend fills, then state why real NHS validation remains out of scope. |
-| **Software Definition** | 40% | Requirements (MoSCoW), UML, ERD, architecture, testing strategy — all **traceable** to objectives | FR/NFRs, user stories, architecture/ERD, OpenAPI, traceability matrix, 245 backend tests, 39 Flutter tests | Cite `docs/traceability_matrix.md`, `docs/architecture.md`, `docs/openapi.yaml`, and the final test counts. |
+| **Software Definition** | 40% | Requirements (MoSCoW), UML, ERD, architecture, testing strategy — all **traceable** to objectives | FR/NFRs, user stories, architecture/ERD, OpenAPI, traceability matrix, 246 backend tests, 39 Flutter tests | Cite `docs/traceability_matrix.md`, `docs/architecture.md`, `docs/openapi.yaml`, and the final test counts. |
 | **Planning** | 15% | Agile justified vs alternatives, sprint plan, Gantt, **risk register with scoring** | Sprint/session logs, deviation/fix-and-verify evidence, risk and production-gate framing | Present deviations honestly: planned prototype evolved into persisted operational workflow while preserving privacy-minimised prediction data. |
 | **Communication** | 5% | Academic tone, Harvard referencing, captioned figures, structure | README, model card, architecture, traceability, production review, screenshot pack, SUS results | Do one final proofread for captions, Harvard consistency, and no clinical overclaiming. |
 
@@ -105,7 +105,7 @@ Two tracks. **Track A** = things that raise your COM668 grade now (do before AT3
 
 | # | Build | Why it scores | Effort | Files |
 |--|-------|--------------|:--:|-------|
-| A1 | **Automated tests for the new endpoints** (carer proxy, slots, nudge, 2FA, audit) | Complete: backend suite now has 245 passing tests. | Done | `backend/tests/` |
+| A1 | **Automated tests for the new endpoints** (carer proxy, slots, nudge, 2FA, audit) | Complete: backend suite now has 246 passing tests. | Done | `backend/tests/` |
 | A2 | **Traceability matrix** doc | Complete: directly targets AT2 40% bucket. | Done | `docs/traceability_matrix.md` |
 | A3 | **Model card + probability calibration** | Complete: calibrated model and limitation framing documented. | Done | `ml/pipeline.py`, `docs/model_card.md` |
 | A4 | **C4 architecture diagram** (Mermaid) | Complete: architecture and ERD evidence exist. | Done | `docs/architecture.md` |
@@ -135,7 +135,7 @@ Two tracks. **Track A** = things that raise your COM668 grade now (do before AT3
 - [x] **STEP 2 — Automated tests for new endpoints (A1).** Cover carer-proxy, slot-optimiser, nudge generator, 2FA enable/verify, audit-log write. *Done = `pytest` green, test count > 90, new endpoints covered.*
 - [x] **STEP 3 — Traceability matrix (A2).** One row per objective → FR/NFR → UML artefact → test id. *Done = every objective traces to a test.*
 - [x] **STEP 4 — Probability calibration + model card (A3).** Wrap selected LR in `CalibratedClassifierCV`, add reliability curve, write 1-page model card. *Done = calibration plot saved, card committed.*
-- [ ] **STEP 5 — C4 architecture + verified ERD (A4).** Mermaid Context+Container+Component; diff ERD against real Alembic schema. *Done = diagram matches `models.py` exactly.*
+- [x] **STEP 5 — C4 architecture + verified ERD (A4).** Mermaid Context+Container+Component; diff ERD against real Alembic schema. *Done = diagram matches `models.py` exactly.*
 - [x] **STEP 6 — SUS usability test (A5).** 5 testers, 10-question SUS, compute score. *Done = a number (e.g. 82/100) + 3 findings.*
 - [x] **STEP 7 — Robustness pass (A6).** Add `/health`, consistent JSON errors, request logging, input validation on every endpoint. *Done = no unhandled 500s on bad input.*
 - [x] **STEP 8 — OpenAPI spec (A7).** Document all endpoints. *Done = spec loads in Swagger UI.*

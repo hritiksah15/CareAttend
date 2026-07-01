@@ -49,7 +49,14 @@ class TestHealth:
         assert data["status"] == "ok"
         assert data["model_loaded"] is True
         assert data["database"] == "ok"
+        assert data["auth_tables"] == "ok"
         assert "uptime_seconds" in data
+
+    def test_security_headers_present(self, client):
+        res = client.get("/health")
+        assert res.headers["X-Content-Type-Options"] == "nosniff"
+        assert res.headers["X-Frame-Options"] == "DENY"
+        assert res.headers["Referrer-Policy"] == "strict-origin-when-cross-origin"
 
 
 class TestJSONErrors:
@@ -68,7 +75,6 @@ class TestJSONErrors:
 
     def test_bad_json_does_not_500(self, client):
         # Malformed body to a JSON endpoint must not leak an HTML 500.
-        res = client.post("/auth/login", data="{not json",
-                          content_type="application/json")
+        res = client.post("/auth/login", data="{not json", content_type="application/json")
         assert res.status_code in (400, 401)
         assert res.is_json

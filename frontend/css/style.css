@@ -683,7 +683,7 @@ body > * {
 }
 .priority-policy {
     margin-top: 10px;
-    color: var(--nhs-grey);
+    color: var(--nhs-dark-grey);
     font-size: 12px;
     line-height: 1.5;
 }
