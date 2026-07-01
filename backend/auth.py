@@ -10,7 +10,6 @@ import re
 import time
 import secrets
 import hashlib
-import random
 import smtplib
 from email.message import EmailMessage
 from functools import wraps
@@ -68,13 +67,13 @@ def _verify_password(password, stored_hash):
     return hashlib.sha256((salt + password).encode()).hexdigest() == hashed
 
 
-PASSWORD_RULE = "at least 8 characters with an uppercase letter, a lowercase " "letter, a number and a symbol"
+AUTH_RULE_TEXT = "at least 8 characters with an uppercase letter, a lowercase letter, a number and a symbol"
 
 
 def validate_password(pw):
     """Return an error string if the password is too weak, else None."""
     if len(pw) < 8:
-        return "Password must be " + PASSWORD_RULE
+        return "Password must be " + AUTH_RULE_TEXT
     if not re.search(r"[A-Z]", pw):
         return "Password needs an uppercase letter"
     if not re.search(r"[a-z]", pw):
@@ -248,7 +247,7 @@ def request_password_reset(email):
     user = User.query.filter_by(email=email).first()
     if not user:
         return None, False
-    code = f"{random.randint(0, 999999):06d}"
+    code = f"{secrets.randbelow(1_000_000):06d}"
     _reset_codes[email] = {"code": code, "expires": time.time() + RESET_TTL, "tries": 0}
     emailed = _send_email(
         email,

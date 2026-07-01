@@ -82,6 +82,11 @@ def _normalise_database_url(url: str) -> str:
     return url
 
 
+def _request_is_https() -> bool:
+    forwarded_proto = request.headers.get("X-Forwarded-Proto", "").split(",", 1)[0].strip().lower()
+    return request.is_secure or forwarded_proto == "https"
+
+
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", os.urandom(32).hex())
 app.config["SQLALCHEMY_DATABASE_URI"] = _normalise_database_url(
     os.environ.get("DATABASE_URL", "postgresql+psycopg://localhost:5432/careattend")
@@ -322,7 +327,12 @@ def auth_login():
         db.session.commit()
     response = jsonify({"token": token, "message": "Login successful"})
     response.set_cookie(
-        "session_token", token, httponly=True, samesite="Strict", max_age=(REMEMBER_TIMEOUT if remember else 1800)
+        "session_token",
+        token,
+        httponly=True,
+        secure=_request_is_https(),
+        samesite="Strict",
+        max_age=(REMEMBER_TIMEOUT if remember else 1800),
     )
     return response
 
@@ -375,7 +385,7 @@ def auth_logout():
             db.session.commit()
         logout(token)
     response = jsonify({"message": "Logged out"})
-    response.delete_cookie("session_token")
+    response.delete_cookie("session_token", secure=_request_is_https(), samesite="Strict")
     return response
 
 

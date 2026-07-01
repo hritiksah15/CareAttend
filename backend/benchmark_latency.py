@@ -23,6 +23,8 @@ import statistics
 import sys
 import time
 
+BENCH_PASSWORD = "Password123!"  # nosec B105
+
 # Isolate from any real database BEFORE app.py reads DATABASE_URL.
 os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
 os.environ.setdefault("FLASK_DEBUG", "0")
@@ -95,14 +97,14 @@ def run(iterations, warmup):
         # Provision an admin (predict needs a token; bias-audit needs admin role).
         client.post(
             "/auth/register",
-            json={"username": "bench", "email": "bench@nhs.uk", "password": "Password123!"},
+            json={"username": "bench", "email": "bench@nhs.uk", "password": BENCH_PASSWORD},
         )
         user = User.query.filter_by(username="bench").first()
         user.role = "admin"
         db.session.commit()
         token = client.post(
             "/auth/login",
-            json={"username": "bench", "password": "Password123!"},
+            json={"username": "bench", "password": BENCH_PASSWORD},
         ).get_json()["token"]
         headers = {"Authorization": f"Bearer {token}"}
 
