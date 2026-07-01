@@ -56,7 +56,7 @@ class ApiService {
   static const String _offlineMessage =
       "Can't reach the server. Check your connection and try again.";
 
-  static const Duration _timeout = Duration(seconds: 30);
+  static const Duration _timeout = Duration(seconds: 75);
 
   static Map<String, String> get _headers => {
         'Content-Type': 'application/json',
