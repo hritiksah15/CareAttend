@@ -54,3 +54,7 @@ tools/a11y/node_modules/
 *.mp4
 *.mov
 *.webm
+
+# Personal AT3 video-recording kit (local prep, not part of graded source)
+docs/assessment-evidence/at3_video_kit/
+docs/assessment-evidence/at3_video_kit_prompt.md
