@@ -2,6 +2,11 @@
 
 Date: 2026-06-30
 
+Current hosted demo endpoints, rechecked on 2026-07-01:
+
+- Firebase Hosting: `https://careattend-64793.web.app/`
+- Render API health: `https://careattend-api.onrender.com/health`
+
 ## Recommended Hosting Split
 
 | Component | Host | Reason |
@@ -39,16 +44,16 @@ CORS_ORIGINS=*
 ```
 
 After Firebase is deployed, replace `CORS_ORIGINS=*` with the exact Firebase
-origin, for example:
+origins. The current demo value is:
 
 ```bash
-CORS_ORIGINS=https://careattend.web.app,https://careattend.firebaseapp.com
+CORS_ORIGINS=https://careattend-64793.web.app,https://careattend-64793.firebaseapp.com
 ```
 
 Health check:
 
 ```bash
-curl https://YOUR_RENDER_SERVICE.onrender.com/health
+curl https://careattend-api.onrender.com/health
 ```
 
 Expected response:
@@ -70,7 +75,7 @@ Build the Flutter web app with the Render backend URL:
 
 ```bash
 cd /Users/hritiksah/Downloads/CareAttend/care_attend_app
-flutter build web --release --dart-define=API_BASE=https://YOUR_RENDER_SERVICE.onrender.com
+flutter build web --release --dart-define=API_BASE=https://careattend-api.onrender.com
 ```
 
 From the repo root, deploy the already-built `care_attend_app/build/web` folder:
@@ -97,8 +102,8 @@ The committed `firebase.json` already points Hosting to
 
 | Check | Command |
 |---|---|
-| Backend health | `curl https://YOUR_RENDER_SERVICE.onrender.com/health` |
-| Flutter app opens | Visit Firebase Hosting URL |
+| Backend health | `curl https://careattend-api.onrender.com/health` |
+| Flutter app opens | Visit `https://careattend-64793.web.app/` |
 | Login works | Use the Render-created admin account |
 | API URL is correct | Browser DevTools network requests go to Render URL, not `127.0.0.1` |
 | CORS locked down | `CORS_ORIGINS` set to Firebase origins |

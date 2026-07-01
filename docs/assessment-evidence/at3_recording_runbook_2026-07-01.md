@@ -4,7 +4,8 @@ Date: 2026-07-01
 Use with: `docs/assessment-evidence/at3_viva_evidence_pack.md`
 Hosted app: `https://careattend-64793.web.app/`
 Hosted API health: `https://careattend-api.onrender.com/health`
-Stable submission baseline: `master` documented at `2cd9f48`, code/deploy baseline `6c86456`
+Runtime/deploy baseline: `6c86456 fix: avoid benchmark credential false positive`
+Current GitHub submission branch: `master` with later documentation/test-path fixes
 
 ## Recording Rules
 

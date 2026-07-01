@@ -143,6 +143,11 @@ Recommended prototype hosting:
 - Firebase Hosting for Flutter web: [`firebase.json`](firebase.json)
 - Step-by-step runbook: [Render + Firebase deployment guide](docs/system-design/deployment_guide_render_firebase.md)
 
+Current hosted demo endpoints, verified on 2026-07-01:
+
+- Flutter web app: `https://careattend-64793.web.app/`
+- API health check: `https://careattend-api.onrender.com/health`
+
 ## Testing
 
 ```bash
