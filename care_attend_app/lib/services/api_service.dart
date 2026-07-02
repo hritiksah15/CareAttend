@@ -95,10 +95,11 @@ class ApiService {
 
   static Future<Map<String, dynamic>> _send(
       Future<http.Response> Function() call,
-      {bool retryable = false}) async {
+      {bool retryable = false,
+      Duration timeout = _timeout}) async {
     for (var attempt = 0;; attempt++) {
       try {
-        final res = await call().timeout(_timeout);
+        final res = await call().timeout(timeout);
         offline.value = false; // a response (even a 4xx) means we are online
         return _handleResponse(res);
       } on ApiException {
@@ -124,6 +125,12 @@ class ApiService {
   static Future<Map<String, dynamic>> _post(String path, {Object? body}) =>
       _send(() => http.post(_uri(path),
           headers: _headers, body: body == null ? null : jsonEncode(body)));
+
+  static Future<Map<String, dynamic>> _postLong(String path, {Object? body}) =>
+      _send(
+          () => http.post(_uri(path),
+              headers: _headers, body: body == null ? null : jsonEncode(body)),
+          timeout: const Duration(seconds: 75));
 
   static Future<Map<String, dynamic>> _put(String path, {Object? body}) =>
       _send(() => http.put(_uri(path),
@@ -153,7 +160,9 @@ class ApiService {
     required String password,
     bool remember = false,
   }) async {
-    final data = await _post('/auth/login', body: {
+    // Hosted Render demos can cold-start after idle periods. Give auth one
+    // longer window so the first sign-in wakes the server instead of failing.
+    final data = await _postLong('/auth/login', body: {
       'username': username,
       'password': password,
       'remember': remember
@@ -419,7 +428,10 @@ class ApiService {
     }
     if (res.statusCode == 401) {
       clearSession();
-      throw ApiException('Session expired. Please log in again.');
+      final message = body['error']?.toString();
+      throw ApiException(message == null || message.isEmpty
+          ? 'Session expired. Please log in again.'
+          : message);
     }
     if (res.statusCode >= 400) {
       throw ApiException(body['error'] ?? 'Request failed');
